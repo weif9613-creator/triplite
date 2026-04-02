@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>行程 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">✈️</span>
+        <span class="brand-name">TripLite</span>
+      </div>
+      <div class="header-meta" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain"></main>
+
+  <nav class="bottom-nav">
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item active"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+  </nav>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // 行程页逻辑
+    function getQueryParam(name) {
+      const url = new URL(location.href);
+      return url.searchParams.get(name);
+    }
+
+    function renderTripOverview() {
+      const main = document.getElementById('appMain');
+      const dayIdx = getCurrentDayIndex();
+      
+      main.innerHTML = `
+        <div class="page-header">
+          <div class="page-header-title">📅 完整行程</div>
+          <div class="page-header-sub">澳门 → 芭提雅 → 曼谷 · 8天7晚</div>
+        </div>
+        
+        <!-- 城市筛选 -->
+        <div class="city-tabs">
+          <button class="city-chip active" onclick="filterCity('all', this)">🌏 全部</button>
+          <button class="city-chip" onclick="filterCity('macau', this)">🎰 澳门</button>
+          <button class="city-chip" onclick="filterCity('pattaya', this)">🏖️ 芭提雅</button>
+          <button class="city-chip" onclick="filterCity('bangkok', this)">🏙️ 曼谷</button>
+          <button class="city-chip" onclick="filterCity('return', this)">✈️ 返程</button>
+        </div>
+        
+        <!-- 行程时间轴 -->
+        <div class="timeline" id="tripTimeline">
+          ${TRIP_DATA.days.map((d, i) => `
+            <div class="tl-item ${i < dayIdx ? 'done' : i === dayIdx ? 'current' : 'future'}" data-city="${d.cityCode}">
+              <div class="tl-card ${i === dayIdx ? 'current' : ''}" onclick="showDayDetail(${d.id})">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:22px;">${d.emoji}</span>
+                  <div>
+                    <div class="tl-date">${d.shortDate} ${i === dayIdx ? '· 今天' : ''}</div>
+                    <div class="tl-title">${d.title}</div>
+                  </div>
+                </div>
+                <div class="tl-subtitle" style="margin-bottom:6px;">${d.summary.substring(0, 50)}...</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                  <span class="tl-badge ${d.cityCode}">${d.city}</span>
+                  ${d.tags.map(t => `<span class="tag gray" style="font-size:10px;">${t}</span>`).join('')}
+                </div>
+                <div style="text-align:right;font-size:12px;color:var(--primary-light);margin-top:8px;font-weight:600;">
+                  查看详情 →
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="safe-bottom"></div>
+      `;
+    }
+    
+    function filterCity(city, btn) {
+      document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      
+      document.querySelectorAll('.tl-item').forEach(item => {
+        if (city === 'all' || item.dataset.city === city) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function showDayDetail(dayId) {
+      const day = TRIP_DATA.days.find(d => d.id === dayId);
+      if (!day) return;
+      
+      const main = document.getElementById('appMain');
+      
+      const periodColors = { am: 'am', pm: 'pm', night: 'night' };
+      const typeColors = { must: 'danger', suggest: 'suggest', optional: 'optional' };
+      
+      main.innerHTML = `
+        <!-- 返回按钮 -->
+        <div style="margin-bottom:12px;">
+          <button onclick="renderTripOverview()" style="display:inline-flex;align-items:center;gap:6px;color:var(--primary-light);font-weight:600;font-size:14px;background:none;border:none;cursor:pointer;padding:8px 0;">
+            <i class="fas fa-arrow-left"></i> 返回行程列表
+          </button>
+        </div>
+        
+        <!-- 单日头部 -->
+        <div class="day-header">
+          <div class="day-date">${day.shortDate} · 第${day.id}天</div>
+          <div class="day-city">${day.city} ${day.emoji}</div>
+          <div class="day-summary">${day.summary}</div>
+          <div class="day-energy">
+            <span>体力消耗：</span>
+            <div class="energy-bar">
+              ${[1,2,3].map(i => `<div class="energy-dot ${i <= day.energyLevel ? 'filled' : ''}"></div>`).join('')}
+            </div>
+            <span>${getEnergyLabel(day.energyLevel)}</span>
+          </div>
+        </div>
+        
+        <!-- 今日亮点 -->
+        ${day.highlights.length > 0 ? `
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">🎯</span>今日亮点</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${day.highlights.map(h => `<span class="tag blue"><i class="fas fa-star" style="font-size:10px;"></i> ${h}</span>`).join('')}
+          </div>
+        </div>
+        ` : ''}
+        
+        <!-- 时间块 -->
+        ${day.times.map(t => `
+          <div class="time-block">
+            <div class="time-block-header">
+              <span class="time-label ${t.period}">${t.label}</span>
+              <span class="time-range">${t.range}</span>
+            </div>
+            ${t.activities.map(a => `
+              <div class="activity-item">
+                <div class="activity-dot ${a.type}"></div>
+                <div style="flex:1;">
+                  <div class="activity-name">${a.name}</div>
+                  <div class="activity-desc" style="white-space:pre-line;">${a.desc}</div>
+                  <div class="activity-meta">
+                    ${a.type === 'must' ? '<span class="tag red" style="font-size:10px;">必做</span>' : ''}
+                    ${a.type === 'suggest' ? '<span class="tag amber" style="font-size:10px;">建议</span>' : ''}
+                    ${a.type === 'optional' ? '<span class="tag gray" style="font-size:10px;">可选</span>' : ''}
+                    ${(a.meta || []).map(m => `<span class="tag blue" style="font-size:10px;">📍 ${m}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+        
+        <!-- 风险提醒 -->
+        ${day.warnings.length > 0 ? `
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">⚠️</span>注意事项</div>
+          ${day.warnings.map(w => `
+            <div class="alert-card ${w.type}" style="margin-bottom:8px;">
+              <div class="alert-icon">${w.type === 'danger' ? '🚨' : w.type === 'warning' ? '⚠️' : w.type === 'success' ? '✅' : 'ℹ️'}</div>
+              <div class="alert-content">
+                <div class="alert-title">${w.title}</div>
+                <div class="alert-text" style="white-space:pre-line;">${w.text}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+        
+        <!-- 备选方案 -->
+        ${day.alternatives.length > 0 ? `
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">🔄</span>备选方案</div>
+          ${day.alternatives.map(a => `
+            <div class="step-item">
+              <div class="step-content">
+                <div class="step-title">${a.name}</div>
+                <div class="step-desc">${a.desc}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+        
+        <!-- 前后天导航 -->
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          ${day.id > 1 ? `
+          <button onclick="showDayDetail(${day.id - 1})" class="btn btn-secondary" style="flex:1;">
+            <i class="fas fa-chevron-left"></i> 前一天
+          </button>
+          ` : '<div style="flex:1;"></div>'}
+          ${day.id < TRIP_DATA.days.length ? `
+          <button onclick="showDayDetail(${day.id + 1})" class="btn btn-primary" style="flex:1;">
+            后一天 <i class="fas fa-chevron-right"></i>
+          </button>
+          ` : '<div style="flex:1;"></div>'}
+        </div>
+        
+        <div class="safe-bottom"></div>
+      `;
+      
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dayParam = getQueryParam('day');
+      if (dayParam) {
+        showDayDetail(parseInt(dayParam));
+      } else {
+        renderTripOverview();
+      }
+      
+      const now = new Date();
+      const headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    });
+  </script>
+</body>
+</html>

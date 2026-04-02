@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>应急帮助 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">✈️</span>
+        <span class="brand-name">TripLite</span>
+      </div>
+      <div class="header-meta" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain"></main>
+
+  <nav class="bottom-nav">
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item active"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+  </nav>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function renderEmergencyPage() {
+      const main = document.getElementById('appMain');
+      
+      main.innerHTML = `
+        <div class="page-header">
+          <div class="page-header-title">🛡️ 应急帮助</div>
+          <div class="page-header-sub">出问题时该看哪 · 紧急联系 · 实用建议</div>
+        </div>
+        
+        <!-- 紧急电话快捷卡 -->
+        <div class="card" style="margin-bottom:14px;border:2px solid #fecaca;">
+          <div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">🆘</span>紧急电话（立即可拨）</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <a href="tel:+6622457032" class="emergency-phone" style="justify-content:center;">
+              <span>🇨🇳</span> 中国使馆
+            </a>
+            <a href="tel:1155" class="emergency-phone" style="justify-content:center;">
+              <span>👮</span> 旅游警察 1155
+            </a>
+            <a href="tel:1669" class="emergency-phone" style="justify-content:center;">
+              <span>🚑</span> 急救 1669
+            </a>
+            <a href="tel:191" class="emergency-phone" style="justify-content:center;">
+              <span>🚔</span> 警察 191
+            </a>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">点击可直接拨打 · 仅在泰国有效</div>
+        </div>
+        
+        <!-- 按分类渲染 -->
+        ${EMERGENCY_DATA.map(section => `
+          <div class="emergency-section">
+            <div class="section-label">${section.title}</div>
+            ${section.items.map(item => renderEmergencyItem(item)).join('')}
+          </div>
+        `).join('')}
+        
+        <!-- 重要备份信息 -->
+        <div class="card" style="margin-top:8px;">
+          <div class="card-title" style="margin-bottom:12px;"><span class="icon">📋</span>出发前必须备份到手机的信息</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${[
+              { name: '护照首页照片', action: '手机相册中单独保存' },
+              { name: '机票确认号+回程机票', action: '截图保存并发到自己邮箱' },
+              { name: 'TDAC确认二维码', action: '截图保存，入境时出示' },
+              { name: '曼谷酒店英文地址', action: '复制到手机备忘录' },
+              { name: '中国驻泰大使馆电话', action: '+66-2-245-7032' }
+            ].map(item => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">
+                <div style="font-size:13px;font-weight:600;color:var(--text-primary);">✓ ${item.name}</div>
+                <div style="font-size:11px;color:var(--text-muted);">${item.action}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- 常用泰语 -->
+        <div class="card" style="margin-top:12px;">
+          <div class="card-title" style="margin-bottom:12px;"><span class="icon">🗣️</span>应急泰语短句</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${[
+              { th: 'ช่วยด้วย（Chuay duay）', cn: '救命/帮帮我' },
+              { th: 'ไปโรงพยาบาล（Pai rong phayaban）', cn: '去医院' },
+              { th: 'โทรตำรวจ（Tho tamruat）', cn: '打电话叫警察' },
+              { th: 'หนังสือเดินทางหาย（Nangsu doenthang haai）', cn: '护照丢了' },
+              { th: 'ฉันไม่สบาย（Chan mai sabai）', cn: '我不舒服/生病了' },
+              { th: 'เท่าไหร่（Thao rai）', cn: '多少钱' },
+              { th: 'ไม่เอา（Mai ao）', cn: '不要了' },
+              { th: 'ขอบคุณ（Khob khun）', cn: '谢谢' }
+            ].map(p => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--primary-light);">${p.th}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">${p.cn}</div>
+                </div>
+                <button onclick="copyToClipboard('${p.th}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-muted);cursor:pointer;">
+                  复制
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- 防骗提醒 -->
+        <div class="card" style="margin-top:12px;">
+          <div class="card-title" style="margin-bottom:12px;"><span class="icon">🚫</span>曼谷常见陷阱</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${[
+              { title: '大皇宫"今天关闭"骗局', desc: '大皇宫门口会有人说"今天关闭，我带你去其他地方"。不要信！直接进正门。开放时间官方为8:30–15:30售票。' },
+              { title: '嘟嘟车漫天要价', desc: '嘟嘟车路线固定但容易绕路。短途出行优先用Grab，价格透明有保障。' },
+              { title: '珠宝店骗局', desc: '出租车/路人推荐"今天打折珠宝店"一律不要去。是骗局。' },
+              { title: '非官方租摩托', desc: '芭提雅街边非官方摩托驾照问题。出行优先Grab或双条车。' }
+            ].map(item => `
+              <div class="step-item warning">
+                <div class="step-content">
+                  <div class="step-title">⚠️ ${item.title}</div>
+                  <div class="step-desc">${item.desc}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="safe-bottom"></div>
+      `;
+    }
+    
+    function renderEmergencyItem(item) {
+      return `
+        <div class="emergency-item">
+          <div class="emergency-icon">${item.icon}</div>
+          <div class="emergency-content">
+            <div class="emergency-title">${item.title}</div>
+            <div class="emergency-text" style="white-space:pre-line;">${item.text}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      renderEmergencyPage();
+      const now = new Date();
+      const headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    });
+  </script>
+</body>
+</html>

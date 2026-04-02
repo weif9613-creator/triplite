@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>行前清单 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">✈️</span>
+        <span class="brand-name">TripLite</span>
+      </div>
+      <div class="header-meta" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain"></main>
+
+  <nav class="bottom-nav">
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item active"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+  </nav>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // 存储管理
+    const STORAGE_KEY = 'triplite_checklist_v2';
+    const DEPARTURE_DATE = '2026-04-26'; // 出发日期
+
+    function loadCheckedState() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch { return {}; }
+    }
+    
+    function saveCheckedState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+    
+    let checkedState = loadCheckedState();
+    let showOnlyUnchecked = false;
+    let openGroups = {};
+    let activePhase = 'all'; // 'all' | 'before' | 'during'
+
+    // ── 计算倒计时 ──
+    function getCountdown() {
+      const now = new Date();
+      const dep = new Date(DEPARTURE_DATE);
+      dep.setHours(0, 0, 0, 0);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diff = Math.ceil((dep - today) / (1000 * 60 * 60 * 24));
+      return diff;
+    }
+
+    // ── 倒计时文案 ──
+    function getCountdownBadge() {
+      const days = getCountdown();
+      if (days > 30) return { text: `出发还有 ${days} 天`, color: 'var(--text-secondary)', bg: 'var(--bg-card)' };
+      if (days > 7)  return { text: `出发还有 ${days} 天`, color: '#1d4ed8', bg: '#dbeafe' };
+      if (days > 3)  return { text: `⚡ 出发还有 ${days} 天，抓紧准备！`, color: '#b45309', bg: '#fef3c7' };
+      if (days > 0)  return { text: `🔥 出发还有 ${days} 天！最后冲刺！`, color: '#dc2626', bg: '#fee2e2' };
+      if (days === 0) return { text: `🎉 今天就要出发了！出发！`, color: '#059669', bg: '#d1fae5' };
+      return { text: `✈️ 旅途中，好好享受！`, color: '#059669', bg: '#d1fae5' };
+    }
+
+    // ── 阶段说明 ──
+    // phase: 'before7' = 提前1周前 | 'before3' = 提前3天内 | 'day0' = 出发当天 | 'during' = 途中随时
+    function getPhaseLabel(phase) {
+      const map = {
+        'before7': { label: '出发前一周', color: 'blue', icon: '📅' },
+        'before3': { label: '出发前3天', color: 'amber', icon: '⚡' },
+        'day0':    { label: '出发当天', color: 'red',   icon: '🔥' },
+        'during':  { label: '途中随时', color: 'green', icon: '✈️' }
+      };
+      return map[phase] || { label: phase, color: 'gray', icon: '📌' };
+    }
+
+    // ── 为每个 checklist item 加 phase 字段（从data.js数据扩展） ──
+    const PHASE_MAP = {
+      // 证件
+      'passport': 'before7',
+      'passport-photo': 'before7',
+      'flight-macau': 'before7',
+      'flight-bkk': 'before7',
+      'flight-return': 'before7',
+      'hotel-macau': 'before7',
+      'hotel-pattaya': 'before7',
+      'hotel-bkk': 'before7',
+      'id-card': 'before7',
+      // 入境
+      'tdac': 'before3',
+      'tdac-qr': 'before3',
+      'macau-entry': 'before7',
+      'pattaya-address': 'before3',
+      'return-ticket': 'before3',
+      // 网络
+      'esim': 'before3',
+      'grab': 'before7',
+      'google-maps': 'before3',
+      'translate-app': 'before3',
+      'hotel-wifi': 'during',
+      'emergency-number': 'before3',
+      // 支付
+      'visa-card': 'before7',
+      'bank-notice': 'before7',
+      'cash-baht': 'before3',
+      'cash-mop': 'before7',
+      'backup-card': 'before7',
+      'exchange-rate': 'before7',
+      // 行李
+      'light-clothes': 'before7',
+      'temple-outfit': 'before3',
+      'sandals': 'before7',
+      'sneakers': 'before7',
+      'swimwear': 'before3',
+      'sunscreen': 'before3',
+      'sunglasses': 'before7',
+      'hat': 'before7',
+      'charger': 'day0',
+      'powerbank': 'day0',
+      'medicine': 'before3',
+      'quick-dry-towel': 'before3',
+      // App
+      'app-grab': 'before7',
+      'app-googlemaps': 'before7',
+      'app-translate': 'before7',
+      'app-booking': 'before7',
+      'app-flightradar': 'before7',
+      'app-xe': 'before7',
+      'app-triplite': 'before3'
+    };
+
+    function getTotalStats() {
+      let total = 0, checked = 0, must = 0, mustDone = 0;
+      CHECKLIST_DATA.forEach(group => {
+        group.items.forEach(item => {
+          total++;
+          if (checkedState[item.id]) checked++;
+          if (item.must) {
+            must++;
+            if (checkedState[item.id]) mustDone++;
+          }
+        });
+      });
+      return { total, checked, must, mustDone };
+    }
+    
+    function getGroupStats(group) {
+      const total = group.items.length;
+      const checked = group.items.filter(item => checkedState[item.id]).length;
+      return { total, checked };
+    }
+
+    // 阶段过滤：只显示当前阶段最相关的项
+    function getActiveItems(group) {
+      if (activePhase === 'all') return group.items;
+      if (activePhase === 'before') {
+        return group.items.filter(i => {
+          const p = PHASE_MAP[i.id] || 'before7';
+          return p === 'before7' || p === 'before3';
+        });
+      }
+      if (activePhase === 'day0') {
+        return group.items.filter(i => (PHASE_MAP[i.id] || 'before7') === 'day0');
+      }
+      if (activePhase === 'during') {
+        return group.items.filter(i => (PHASE_MAP[i.id] || 'before7') === 'during');
+      }
+      return group.items;
+    }
+
+    function renderChecklist() {
+      const main = document.getElementById('appMain');
+      const stats = getTotalStats();
+      const pct = Math.round((stats.checked / stats.total) * 100);
+      const countdown = getCountdown();
+      const badge = getCountdownBadge();
+      
+      // 初始化所有分组为展开
+      CHECKLIST_DATA.forEach(g => {
+        if (openGroups[g.id] === undefined) openGroups[g.id] = true;
+      });
+      
+      main.innerHTML = `
+        <div class="page-header">
+          <div class="page-header-title">✅ 行前清单</div>
+          <div class="page-header-sub">第一次出国完整准备 · 照着勾即可</div>
+        </div>
+
+        <!-- 倒计时横幅 -->
+        <div style="background:${badge.bg};border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:700;color:${badge.color};">
+          ${badge.text}
+        </div>
+        
+        <!-- 进度总览 -->
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div>
+              <div style="font-size:24px;font-weight:800;color:${pct === 100 ? 'var(--success)' : 'var(--primary-light)'};">${pct}%</div>
+              <div style="font-size:12px;color:var(--text-secondary);">准备完成度</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:15px;font-weight:700;color:var(--danger);">必做项 ${stats.mustDone}/${stats.must}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">全部项 ${stats.checked}/${stats.total}</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${pct}%;background:${pct === 100 ? 'var(--success)' : 'linear-gradient(90deg,var(--primary),var(--primary-light))'}"></div>
+          </div>
+          
+          <!-- 快速操作 -->
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button onclick="toggleShowUnchecked()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;">
+              <i class="fas fa-filter"></i> ${showOnlyUnchecked ? '显示全部' : '只看未完成'}
+            </button>
+            <button onclick="resetAll()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;">
+              <i class="fas fa-redo"></i> 重置全部
+            </button>
+          </div>
+        </div>
+
+        <!-- 阶段快速筛选 -->
+        <div class="city-tabs" style="margin-bottom:12px;">
+          <button class="city-chip ${activePhase==='all'?'active':''}" onclick="setPhase('all',this)">📋 全部</button>
+          <button class="city-chip ${activePhase==='before'?'active':''}" onclick="setPhase('before',this)">📅 出发前</button>
+          <button class="city-chip ${activePhase==='day0'?'active':''}" onclick="setPhase('day0',this)">🔥 出发当天</button>
+          <button class="city-chip ${activePhase==='during'?'active':''}" onclick="setPhase('during',this)">✈️ 途中</button>
+        </div>
+
+        <!-- 阶段说明 -->
+        ${activePhase !== 'all' ? `
+        <div class="alert-card info" style="margin-bottom:12px;">
+          <div class="alert-icon">${activePhase==='before'?'📅':activePhase==='day0'?'🔥':'✈️'}</div>
+          <div class="alert-content">
+            <div class="alert-title">${activePhase==='before'?'出发前需完成的项目':activePhase==='day0'?'出发当天早上逐项检查':'途中随时可处理的项目'}</div>
+            <div class="alert-text">${activePhase==='before'?'出发前一周：完成订单/证件/App准备；出发前3天：完成TDAC/网络/着装确认':activePhase==='day0'?'出门前最后检查：充电宝、护照在随身包、机票截图、TDAC截图、插头转换器':'如酒店WiFi确认，可在入住后立即处理'}</div>
+          </div>
+        </div>
+        ` : ''}
+        
+        <!-- 必做项提醒 -->
+        ${stats.mustDone < stats.must ? `
+        <div class="alert-card danger" style="margin-bottom:12px;">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-content">
+            <div class="alert-title">还有 ${stats.must - stats.mustDone} 项必做事项未完成</div>
+            <div class="alert-text">特别注意：TDAC入境卡须在4/27抵达泰国前填写；护照有效期需在5/3之后还剩6个月以上。</div>
+          </div>
+        </div>
+        ` : `
+        <div class="alert-card success" style="margin-bottom:12px;">
+          <div class="alert-icon">🎉</div>
+          <div class="alert-content">
+            <div class="alert-title">所有必做事项已完成！</div>
+            <div class="alert-text">你已经准备好了，出发吧！祝旅途愉快！</div>
+          </div>
+        </div>
+        `}
+        
+        <!-- 分组清单 -->
+        <div id="checklistGroups"></div>
+
+        <!-- 底部重要提示 -->
+        <div class="card" style="margin-top:8px;border-left:4px solid var(--danger);">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">⚡</span>出发前最重要的5件事</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
+              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span>
+              <span><strong>TDAC电子入境卡</strong> – 4/27抵达曼谷前必须填，官网 tdac.immigration.go.th，全英文填写</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
+              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span>
+              <span><strong>护照检查</strong> – 有效期必须在2026年11月3日之后（还剩6个月+）</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
+              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span>
+              <span><strong>Grab安装并绑卡</strong> – 整趟旅行的打车核心，提前注册，不然到了不能用</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
+              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</span>
+              <span><strong>银行卡开通境外消费</strong> – 手机银行App里操作，否则刷卡会被拒</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
+              <span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</span>
+              <span><strong>4/30大皇宫着装</strong> – 提前从行李箱找出长裤/过膝裙，单独放好备用</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ☀️ 天气相关注意事项专项提示 -->
+        <div class="card" style="margin-top:10px;border-left:4px solid #f97316;">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">☀️</span>天气相关 · 出发前必备物品核查</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">4月底–5月初 东南亚热季末期，高温+强紫外线+可能阵雨，以下物品必须带齐</div>
+          
+          <!-- 防晒必备 -->
+          <div style="background:#fff7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:6px;">🧴 防晒（最重要 · 全程每天都用）</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${[
+                '防晒霜 SPF50+ PA++++ · 至少200ml，最好带两支（随身+备用）',
+                '防晒补涂喷雾 · 运动防水型，出汗下水后方便补涂',
+                '宽沿遮阳帽 · 帽檐≥7cm，遮脸颊+颈部+耳朵',
+                'UV400墨镜 · 强热带阳光，不戴会损伤眼睛',
+                '防晒衣/长袖衫 · UPF40+，格兰岛出海必备'
+              ].map(t => `<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>${t}</div>`).join('')}
+            </div>
+          </div>
+
+          <!-- 防暑备水 -->
+          <div style="background:#eff6ff;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">💧 防暑补水（高温环境必备）</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${[
+                '保温水壶/杯 500ml+ · 随时补水，不等口渴就喝',
+                '藿香正气水/胶囊 · 轻度中暑+肠胃不适万能药',
+                '十滴水小瓶 · 随身急救，中暑时用',
+                '口服补液盐 · 大量出汗后补充电解质'
+              ].map(t => `<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;"><span style="color:#3b82f6;font-size:10px;margin-top:4px;">●</span>${t}</div>`).join('')}
+            </div>
+          </div>
+
+          <!-- 防雨 -->
+          <div style="background:#f0fdf4;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:6px;">🌧️ 防雨（午后可能阵雨）</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${[
+                '折叠晴雨伞 · 轻量款，当地7-Eleven也有售约80–120฿',
+                '防水手机袋/小包 · 护照+手机防雨'
+              ].map(t => `<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#14532d;"><span style="color:#22c55e;font-size:10px;margin-top:4px;">●</span>${t}</div>`).join('')}
+            </div>
+          </div>
+
+          <!-- 蚊虫 -->
+          <div style="background:#fdf4ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+            <div style="font-size:12px;font-weight:700;color:#7e22ce;margin-bottom:6px;">🦟 驱蚊（热带登革热风险）</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              ${[
+                '驱蚊液 DEET 30%+ · 黄昏后必用，防登革热',
+                '蚊虫叮咬止痒膏 · 清凉油或芦荟胶'
+              ].map(t => `<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#581c87;"><span style="color:#a855f7;font-size:10px;margin-top:4px;">●</span>${t}</div>`).join('')}
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;background:#fef3c7;border-radius:8px;padding:8px 10px;">
+            <span style="font-size:16px;">💡</span>
+            <span style="font-size:12px;color:#92400e;">查看<a href="weather.html" style="color:#b45309;font-weight:700;">天气页面</a>获取逐日天气详情和防暑防晒完整指南 →</span>
+          </div>
+        </div>
+        
+        <div class="safe-bottom"></div>
+      `;
+      
+      renderGroups();
+    }
+
+    function setPhase(phase, btn) {
+      activePhase = phase;
+      document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderChecklist();
+    }
+    
+    function renderGroups() {
+      const container = document.getElementById('checklistGroups');
+      if (!container) return;
+      
+      container.innerHTML = CHECKLIST_DATA.map(group => {
+        const stats = getGroupStats(group);
+        const isOpen = openGroups[group.id];
+        const isDone = stats.checked === stats.total;
+        
+        let itemsToShow = getActiveItems(group);
+        if (showOnlyUnchecked) {
+          itemsToShow = itemsToShow.filter(item => !checkedState[item.id]);
+        }
+        
+        if (itemsToShow.length === 0) return '';
+        
+        return `
+          <div class="checklist-group">
+            <div class="checklist-group-header" onclick="toggleGroup('${group.id}')">
+              <div class="checklist-group-title">
+                <span style="font-size:18px;">${group.icon}</span>
+                <span>${group.title}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="checklist-progress ${isDone ? 'done' : ''}">${stats.checked}/${stats.total}</span>
+                <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" style="color:var(--text-muted);font-size:12px;"></i>
+              </div>
+            </div>
+            <div class="checklist-items ${isOpen ? 'open' : ''}" id="group_${group.id}">
+              ${itemsToShow.map(item => renderCheckItem(item)).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function renderCheckItem(item) {
+      const isChecked = checkedState[item.id];
+      const phase = PHASE_MAP[item.id] || 'before7';
+      const phaseInfo = getPhaseLabel(phase);
+      return `
+        <div class="check-item ${isChecked ? 'checked' : ''} ${item.must ? 'must-item' : ''}" 
+             onclick="toggleItem('${item.id}')">
+          <div class="check-box">
+            ${isChecked ? '<i class="fas fa-check"></i>' : ''}
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;">
+              <span class="check-name">${item.name}</span>
+              ${item.must ? '<span class="check-badge must">必须</span>' : ''}
+              ${item.tag && !item.must ? `<span class="check-badge tip">${item.tag}</span>` : ''}
+              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg);color:var(--text-secondary);font-weight:600;">${phaseInfo.icon} ${phaseInfo.label}</span>
+            </div>
+            ${item.desc ? `<div class="check-desc">${item.desc}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    function toggleItem(itemId) {
+      checkedState[itemId] = !checkedState[itemId];
+      saveCheckedState(checkedState);
+      renderChecklist();
+    }
+    
+    function toggleGroup(groupId) {
+      openGroups[groupId] = !openGroups[groupId];
+      renderGroups();
+    }
+    
+    function toggleShowUnchecked() {
+      showOnlyUnchecked = !showOnlyUnchecked;
+      renderChecklist();
+    }
+    
+    function resetAll() {
+      if (confirm('确定重置所有勾选状态吗？')) {
+        checkedState = {};
+        saveCheckedState(checkedState);
+        renderChecklist();
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      renderChecklist();
+      const now = new Date();
+      const headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    });
+  </script>
+</body>
+</html>

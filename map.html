@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>地图路线 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">✈️</span>
+        <span class="brand-name">TripLite</span>
+      </div>
+      <div class="header-meta" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain"></main>
+
+  <nav class="bottom-nav">
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item active"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+  </nav>
+
+  <script src="js/data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let leafletMap = null;
+    let currentCity = 'all';
+    let markers = [];
+
+    function renderMapPage() {
+      const main = document.getElementById('appMain');
+      main.innerHTML = `
+        <div class="page-header">
+          <div class="page-header-title">🗺️ 地图路线</div>
+          <div class="page-header-sub">关键地点 · 路线指引 · 交通建议</div>
+        </div>
+        
+        <!-- 城市切换 -->
+        <div class="city-tabs">
+          <button class="city-chip active" onclick="switchMapCity('all', this)">🌏 总览</button>
+          <button class="city-chip" onclick="switchMapCity('macau', this)">🎰 澳门</button>
+          <button class="city-chip" onclick="switchMapCity('pattaya', this)">🏖️ 芭提雅</button>
+          <button class="city-chip" onclick="switchMapCity('bangkok', this)">🏙️ 曼谷</button>
+        </div>
+        
+        <!-- 地图容器 -->
+        <div class="map-container">
+          <div id="leafletMap"></div>
+        </div>
+        
+        <!-- 图例说明 -->
+        <div class="card" style="margin-bottom:12px;padding:10px 14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">地图图例</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>景点</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>住宿</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block;"></span>交通</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>美食</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#ec4899;display:inline-block;"></span>购物</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#14b8a6;display:inline-block;"></span>按摩</span>
+            <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#8b5cf6;display:inline-block;"></span>夜生活</span>
+          </div>
+        </div>
+        
+        <!-- 路线说明 -->
+        <div id="routeSection"></div>
+        
+        <!-- 地点卡片 -->
+        <div class="section-label" id="poisLabel">全部关键地点</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;padding:0 2px;">点击卡片可在地图上高亮显示该地点</div>
+        <div id="poisList"></div>
+        
+        <div class="safe-bottom"></div>
+      `;
+      
+      initMap();
+      renderPois('all');
+      renderRoutes('all');
+    }
+    
+    function initMap() {
+      if (leafletMap) {
+        leafletMap.remove();
+        leafletMap = null;
+      }
+      
+      leafletMap = L.map('leafletMap', {
+        center: [13.7563, 100.5018],
+        zoom: 5,
+        zoomControl: true,
+        attributionControl: false
+      });
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+      }).addTo(leafletMap);
+      
+      addMarkers('all');
+    }
+    
+    function addMarkers(city) {
+      markers.forEach(m => m.remove());
+      markers = [];
+      
+      const filtered = city === 'all' ? MAP_DATA.pois : MAP_DATA.pois.filter(p => p.city === city);
+      
+      filtered.forEach(poi => {
+        const icon = L.divIcon({
+          html: `<div style="
+            background:white;
+            border-radius:50%;
+            width:36px;height:36px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.25);
+            border:2px solid ${getPoiColor(poi.type)};
+          ">${poi.emoji}</div>`,
+          className: '',
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+        
+        const marker = L.marker([poi.lat, poi.lng], { icon })
+          .addTo(leafletMap)
+          .bindPopup(`
+            <div style="font-family:sans-serif;min-width:160px;">
+              <div style="font-size:15px;font-weight:700;margin-bottom:4px;">${poi.emoji} ${poi.name}</div>
+              <div style="font-size:12px;color:#666;margin-bottom:6px;">${poi.address}</div>
+              <div style="font-size:12px;color:#1e40af;background:#dbeafe;padding:4px 8px;border-radius:6px;">${poi.tip}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+                <a href="https://uri.amap.com/marker?position=${poi.lng},${poi.lat}&name=${encodeURIComponent(poi.name)}&coordinate=gaode&callnative=1" target="_blank" style="background:#00b7ff;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">📍 高德导航</a>
+                <a href="https://maps.google.com/?q=${poi.lat},${poi.lng}" target="_blank" style="background:#4285f4;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">🗺️ 谷歌地图</a>
+              </div>
+            </div>
+          `);
+        markers.push(marker);
+      });
+      
+      if (filtered.length > 0) {
+        const group = L.featureGroup(markers);
+        leafletMap.fitBounds(group.getBounds().pad(0.2));
+      }
+    }
+    
+    function getPoiColor(type) {
+      const colors = {
+        attraction: '#f59e0b',
+        stay: '#10b981',
+        transport: '#3b82f6',
+        food: '#ef4444',
+        nightlife: '#8b5cf6',
+        shopping: '#ec4899',
+        massage: '#14b8a6'
+      };
+      return colors[type] || '#64748b';
+    }
+    
+    function switchMapCity(city, btn) {
+      currentCity = city;
+      document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      
+      addMarkers(city);
+      renderPois(city);
+      renderRoutes(city);
+      
+      const label = document.getElementById('poisLabel');
+      if (label) {
+        const names = { all: '全部关键地点', macau: '澳门关键地点', bangkok: '曼谷关键地点', pattaya: '芭提雅关键地点' };
+        label.textContent = names[city] || '关键地点';
+      }
+    }
+    
+    function renderPois(city) {
+      const list = document.getElementById('poisList');
+      if (!list) return;
+      
+      const filtered = city === 'all' ? MAP_DATA.pois : MAP_DATA.pois.filter(p => p.city === city);
+      
+      const typeLabels = {
+        attraction: '🎯 景点',
+        stay: '🏨 住宿',
+        transport: '🚌 交通',
+        food: '🍜 美食',
+        nightlife: '🌃 夜生活',
+        shopping: '🛍️ 购物',
+        massage: '💆 按摩'
+      };
+      
+      list.innerHTML = filtered.map(poi => `
+        <div class="poi-card" data-lat="${poi.lat}" data-lng="${poi.lng}" data-id="${poi.id}" onclick="focusPoi(${poi.lat}, ${poi.lng}, '${poi.id}')">
+          <div class="poi-emoji">${poi.emoji}</div>
+          <div class="poi-info">
+            <div class="poi-name">${poi.name}</div>
+            <div class="poi-addr">${poi.address}</div>
+            <div style="margin-bottom:4px;">
+              <span class="tag ${getPoiTagClass(poi.type)}" style="font-size:10px;">${typeLabels[poi.type] || poi.type}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);background:var(--bg);padding:6px 8px;border-radius:6px;line-height:1.5;">
+              💡 ${poi.tip}
+            </div>
+            <div class="poi-actions" style="margin-top:8px;flex-wrap:wrap;gap:6px;">
+              <a href="https://uri.amap.com/marker?position=${poi.lng},${poi.lat}&name=${encodeURIComponent(poi.name)}&coordinate=gaode&callnative=1" target="_blank" class="poi-action-btn" style="background:#00b7ff;color:white;border:none;text-decoration:none;" onclick="event.stopPropagation()">
+                📍 高德
+              </a>
+              <a href="https://maps.google.com/?q=${poi.lat},${poi.lng}" target="_blank" class="poi-action-btn" style="background:#4285f4;color:white;border:none;text-decoration:none;" onclick="event.stopPropagation()">
+                🗺️ 谷歌
+              </a>
+              <button class="poi-action-btn" data-addr="${poi.address.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();copyToClipboard(this.dataset.addr)">
+                <i class="fas fa-copy"></i> 复制
+              </button>
+              ${poi.officialUrl ? `<a href="${poi.officialUrl}" target="_blank" class="poi-action-btn" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> 官网</a>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getPoiTagClass(type) {
+      const classes = {
+        attraction: 'amber',
+        stay: 'green',
+        transport: 'blue',
+        food: 'red',
+        nightlife: 'purple',
+        shopping: 'purple',
+        massage: 'green'
+      };
+      return classes[type] || 'gray';
+    }
+    
+    function renderRoutes(city) {
+      const section = document.getElementById('routeSection');
+      if (!section) return;
+      
+      const filtered = city === 'all' ? MAP_DATA.routes : MAP_DATA.routes.filter(r => r.city === city);
+      
+      if (filtered.length === 0) {
+        section.innerHTML = '';
+        return;
+      }
+      
+      section.innerHTML = `
+        <div class="section-label">推荐路线</div>
+        ${filtered.map(route => `
+          <div class="route-card">
+            <div class="route-title">${route.emoji} ${route.title}</div>
+            <div class="route-steps">
+              ${route.steps.map((s, i) => `
+                <div class="route-step">
+                  <div class="route-step-num">${i + 1}</div>
+                  <div class="route-step-info">
+                    <div class="route-step-name">${s.name}</div>
+                    <div class="route-step-desc">${s.desc}</div>
+                    ${s.transport ? `<span class="route-transport">${s.transport}</span>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+    
+    function focusPoi(lat, lng, id) {
+      leafletMap.setView([lat, lng], 15);
+      markers.forEach(m => {
+        if (m.getLatLng().lat === lat && m.getLatLng().lng === lng) {
+          m.openPopup();
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function openNav(url) {
+      window.open(url, '_blank');
+    }
+    
+    // 重要地点快捷卡
+    function renderQuickPois() {
+      // 城市页面特有内容已在renderPois中处理
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMapPage();
+      const now = new Date();
+      const headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    });
+  </script>
+</body>
+</html>

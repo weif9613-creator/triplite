@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>住宿建议 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .dist-row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 4px; }
+    .dist-chip {
+      font-size:11px; padding:3px 8px; border-radius:20px;
+      background:var(--bg); color:var(--text-secondary);
+      border:1px solid var(--border); display:flex; align-items:center; gap:4px;
+    }
+    .dist-chip .d-icon { font-size:12px; }
+    .dist-chip.walk { border-color:#10b981; color:#065f46; background:#d1fae5; }
+    .dist-chip.taxi { border-color:#3b82f6; color:#1e40af; background:#dbeafe; }
+    .hotel-nearby-title {
+      font-size:11px; font-weight:700; color:var(--text-secondary);
+      text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; margin-top:10px;
+    }
+    .nearby-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;
+    }
+    .nearby-item {
+      background:var(--bg); border-radius:10px; padding:8px 10px;
+      font-size:11px; line-height:1.5;
+    }
+    .nearby-item .nearby-name { font-weight:700; font-size:12px; margin-bottom:2px; }
+    .nearby-item .nearby-dist { color:var(--text-secondary); }
+    .hotel-rank-badge {
+      position:absolute; top:-6px; right:12px;
+      font-size:11px; font-weight:700; padding:2px 10px;
+      border-radius:20px; color:white;
+    }
+    .hotel-card { position:relative; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">✈️</span>
+        <span class="brand-name">TripLite</span>
+      </div>
+      <div class="header-meta" id="headerDate"></div>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain"></main>
+
+  <nav class="bottom-nav">
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+  </nav>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let currentStayCity = 'macau';
+
+    // 每家酒店的周边距离数据（补充）
+    const HOTEL_NEARBY = {
+      // ── 澳门 ──
+      '澳门喜来登大酒店': {
+        walk: ['路氹城美食广场 步行4分钟', '银河商场 步行5分钟', '便利店 步行2分钟'],
+        taxi:  ['大三巴牌坊 车程20分钟', '议事亭前地 车程22分钟', '澳门机场 车程10分钟'],
+        note: '机场穿梭巴士：北出口停车场，11:00–21:00，每15–20分钟'
+      },
+      '澳门万豪酒店': {
+        walk: ['四季购物中心 步行3分钟', '便利店 步行3分钟', '路氹城大街 步行5分钟'],
+        taxi:  ['大三巴牌坊 车程20分钟', '澳门机场 车程10分钟'],
+        note: '毗邻四季，周边餐厅丰富，设施完善'
+      },
+      '路氹城商务酒店（省钱档）': {
+        walk: ['便利店 步行5分钟', '餐厅 步行5–10分钟'],
+        taxi:  ['大三巴牌坊 车程20–25分钟', '澳门机场 车程8–12分钟'],
+        note: '仅作睡觉用途，位置交通均可接受'
+      },
+      // ── 芭提雅 ──
+      'Aya Boutique Hotel Pattaya': {
+        walk: ['芭提雅海滩 步行8分钟', '7-Eleven 步行2分钟', '街边泰餐 步行3分钟'],
+        taxi:  ['Bali Hai码头 双条车/Grab 15–20分钟约50฿', 'Central Festival商场 步行10分钟', '真理寺 Grab约15分钟'],
+        note: '双条车站就在Beach Road，去码头和格兰岛方便'
+      },
+      'Amara Bangkok Pattaya': {
+        walk: ['芭提雅海滩 步行10分钟', '便利店 步行3分钟', 'Central Festival 步行8分钟'],
+        taxi:  ['Bali Hai码头 双条车约20–25分钟', '真理寺 Grab约8分钟', 'Nang Nual餐厅 Grab约15分钟'],
+        note: '泳池是加分项，出海晒完回来可直接跳泳池'
+      },
+      'Flipper Lodge Hotel': {
+        walk: ['芭提雅海滩 步行10分钟', '餐厅 步行5分钟', '7-Eleven 步行3分钟'],
+        taxi:  ['Bali Hai码头 双条车约20分钟', 'Central Festival 步行10分钟'],
+        note: '最省钱选项，步行圈餐厅丰富，去Bali Hai需要双条车'
+      },
+      // ── 曼谷 ──
+      'Grande Centre Point Terminal 21': {
+        walk: ['Terminal 21商场 步行5分钟（B1美食广场50–100฿）', 'BTS Asok站 步行5分钟', 'MRT Sukhumvit站 步行3分钟', 'Health Land按摩 步行10分钟', '7-Eleven 步行1分钟'],
+        taxi:  ['大皇宫 Grab约80–120฿（40–50分钟）', '唐人街Yaowarat Grab约50–70฿（20分钟）', 'Siam Paragon BTS约15分钟', 'Jodd Fairs夜市 Grab约20分钟', '素万那普机场 Grab约200–300฿（45–60分钟）'],
+        note: '全程最优位置：双地铁交汇，商场/餐厅/按摩步行全解决'
+      },
+      'Mercure Bangkok Sukhumvit 11': {
+        walk: ['BTS Nana站 步行5分钟', 'Soi 11街边餐厅 步行3分钟', '按摩店 步行5分钟', '7-Eleven 步行1分钟'],
+        taxi:  ['Terminal 21 BTS 1站约5分钟', '大皇宫 Grab约80–120฿', '唐人街 Grab约50–70฿', 'Siam Paragon BTS约15分钟', '素万那普机场 Grab约200–300฿'],
+        note: 'Soi 11周末夜间酒吧有噪音，浅睡眠者注意选楼层'
+      },
+      'ibis Bangkok Sukhumvit 4': {
+        walk: ['BTS Nana站 步行3分钟', 'Soi 4/5餐厅 步行3分钟', '7-Eleven 步行1分钟'],
+        taxi:  ['Terminal 21 BTS 1站约5分钟', '大皇宫 Grab约80–120฿', 'Siam Paragon BTS约15分钟', '素万那普机场 Grab约200–300฿'],
+        note: 'Soi 4有酒吧区，位置佳但夜间较热闹，适合价格敏感旅行者'
+      }
+    };
+    
+    function renderStayPage() {
+      const main = document.getElementById('appMain');
+      
+      main.innerHTML = `
+        <div class="page-header">
+          <div class="page-header-title">🏨 住宿建议</div>
+          <div class="page-header-sub">区域分析 · 候选酒店 · 距离说明</div>
+        </div>
+        
+        <!-- 行程住宿概览 -->
+        <div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,#1e3a5f,#1e40af);">
+          <div style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;margin-bottom:8px;">📍 本次行程住宿安排</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
+              <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/26（1晚）</span>
+              <span>🎰 澳门 · 氹仔/路氹区</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
+              <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/27–4/28（2晚）</span>
+              <span>🏖️ 芭提雅 · Central/North区靠海</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
+              <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/29–5/1（3晚）</span>
+              <span>🏙️ 曼谷 · Asok/Sukhumvit区</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 城市选择 -->
+        <div class="city-tabs">
+          ${STAY_DATA.cities.map((c, i) => `
+            <button class="city-chip ${i === 0 ? 'active' : ''}" onclick="switchStayCity('${c.id}', this)">
+              ${c.emoji} ${c.name}
+            </button>
+          `).join('')}
+        </div>
+        
+        <!-- 城市内容 -->
+        <div id="stayCityContent"></div>
+        
+        <!-- 住宿总体建议 -->
+        <div class="card" style="margin-top:4px;">
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">💡</span>住宿选择通用原则</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="step-item am">
+              <div class="step-content">
+                <div class="step-title">位置 > 价格</div>
+                <div class="step-desc">宁可多花50元住在交通方便的地方，省去每天打车折腾时间。尤其是曼谷，必须在BTS/MRT步行圈内。</div>
+              </div>
+            </div>
+            <div class="step-item pm">
+              <div class="step-content">
+                <div class="step-title">连续住，不频繁换</div>
+                <div class="step-desc">芭提雅连住2晚，曼谷连住3晚，不要频繁换酒店。每次搬行李都会消耗宝贵的游玩时间。</div>
+              </div>
+            </div>
+            <div class="step-item night">
+              <div class="step-content">
+                <div class="step-title">提前预订，灵活取消</div>
+                <div class="step-desc">国内用户推荐用 <strong>Trip.com（携程国际版）</strong>，境外可用 Booking 或 Agoda 比价。均优先选"免费取消"房型，方便调整行程。</div>
+              </div>
+            </div>
+            <div class="step-item am">
+              <div class="step-content">
+                <div class="step-title">第一晚酒店要附近有餐厅</div>
+                <div class="step-desc">抵达芭提雅（4/27）和曼谷（4/29）的第一晚，很可能已经很累。确认酒店步行5–10分钟内有餐厅或便利店。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="safe-bottom"></div>
+      `;
+      
+      switchStayCity('macau', document.querySelector('.city-chip'));
+    }
+    
+    function switchStayCity(cityId, btn) {
+      currentStayCity = cityId;
+      
+      document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      
+      const cityData = STAY_DATA.cities.find(c => c.id === cityId);
+      const content = document.getElementById('stayCityContent');
+      if (!content || !cityData) return;
+      
+      content.innerHTML = `
+        <!-- 区域总结卡 -->
+        <div class="hero-card" style="margin-bottom:14px;">
+          <div style="font-size:12px;opacity:0.75;margin-bottom:6px;font-weight:600;">${cityData.dates} · ${cityData.stayNights}晚</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:6px;">${cityData.emoji} ${cityData.name} · ${cityData.area}</div>
+          <div style="font-size:13px;opacity:0.85;line-height:1.6;margin-bottom:12px;">${cityData.reason}</div>
+          <div class="hero-tags">
+            <span class="hero-tag">预算 ${cityData.budgetRange}</span>
+            <span class="hero-tag">${cityData.stayNights}晚</span>
+          </div>
+        </div>
+        
+        <!-- 酒店列表标题 -->
+        <div class="section-label">候选酒店（${cityData.hotels.length}家参考）</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">价格为参考均价，以预订平台实时为准。<strong>推荐选"免费取消"房型。</strong></div>
+        
+        <!-- 酒店卡片列表 -->
+        ${cityData.hotels.map((hotel, idx) => renderHotelCard(hotel, idx, cityData.hotels.length)).join('')}
+        
+        <!-- 该城市特别说明 -->
+        ${getCitySpecialNote(cityId)}
+      `;
+    }
+
+    function renderHotelCard(hotel, idx, total) {
+      const rankColors = ['#10b981', '#f59e0b', '#94a3b8'];
+      const rankLabels = ['⭐ 首推', '👍 备选', '💰 省钱'];
+      const rankColor = rankColors[idx] || '#94a3b8';
+      const rankLabel = rankLabels[idx] || '';
+      const nearby = HOTEL_NEARBY[hotel.name];
+
+      return `
+        <div class="hotel-card" style="margin-bottom:16px;">
+          <span class="hotel-rank-badge" style="background:${rankColor};">${rankLabel}</span>
+          <div class="hotel-top">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:4px;">
+              <div style="flex:1;">
+                <div class="hotel-name">${hotel.name}</div>
+                <div class="hotel-area"><i class="fas fa-map-marker-alt" style="color:var(--danger);font-size:11px;"></i> ${hotel.area}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="hotel-price-row">
+                  <div class="hotel-price">${hotel.price}</div>
+                  <div class="hotel-price-unit">/晚</div>
+                </div>
+                <div class="hotel-score">
+                  <i class="fas fa-star" style="font-size:11px;"></i>
+                  ${hotel.score}
+                </div>
+              </div>
+            </div>
+            <div class="hotel-tags">
+              ${hotel.tags.map(t => `<span class="tag ${idx === 0 ? 'blue' : idx === 1 ? 'amber' : 'gray'}" style="font-size:11px;">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div class="hotel-body">
+            <!-- 核心优势 -->
+            <div class="hotel-pros">
+              ${hotel.pros.map(p => `<div class="hotel-pro">${p}</div>`).join('')}
+            </div>
+
+            <!-- 周边距离明细 -->
+            ${nearby ? `
+            <div style="background:var(--bg);border-radius:10px;padding:10px;margin-top:8px;">
+              <div class="hotel-nearby-title">📍 周边实际距离</div>
+              <div class="dist-row">
+                ${nearby.walk.map(w => `<span class="dist-chip walk"><span class="d-icon">🚶</span>${w}</span>`).join('')}
+              </div>
+              <div class="dist-row">
+                ${nearby.taxi.map(t => `<span class="dist-chip taxi"><span class="d-icon">🚗</span>${t}</span>`).join('')}
+              </div>
+              ${nearby.note ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:6px;padding:6px;background:rgba(0,0,0,0.04);border-radius:6px;">💡 ${nearby.note}</div>` : ''}
+            </div>
+            ` : ''}
+
+            ${hotel.warning ? `
+            <div class="hotel-warning" style="margin-top:8px;">
+              <span>⚠️</span>
+              <span>${hotel.warning}</span>
+            </div>
+            ` : ''}
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:10px;background:var(--bg);padding:7px 10px;border-radius:8px;line-height:1.6;">
+              🔍 以下为<strong>关键词搜索页</strong>，含日期筛选，打开后按名称找到酒店。<strong>国内优先用 Trip.com</strong>，境外用 Booking/Agoda 比价。
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+              <a href="${hotel.trip || 'https://www.trip.com/hotels/'}" target="_blank"
+                 style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;background:#006ECC;color:white;font-size:13px;font-weight:700;text-decoration:none;">
+                <i class="fas fa-search" style="font-size:12px;"></i> Trip.com 搜索此酒店（国内可用）
+              </a>
+              <div style="display:flex;gap:8px;">
+                <a href="${hotel.booking}" target="_blank" class="hotel-action-btn primary" style="flex:1;text-align:center;">
+                  <i class="fas fa-external-link-alt" style="font-size:11px;"></i> Booking
+                </a>
+                <a href="${hotel.agoda}" target="_blank" class="hotel-action-btn secondary" style="flex:1;text-align:center;">
+                  <i class="fas fa-external-link-alt" style="font-size:11px;"></i> Agoda
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function getCitySpecialNote(cityId) {
+      const notes = {
+        macau: `
+          <div class="alert-card info" style="margin-top:4px;">
+            <div class="alert-icon">✈️</div>
+            <div class="alert-content">
+              <div class="alert-title">澳门机场接驳 & 明天早班机</div>
+              <div class="alert-text">氹仔/路氹大型酒店均有免费穿梭巴士。<strong>明天要飞曼谷，确认好航班时间，提前至少1.5小时到机场</strong>。机场北出口外停车场找穿梭巴士，11:00–21:00，每15–20分钟一班。出发当天早上先确认班次！</div>
+            </div>
+          </div>
+          <div class="alert-card warning" style="margin-top:8px;">
+            <div class="alert-icon">💡</div>
+            <div class="alert-content">
+              <div class="alert-title">今晚不要贪玩</div>
+              <div class="alert-text">明天一早飞曼谷落地后直奔芭提雅，路程长。今晚22:30前必须休息，不要熬夜逛威尼斯人。</div>
+            </div>
+          </div>
+        `,
+        bangkok: `
+          <div class="alert-card info" style="margin-top:4px;">
+            <div class="alert-icon">🚇</div>
+            <div class="alert-content">
+              <div class="alert-title">曼谷Asok区 · 为什么选这里</div>
+              <div class="alert-text">BTS Asok站 + MRT Sukhumvit站双线交汇：<br>
+                • 去大皇宫：BTS转水上巴士约50分钟<br>
+                • 去Siam商圈：BTS约15分钟<br>
+                • 去机场（5/2晚）：Grab直达约45分钟<br>
+                • 步行圈：Terminal 21、按摩店、餐厅、7-Eleven全在5–10分钟内</div>
+            </div>
+          </div>
+          <div class="alert-card warning" style="margin-top:8px;">
+            <div class="alert-icon">⏰</div>
+            <div class="alert-content">
+              <div class="alert-title">5/2（最后一晚）重要提醒</div>
+              <div class="alert-text">5/2中午12:00退房，22:00出发去机场。退房后可以寄存行李在前台，下午轻量购物，17:30前吃完晚饭，取行李，22:00打Grab走人。<strong>不要在这天安排远处活动。</strong></div>
+            </div>
+          </div>
+        `,
+        pattaya: `
+          <div class="alert-card info" style="margin-top:4px;">
+            <div class="alert-icon">⛵</div>
+            <div class="alert-content">
+              <div class="alert-title">芭提雅住宿 · 为什么选中/北芭提雅</div>
+              <div class="alert-text">你的核心景点是格兰岛（Koh Larn）。出发码头Bali Hai在<strong>南芭提雅</strong>，从中/北区去码头：<br>
+                • 双条车约20–30泰铢，约20分钟<br>
+                • Grab约50–80泰铢，约10分钟<br>
+                住中/北芭提雅：去海滩步行，去码头打车，两边都照顾到。</div>
+            </div>
+          </div>
+          <div class="alert-card warning" style="margin-top:8px;">
+            <div class="alert-icon">📅</div>
+            <div class="alert-content">
+              <div class="alert-title">4/29上午退房节奏</div>
+              <div class="alert-text">上午可选真理寺（08:00–10:30），12:00前退房，午饭后出发去曼谷Asok。包车直达约1.5–2小时，或北站大巴+BTS约2.5–3小时。</div>
+            </div>
+          </div>
+        `
+      };
+      return notes[cityId] || '';
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      renderStayPage();
+      const now = new Date();
+      const headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    });
+  </script>
+</body>
+</html>
