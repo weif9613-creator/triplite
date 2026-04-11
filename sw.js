@@ -3,17 +3,23 @@
 // 离线缓存策略：Cache First for static assets
 // ============================================
 
-const CACHE_NAME = 'triplite-v7';
+const CACHE_NAME = 'triplite-v9';
 const OFFLINE_PAGE = '/index.html';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/trip',
   '/trip.html',
+  '/map',
   '/map.html',
+  '/checklist',
   '/checklist.html',
+  '/stay',
   '/stay.html',
+  '/emergency',
   '/emergency.html',
+  '/weather',
   '/weather.html',
   '/css/style.css',
   '/js/data.js',

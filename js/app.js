@@ -10,9 +10,18 @@ function setActiveNav() {
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.remove('active');
     const href = item.getAttribute('href') || '';
-    if (href && path.endsWith(href)) item.classList.add('active');
-    if ((path.endsWith('/') || path.endsWith('index.html') || path === '/') && href === 'index.html') {
+    if (!href) return;
+    // 首页判断
+    if (href === '/' && (path === '/' || path.endsWith('/index.html') || path.endsWith('/'))) {
       item.classList.add('active');
+      return;
+    }
+    // 无后缀路径匹配（如 /checklist 匹配 /checklist 和 /checklist.html）
+    if (href !== '/') {
+      const base = href.replace(/\.html$/, '');
+      if (path === base || path === base + '.html' || path.startsWith(base + '?') || path.startsWith(base + '.html?')) {
+        item.classList.add('active');
+      }
     }
   });
 }

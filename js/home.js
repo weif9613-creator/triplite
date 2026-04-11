@@ -52,7 +52,7 @@ function renderHome() {
     <div class="card fade-in">
       <div class="card-header">
         <div class="card-title"><span class="icon">📋</span>今日要点</div>
-        <a href="trip.html?day=${today.id}" style="font-size:13px;color:var(--primary-light);font-weight:600;">查看详情 →</a>
+        <a href="/trip?day=${today.id}" style="font-size:13px;color:var(--primary-light);font-weight:600;">查看详情 →</a>
       </div>
       <div class="step-list">
         ${today.times.map(t => t.activities.filter(a => a.type === 'must').map(a => `
@@ -109,27 +109,27 @@ function renderHome() {
     <!-- 快捷按钮 -->
     <div class="section-label">快捷入口</div>
     <div class="quick-grid fade-in">
-      <a href="trip.html" class="quick-btn">
+      <a href="/trip" class="quick-btn">
         <div class="quick-btn-icon blue"><i class="fas fa-route"></i></div>
         <span class="quick-btn-label">查看行程</span>
       </a>
-      <a href="map.html" class="quick-btn">
+      <a href="/map" class="quick-btn">
         <div class="quick-btn-icon teal"><i class="fas fa-map-marker-alt"></i></div>
         <span class="quick-btn-label">地图路线</span>
       </a>
-      <a href="checklist.html" class="quick-btn">
+      <a href="/checklist" class="quick-btn">
         <div class="quick-btn-icon amber"><i class="fas fa-check-square"></i></div>
         <span class="quick-btn-label">行前清单</span>
       </a>
-      <a href="weather.html" class="quick-btn">
+      <a href="/weather" class="quick-btn">
         <div class="quick-btn-icon" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);"><i class="fas fa-cloud-sun" style="color:white;"></i></div>
         <span class="quick-btn-label">天气提醒</span>
       </a>
-      <a href="stay.html" class="quick-btn">
+      <a href="/stay" class="quick-btn">
         <div class="quick-btn-icon" style="background:linear-gradient(135deg,#059669,#10b981);"><i class="fas fa-bed" style="color:white;"></i></div>
         <span class="quick-btn-label">住宿建议</span>
       </a>
-      <a href="emergency.html" class="quick-btn">
+      <a href="/emergency" class="quick-btn">
         <div class="quick-btn-icon rose"><i class="fas fa-shield-alt"></i></div>
         <span class="quick-btn-label">应急帮助</span>
       </a>
@@ -140,7 +140,7 @@ function renderHome() {
     <div class="timeline fade-in">
       ${TRIP_DATA.days.map((d, i) => `
         <div class="tl-item ${i < dayIdx ? 'done' : i === dayIdx ? 'current' : 'future'}">
-          <div class="tl-card ${i === dayIdx ? 'current' : ''}" onclick="location.href='trip.html?day=${d.id}'">
+          <div class="tl-card ${i === dayIdx ? 'current' : ''}" onclick="location.href='/trip?day=${d.id}'">
             <div class="tl-date">${d.shortDate} ${d.emoji}</div>
             <div class="tl-title">${d.title}</div>
             <div class="tl-subtitle">${d.city}</div>
@@ -229,7 +229,7 @@ function buildWeatherCardInner(w, riskTc, uvC, isLive) {
     <div style="font-size:12px;background:rgba(255,255,255,0.6);border-radius:8px;padding:7px 10px;color:var(--text-primary);line-height:1.6;">
       <strong>⚡ 今日必做：</strong>${w.mustDo}
     </div>
-    <a href="weather.html" style="display:block;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:${riskTc};padding:6px;border-radius:8px;background:rgba(255,255,255,0.5);">查看全程8天天气详情 →</a>
+    <a href="/weather" style="display:block;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:${riskTc};padding:6px;border-radius:8px;background:rgba(255,255,255,0.5);">查看全程8天天气详情 →</a>
   `;
 }
 
