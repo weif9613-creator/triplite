@@ -1,10 +1,10 @@
 // ============================================
-// TripLite Service Worker v24
-// 修复：预缓存失败不阻断SW启动；导航请求永远有网络回源；
-//       外部CDN/字体完全不拦截；彻底解决ERR_FAILED
+// TripLite Service Worker v25
+// 修复：所有本地资源改为网络优先，确保部署新版本后
+//       用户刷新一次即可看到最新内容，不再读旧缓存
 // ============================================
 
-var CACHE_NAME = 'triplite-v24';
+var CACHE_NAME = 'triplite-v25';
 var OFFLINE_HTML = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>离线 · TripLite</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f4f8;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;text-align:center}h2{color:#1a3a5c;font-size:22px;margin-bottom:8px}.sub{color:#64748b;font-size:14px;margin-bottom:24px}button{background:#1a3a5c;color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:15px;cursor:pointer}</style></head><body><div style="font-size:48px;margin-bottom:16px">📡</div><h2>暂时无法访问</h2><p class="sub">请检查网络连接后重试</p><button onclick="location.reload()">重新加载</button></body></html>';
 
 // 只缓存确定存在的带扩展名文件，避免Cloudflare 404导致install失败
@@ -39,14 +39,14 @@ self.addEventListener('install', function(event) {
           })
           .catch(function(err) {
             // 单个资源失败不影响SW整体安装
-            console.warn('[SW v24] precache skip:', url, err.message);
+            console.warn('[SW v25] precache skip:', url, err.message);
           });
       });
       return Promise.all(tasks);
     }).then(function() {
-      console.log('[SW v24] install done');
+      console.log('[SW v25] install done');
     }).catch(function(err) {
-      console.warn('[SW v24] install error (non-fatal):', err);
+      console.warn('[SW v25] install error (non-fatal):', err);
     })
   );
   // 强制立即激活
@@ -60,7 +60,7 @@ self.addEventListener('activate', function(event) {
       return Promise.all(
         keys.filter(function(key) { return key !== CACHE_NAME; })
             .map(function(key) {
-              console.log('[SW v24] delete old cache:', key);
+              console.log('[SW v25] delete old cache:', key);
               return caches.delete(key);
             })
       );
@@ -132,26 +132,19 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // ③ 本地静态资源（CSS/JS/图片等）：缓存优先（Cache First），后台刷新
+  // ③ 本地静态资源（CSS/JS/图片等）：网络优先，断网时才用缓存
+  //    确保每次部署后刷新一次即可获取最新文件
   event.respondWith(
-    caches.match(request).then(function(cached) {
-      // 命中缓存：立即返回，同时后台刷新
-      if (cached) {
-        fetch(request).then(function(fresh) {
-          if (fresh && fresh.ok) {
-            caches.open(CACHE_NAME).then(function(c) { c.put(request, fresh); });
-          }
-        }).catch(function() {});
-        return cached;
+    fetch(request).then(function(response) {
+      if (response && response.ok && response.status === 200) {
+        var clone = response.clone();
+        caches.open(CACHE_NAME).then(function(c) { c.put(request, clone); });
       }
-      // 未命中：走网络
-      return fetch(request).then(function(response) {
-        if (response && response.ok && response.status === 200) {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function(c) { c.put(request, clone); });
-        }
-        return response;
-      }).catch(function() {
+      return response;
+    }).catch(function() {
+      // 断网时降级到缓存
+      return caches.match(request).then(function(cached) {
+        if (cached) return cached;
         return new Response('', { status: 503, statusText: 'Offline' });
       });
     })

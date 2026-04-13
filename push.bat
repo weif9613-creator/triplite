@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.8: 全面ES5兼容性修复-消除所有模板字面量/箭头函数/const/let/async-await,兼容更多移动端浏览器"
+git commit -m "v1.9: 修复SW缓存-改为网络优先确保部署后刷新即见新内容-修复行程地图页空白-画笔按钮改emoji"
 echo.
 
 echo [4/4] 推送到 GitHub...
