@@ -4,12 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1a3a5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TripLite">
+  <meta name="format-detection" content="telephone=no,email=no,address=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>应急帮助 · TripLite</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 </head>
 <body>
   <header class="app-header">
@@ -25,142 +33,96 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="/"             class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="/trip"          class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="/map"           class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
-    <a href="/checklist"     class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="/weather"       class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
-    <a href="/emergency"     class="nav-item active"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+    <a href="index.html"    class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"     class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"      class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"  class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item active"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
   <script>
     function renderEmergencyPage() {
-      const main = document.getElementById('appMain');
+      var main = document.getElementById('appMain');
+      if (!main) return;
       
-      main.innerHTML = `
-        <div class="page-header">
-          <div class="page-header-title">🛡️ 应急帮助</div>
-          <div class="page-header-sub">出问题时该看哪 · 紧急联系 · 实用建议</div>
-        </div>
-        
-        <!-- 紧急电话快捷卡 -->
-        <div class="card" style="margin-bottom:14px;border:2px solid #fecaca;">
-          <div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">🆘</span>紧急电话（立即可拨）</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <a href="tel:+6622457032" class="emergency-phone" style="justify-content:center;">
-              <span>🇨🇳</span> 中国使馆
-            </a>
-            <a href="tel:1155" class="emergency-phone" style="justify-content:center;">
-              <span>👮</span> 旅游警察 1155
-            </a>
-            <a href="tel:1669" class="emergency-phone" style="justify-content:center;">
-              <span>🚑</span> 急救 1669
-            </a>
-            <a href="tel:191" class="emergency-phone" style="justify-content:center;">
-              <span>🚔</span> 警察 191
-            </a>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">点击可直接拨打 · 仅在泰国有效</div>
-        </div>
-        
-        <!-- 按分类渲染 -->
-        ${EMERGENCY_DATA.map(section => `
-          <div class="emergency-section">
-            <div class="section-label">${section.title}</div>
-            ${section.items.map(item => renderEmergencyItem(item)).join('')}
-          </div>
-        `).join('')}
-        
-        <!-- 重要备份信息 -->
-        <div class="card" style="margin-top:8px;">
-          <div class="card-title" style="margin-bottom:12px;"><span class="icon">📋</span>出发前必须备份到手机的信息</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            ${[
-              { name: '护照首页照片', action: '手机相册中单独保存' },
-              { name: '机票确认号+回程机票', action: '截图保存并发到自己邮箱' },
-              { name: 'TDAC确认二维码', action: '截图保存，入境时出示' },
-              { name: '曼谷酒店英文地址', action: '复制到手机备忘录' },
-              { name: '中国驻泰大使馆电话', action: '+66-2-245-7032' }
-            ].map(item => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">
-                <div style="font-size:13px;font-weight:600;color:var(--text-primary);">✓ ${item.name}</div>
-                <div style="font-size:11px;color:var(--text-muted);">${item.action}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <!-- 常用泰语 -->
-        <div class="card" style="margin-top:12px;">
-          <div class="card-title" style="margin-bottom:12px;"><span class="icon">🗣️</span>应急泰语短句</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            ${[
-              { th: 'ช่วยด้วย（Chuay duay）', cn: '救命/帮帮我' },
-              { th: 'ไปโรงพยาบาล（Pai rong phayaban）', cn: '去医院' },
-              { th: 'โทรตำรวจ（Tho tamruat）', cn: '打电话叫警察' },
-              { th: 'หนังสือเดินทางหาย（Nangsu doenthang haai）', cn: '护照丢了' },
-              { th: 'ฉันไม่สบาย（Chan mai sabai）', cn: '我不舒服/生病了' },
-              { th: 'เท่าไหร่（Thao rai）', cn: '多少钱' },
-              { th: 'ไม่เอา（Mai ao）', cn: '不要了' },
-              { th: 'ขอบคุณ（Khob khun）', cn: '谢谢' }
-            ].map(p => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">
-                <div>
-                  <div style="font-size:13px;font-weight:600;color:var(--primary-light);">${p.th}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">${p.cn}</div>
-                </div>
-                <button onclick="copyToClipboard('${p.th}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-muted);cursor:pointer;">
-                  复制
-                </button>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <!-- 防骗提醒 -->
-        <div class="card" style="margin-top:12px;">
-          <div class="card-title" style="margin-bottom:12px;"><span class="icon">🚫</span>曼谷常见陷阱</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            ${[
-              { title: '大皇宫"今天关闭"骗局', desc: '大皇宫门口会有人说"今天关闭，我带你去其他地方"。不要信！直接进正门。开放时间官方为8:30–15:30售票。' },
-              { title: '嘟嘟车漫天要价', desc: '嘟嘟车路线固定但容易绕路。短途出行优先用Grab，价格透明有保障。' },
-              { title: '珠宝店骗局', desc: '出租车/路人推荐"今天打折珠宝店"一律不要去。是骗局。' },
-              { title: '非官方租摩托', desc: '芭提雅街边非官方摩托驾照问题。出行优先Grab或双条车。' }
-            ].map(item => `
-              <div class="step-item warning">
-                <div class="step-content">
-                  <div class="step-title">⚠️ ${item.title}</div>
-                  <div class="step-desc">${item.desc}</div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <div class="safe-bottom"></div>
-      `;
+      main.innerHTML = '<div class="page-header"><div class="page-header-title">\ud83d\udee1\ufe0f \u5e94\u6025\u5e2e\u52a9</div><div class="page-header-sub">\u51fa\u95ee\u9898\u65f6\u8be5\u770b\u54ea \u00b7 \u7d27\u6025\u8054\u7cfb \u00b7 \u5b9e\u7528\u5efa\u8bae</div></div>'\n        + '<div class="card" style="margin-bottom:14px;border:2px solid #fecaca;"><div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">\ud83c\udd98</span>\u7d27\u6025\u7535\u8bdd\uff08\u7acb\u5373\u53ef\u62e8\uff09</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><a href="tel:+6622457010" class="emergency-phone" style="justify-content:center;"><span>\ud83c\udde8\ud83c\uddf3</span> \u4e2d\u56fd\u4f7f\u9986\u9886\u4fdd</a><a href="tel:1155" class="emergency-phone" style="justify-content:center;"><span>\ud83d\udc6e</span> \u65c5\u6e38\u8b66\u5bdf 1155</a><a href="tel:1669" class="emergency-phone" style="justify-content:center;"><span>\ud83d\ude91</span> \u6025\u6551 1669</a><a href="tel:191" class="emergency-phone" style="justify-content:center;"><span>\ud83d\ude94</span> \u8b66\u5bdf 191</a></div><div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">\u70b9\u51fb\u53ef\u76f4\u63a5\u62e8\u6253 \u00b7 \u4ec5\u5728\u6cf0\u56fd\u6709\u6548</div></div>'\n        + '<div id="emergency-sections"></div>'\n        + '<div class="card" style="margin-top:8px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udccb</span>\u51fa\u53d1\u524d\u5fc5\u987b\u5907\u4efd\u5230\u624b\u673a\u7684\u4fe1\u606f</div><div style="display:flex;flex-direction:column;gap:6px;">'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u62a4\u7167\u9996\u9875\u7167\u7247</div><div style="font-size:11px;color:var(--text-muted);">\u624b\u673a\u76f8\u518c\u4e2d\u5355\u72ec\u4fdd\u5b58</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u673a\u7968\u786e\u8ba4\u53f7+\u56de\u7a0b\u673a\u7968</div><div style="font-size:11px;color:var(--text-muted);">\u622a\u56fe\u4fdd\u5b58\u5e76\u53d1\u5230\u81ea\u5df1\u90ae\u7b71</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; TDAC\u786e\u8ba4\u4e8c\u7ef4\u7801</div><div style="font-size:11px;color:var(--text-muted);">\u622a\u56fe\u4fdd\u5b58\uff0c\u5165\u5883\u65f6\u51fa\u793a</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u66fc\u8c37\u9152\u5e97\u82f1\u6587\u5730\u5740</div><div style="font-size:11px;color:var(--text-muted);">\u590d\u5236\u5230\u624b\u673a\u5907\u5fd8\u5f55</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u4e2d\u56fd\u9a7b\u6cf0\u5927\u4f7f\u9986\u9886\u4fdd\u70ed\u7ebf</div><div style="font-size:11px;color:var(--text-muted);">+66-2-245-7010\uff0824h\uff09</div></div>'\n        + '</div></div>'\n        + '<div class="card" style="margin-top:12px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udde3\ufe0f</span>\u5e94\u6025\u6cf0\u8bed\u77ed\u53e5</div><div id="thai-phrases-inline" style="display:flex;flex-direction:column;gap:6px;"></div></div>'\n        + '<div class="card" style="margin-top:12px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udeab</span>\u66fc\u8c37\u5e38\u89c1\u9677\u9631</div><div style="display:flex;flex-direction:column;gap:8px;">'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u5927\u7687\u5bab\u201c\u4eca\u5929\u5173\u95ed\u201d\u9a97\u5c40</div><div class="step-desc">\u5927\u7687\u5bab\u95e8\u53e3\u4f1a\u6709\u4eba\u8bf4\u201c\u4eca\u5929\u5173\u95ed\uff0c\u6211\u5e26\u4f60\u53bb\u5176\u4ed6\u5730\u65b9\u201d\u3002\u4e0d\u8981\u4fe1\uff01\u76f4\u63a5\u8fdb\u6b63\u95e8\u3002\u5f00\u653e\u65f6\u95f4\u5b98\u65b9\u4e3a8:30\u201315:30\u552e\u7968\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u561a\u561a\u8f66\u6f2b\u5929\u8981\u4ef7</div><div class="step-desc">\u561a\u561a\u8f66\u8def\u7ebf\u56fa\u5b9a\u4f46\u5bb9\u6613\u7ed5\u8def\u3002\u77ed\u9014\u51fa\u884c\u4f18\u5148\u7528Grab\uff0c\u4ef7\u683c\u900f\u660e\u6709\u4fdd\u969c\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u73e0\u5b9d\u5e97\u9a97\u5c40</div><div class="step-desc">\u51fa\u79df\u8f66/\u8def\u4eba\u63a8\u8350\u201c\u4eca\u5929\u6253\u6298\u73e0\u5b9d\u5e97\u201d\u4e00\u5f8b\u4e0d\u8981\u53bb\u3002\u662f\u9a97\u5c40\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u975e\u5b98\u65b9\u79df\u6469\u6258</div><div class="step-desc">\u8a71\u63d0\u96c5\u8857\u8fb9\u975e\u5b98\u65b9\u6469\u6258\u9a7e\u7167\u95ee\u9898\u3002\u51fa\u884c\u4f18\u5148Grab\u6216\u53cc\u6761\u8f66\u3002</div></div></div>'\n        + '</div></div>'\n        + '<div class="safe-bottom"></div>';
     }
     
     function renderEmergencyItem(item) {
-      return `
-        <div class="emergency-item">
-          <div class="emergency-icon">${item.icon}</div>
-          <div class="emergency-content">
-            <div class="emergency-title">${item.title}</div>
-            <div class="emergency-text" style="white-space:pre-line;">${item.text}</div>
-          </div>
-        </div>
-      `;
+      return '<div class="emergency-item">'
+        + '<div class="emergency-icon">' + item.icon + '</div>'
+        + '<div class="emergency-content">'
+        + '<div class="emergency-title">' + item.title + '</div>'
+        + '<div class="emergency-text" style="white-space:pre-line;">' + item.text + '</div>'
+        + '</div></div>';
+    }
+
+    function copyToClipboard(text) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text);
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+      } catch(e) {}
     }
     
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
       renderEmergencyPage();
-      const now = new Date();
-      const headerDate = document.getElementById('headerDate');
-      if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+
+      // 按分类填充
+      var sectionsEl = document.getElementById('emergency-sections');
+      if (sectionsEl && typeof EMERGENCY_DATA !== 'undefined') {
+        var sectHtml = '';
+        for (var si = 0; si < EMERGENCY_DATA.length; si++) {
+          var section = EMERGENCY_DATA[si];
+          sectHtml += '<div class="emergency-section"><div class="section-label">' + section.title + '</div>';
+          for (var ii = 0; ii < section.items.length; ii++) {
+            sectHtml += renderEmergencyItem(section.items[ii]);
+          }
+          sectHtml += '</div>';
+        }
+        sectionsEl.innerHTML = sectHtml;
+      }
+
+      // 泰语短句
+      var thaiPhrases = [
+        { th: 'ช่วยด้วย（Chuay duay）', cn: '救命/帮帮我' },
+        { th: 'ไปโรงพยาบาล（Pai rong phayaban）', cn: '去医院' },
+        { th: 'โทรตำรวจ（Tho tamruat）', cn: '打电话叫警察' },
+        { th: 'หนังสือเดินทางหาย（Nangsu doenthang haai）', cn: '护照丢了' },
+        { th: 'ฉันไม่สบาย（Chan mai sabai）', cn: '我不舒服/生病了' },
+        { th: 'เท่าไหร่（Thao rai）', cn: '多少钱' },
+        { th: 'ไม่เอา（Mai ao）', cn: '不要了' },
+        { th: 'ขอบคุณ（Khob khun）', cn: '谢谢' }
+      ];
+      var phrasesEl = document.getElementById('thai-phrases-inline');
+      if (phrasesEl) {
+        var pHtml = '';
+        for (var pi = 0; pi < thaiPhrases.length; pi++) {
+          var ph = thaiPhrases[pi];
+          pHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">'
+            + '<div><div style="font-size:13px;font-weight:600;color:var(--primary-light);">' + ph.th + '</div><div style="font-size:12px;color:var(--text-secondary);">' + ph.cn + '</div></div>'
+            + '<button onclick="copyToClipboard(this.dataset.text)" data-text="' + ph.th.replace(/"/g, '&quot;') + '" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-muted);cursor:pointer;">复制</button>'
+            + '</div>';
+        }
+        phrasesEl.innerHTML = pHtml;
+      }
+
+      var now = new Date();
+      var headerDate = document.getElementById('headerDate');
+      if (headerDate) headerDate.textContent = (now.getMonth()+1) + '月' + now.getDate() + '日';
     });
   </script>
+
+  <!-- 涂鸦悬浮按钮 -->
+  <a href="note.html" class="note-fab" title="涂鸦记录">✏️</a>
 </body>
 </html>

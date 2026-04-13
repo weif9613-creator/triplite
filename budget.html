@@ -4,12 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1a3a5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TripLite">
+  <meta name="format-detection" content="telephone=no,email=no,address=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>费用预算 · TripLite</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     /* ── 预算专用样式 ── */
     .budget-hero {
@@ -63,6 +71,7 @@
       padding: 4px 10px;
       font-size: 11px;
       font-weight: 600;
+      -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
     }
 
@@ -347,18 +356,18 @@
   //   100MOP ≈ 88元 → 1MOP = 0.88¥
   // ====================================================
 
-  const RATES = {
+  var RATES = {
     THB: 0.21,   // 泰铢 → 人民币
     MOP: 0.88,   // 澳门元 → 人民币
     CNY: 1.0
   };
 
   // 当前汇率（可通过计算器修改）
-  let currentRates = { ...RATES };
+  var currentRates = { THB: 0.21, MOP: 0.88, CNY: 1.0 };
 
   // 预算项格式：{ cat, name, minLocal, maxLocal, currency, note }
   // cat: transport/hotel/food/ticket/shop/misc
-  const BUDGET_DAYS = [
+  var BUDGET_DAYS = [
     {
       id: 1,
       date: '4/26',
@@ -484,7 +493,7 @@
     }
   ];
 
-  const CAT_CONFIG = {
+  var CAT_CONFIG = {
     transport: { label: '交通', icon: '🚕', color: '#3b82f6' },
     hotel:     { label: '住宿', icon: '🏨', color: '#8b5cf6' },
     food:      { label: '餐饮', icon: '🍛', color: '#f59e0b' },
@@ -499,32 +508,32 @@
   }
 
   function fmtRMB(val) {
-    return val >= 10 ? `¥${Math.round(val)}` : `¥${val.toFixed(1)}`;
+    return val >= 10 ? '¥' + Math.round(val) : '¥' + val.toFixed(1);
   }
 
   function fmtLocal(val, currency) {
-    if (currency === 'CNY') return `¥${Math.round(val)}`;
-    if (currency === 'THB') return `฿${Math.round(val)}`;
-    if (currency === 'MOP') return `${Math.round(val)}P`;
-    return `${val}`;
+    if (currency === 'CNY') return '¥' + Math.round(val);
+    if (currency === 'THB') return '฿' + Math.round(val);
+    if (currency === 'MOP') return Math.round(val) + 'P';
+    return '' + val;
   }
 
   // ── 计算单日范围（CNY） ──
   function calcDayTotal(day) {
-    let minCNY = 0, maxCNY = 0;
-    day.items.forEach(it => {
+    var minCNY = 0, maxCNY = 0;
+    day.items.forEach(function(it) {
       minCNY += toRMB(it.min, it.currency);
       maxCNY += toRMB(it.max, it.currency);
     });
-    return { minCNY, maxCNY, midCNY: (minCNY + maxCNY) / 2 };
+    return { minCNY: minCNY, maxCNY: maxCNY, midCNY: (minCNY + maxCNY) / 2 };
   }
 
   // ── 计算分类汇总（CNY） ──
   function calcCatTotals() {
-    const cats = {};
-    Object.keys(CAT_CONFIG).forEach(k => { cats[k] = { minCNY: 0, maxCNY: 0 }; });
-    BUDGET_DAYS.forEach(day => {
-      day.items.forEach(it => {
+    var cats = {};
+    Object.keys(CAT_CONFIG).forEach(function(k) { cats[k] = { minCNY: 0, maxCNY: 0 }; });
+    BUDGET_DAYS.forEach(function(day) {
+      day.items.forEach(function(it) {
         if (cats[it.cat]) {
           cats[it.cat].minCNY += toRMB(it.min, it.currency);
           cats[it.cat].maxCNY += toRMB(it.max, it.currency);
@@ -536,287 +545,221 @@
 
   // ── 计算城市小计 ──
   function calcCityTotals() {
-    const cities = { macau: { min: 0, max: 0 }, pattaya: { min: 0, max: 0 }, bangkok: { min: 0, max: 0 }, return: { min: 0, max: 0 } };
-    BUDGET_DAYS.forEach(day => {
-      const code = day.cityCode;
+    var cities = { macau: { min: 0, max: 0 }, pattaya: { min: 0, max: 0 }, bangkok: { min: 0, max: 0 }, 'return': { min: 0, max: 0 } };
+    BUDGET_DAYS.forEach(function(day) {
+      var code = day.cityCode;
       if (!cities[code]) return;
-      const { minCNY, maxCNY } = calcDayTotal(day);
-      cities[code].min += minCNY;
-      cities[code].max += maxCNY;
+      var t = calcDayTotal(day);
+      cities[code].min += t.minCNY;
+      cities[code].max += t.maxCNY;
     });
     return cities;
   }
 
   // ── 折叠状态 ──
-  const openDays = {};
-  BUDGET_DAYS.forEach(d => { openDays[d.id] = false; });
+  var openDays = {};
+  BUDGET_DAYS.forEach(function(d) { openDays[d.id] = false; });
 
   function toggleDay(id) {
     openDays[id] = !openDays[id];
-    const body = document.getElementById(`dbc-body-${id}`);
-    const icon = document.getElementById(`dbc-icon-${id}`);
+    var body = document.getElementById('dbc-body-' + id);
+    var icon = document.getElementById('dbc-icon-' + id);
     if (body) body.style.display = openDays[id] ? 'block' : 'none';
     if (icon) icon.textContent = openDays[id] ? '▲' : '▼';
   }
 
   // ── 汇率计算器 ──
-  let calcCurrency = 'THB'; // 当前计算货币
+  var calcCurrency = 'THB'; // 当前计算货币
 
   function updateCalc(from, val) {
-    const numVal = parseFloat(val) || 0;
+    var numVal = parseFloat(val) || 0;
     if (from === 'local') {
-      const cny = numVal * currentRates[calcCurrency];
-      const el = document.getElementById('calc-cny');
-      if (el) el.value = cny > 0 ? cny.toFixed(1) : '';
+      var cny = numVal * currentRates[calcCurrency];
+      var elCny = document.getElementById('calc-cny');
+      if (elCny) elCny.value = cny > 0 ? cny.toFixed(1) : '';
     } else {
-      const local = numVal / currentRates[calcCurrency];
-      const el = document.getElementById('calc-local');
-      if (el) el.value = local > 0 ? local.toFixed(0) : '';
+      var local = numVal / currentRates[calcCurrency];
+      var elLocal = document.getElementById('calc-local');
+      if (elLocal) elLocal.value = local > 0 ? local.toFixed(0) : '';
     }
     updateQuickCalc();
   }
 
   function setCalcCurrency(cur) {
     calcCurrency = cur;
-    document.querySelectorAll('.rate-chip').forEach(c => {
-      c.classList.toggle('active', c.dataset.cur === cur);
+    document.querySelectorAll('.rate-chip').forEach(function(c) {
+      if (c.dataset.cur === cur) c.classList.add('active');
+      else c.classList.remove('active');
     });
-    const label = document.getElementById('calc-local-label');
+    var label = document.getElementById('calc-local-label');
     if (label) label.textContent = cur === 'THB' ? '泰铢 (฿)' : '澳门元 (P)';
-    document.getElementById('calc-local').value = '';
-    document.getElementById('calc-cny').value = '';
+    var elL = document.getElementById('calc-local');
+    var elC = document.getElementById('calc-cny');
+    if (elL) elL.value = '';
+    if (elC) elC.value = '';
     updateQuickCalc();
   }
 
   function updateQuickCalc() {
-    const quicks = [100, 200, 500];
-    quicks.forEach((v, i) => {
-      const el = document.getElementById(`qc-${i}`);
-      if (el) el.innerHTML = `<div class="rate-quick-btn-val">${fmtRMB(v * currentRates[calcCurrency])}</div><div class="rate-quick-btn-label">${v}${calcCurrency === 'THB' ? '฿' : 'P'}</div>`;
+    var quicks = [100, 200, 500];
+    quicks.forEach(function(v, i) {
+      var el = document.getElementById('qc-' + i);
+      var unit = calcCurrency === 'THB' ? '฿' : 'P';
+      if (el) el.innerHTML = '<div class="rate-quick-btn-val">' + fmtRMB(v * currentRates[calcCurrency]) + '</div><div class="rate-quick-btn-label">' + v + unit + '</div>';
     });
-    // 更新主汇率显示
-    const rateEl = document.getElementById('current-rate-display');
+    var rateEl = document.getElementById('current-rate-display');
     if (rateEl) {
-      const unit = calcCurrency === 'THB' ? '฿' : 'P';
-      rateEl.textContent = `当前汇率：100${unit} = ¥${(currentRates[calcCurrency] * 100).toFixed(1)}`;
+      var unit2 = calcCurrency === 'THB' ? '฿' : 'P';
+      rateEl.textContent = '当前汇率：100' + unit2 + ' = ¥' + (currentRates[calcCurrency] * 100).toFixed(1);
     }
   }
 
   // ── 主渲染 ──
   function renderBudget() {
-    const main = document.getElementById('appMain');
+    var main = document.getElementById('appMain');
+    if (!main) return;
 
     // 计算全程总预算
-    let totalMin = 0, totalMax = 0;
-    BUDGET_DAYS.forEach(d => {
-      const t = calcDayTotal(d);
+    var totalMin = 0, totalMax = 0;
+    BUDGET_DAYS.forEach(function(d) {
+      var t = calcDayTotal(d);
       totalMin += t.minCNY;
       totalMax += t.maxCNY;
     });
-    const totalMid = (totalMin + totalMax) / 2;
+    var totalMid = (totalMin + totalMax) / 2;
 
-    const cats = calcCatTotals();
-    const catMaxMax = Math.max(...Object.values(cats).map(c => c.maxCNY));
-    const cityTotals = calcCityTotals();
+    var cats = calcCatTotals();
+    var catMaxMax = 0;
+    Object.keys(cats).forEach(function(k) { if (cats[k].maxCNY > catMaxMax) catMaxMax = cats[k].maxCNY; });
+    var cityTotals = calcCityTotals();
 
-    main.innerHTML = `
-      <div class="page-header">
-        <div class="page-header-title">💰 费用预算</div>
-        <div class="page-header-sub">8天预估 · 2人参考（可根据实际调整）</div>
-      </div>
-
-      <!-- 总预算 Hero -->
-      <div class="budget-hero">
-        <div class="budget-hero-title">💰 全程预估总费用（1人）</div>
-        <div class="budget-total-row">
-          <div>
-            <div class="budget-total-cny">¥${Math.round(totalMid).toLocaleString()}</div>
-            <div class="budget-total-sub">区间：¥${Math.round(totalMin).toLocaleString()} ~ ¥${Math.round(totalMax).toLocaleString()}</div>
-          </div>
-          <div class="budget-per-day">
-            <div class="budget-per-day-num">¥${Math.round(totalMid/8)}<span style="font-size:13px;font-weight:600;">/天</span></div>
-            <div class="budget-per-day-label">日均参考</div>
-          </div>
-        </div>
-        <div class="budget-cat-row">
-          ${Object.entries(CAT_CONFIG).map(([k,v]) => {
-            const c = cats[k];
-            const mid = Math.round((c.minCNY + c.maxCNY) / 2);
-            return `<div class="budget-cat-chip">${v.icon} ${v.label} ¥${mid}</div>`;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- 城市小计 -->
-      <div class="city-summary">
-        <div class="city-sum-card">
-          <div class="city-sum-emoji">🎰</div>
-          <div class="city-sum-name">澳门</div>
-          <div class="city-sum-val">¥${Math.round((cityTotals.macau.min+cityTotals.macau.max)/2)}</div>
-          <div class="city-sum-cny">1天</div>
-        </div>
-        <div class="city-sum-card">
-          <div class="city-sum-emoji">🏖️</div>
-          <div class="city-sum-name">芭提雅</div>
-          <div class="city-sum-val">¥${Math.round((cityTotals.pattaya.min+cityTotals.pattaya.max)/2)}</div>
-          <div class="city-sum-cny">2天</div>
-        </div>
-        <div class="city-sum-card">
-          <div class="city-sum-emoji">🏙️</div>
-          <div class="city-sum-name">曼谷</div>
-          <div class="city-sum-val">¥${Math.round((cityTotals.bangkok.min+cityTotals.bangkok.max)/2)}</div>
-          <div class="city-sum-cny">4天</div>
-        </div>
-      </div>
-
-      <!-- 汇率计算器 -->
-      <div class="rate-card">
-        <div class="rate-card-title"><i class="fas fa-calculator" style="color:var(--primary);"></i> 快速汇率计算器</div>
-        <div class="rate-chips">
-          <button class="rate-chip active" data-cur="THB" onclick="setCalcCurrency('THB')">泰铢 ฿</button>
-          <button class="rate-chip" data-cur="MOP" onclick="setCalcCurrency('MOP')">澳门元 P</button>
-        </div>
-        <div class="rate-inputs" style="margin-top:10px;">
-          <div class="rate-input-wrap">
-            <div class="rate-input-label" id="calc-local-label">泰铢 (฿)</div>
-            <input type="number" class="rate-input-field" id="calc-local" placeholder="输入金额"
-              oninput="updateCalc('local', this.value)">
-          </div>
-          <div class="rate-arrow">⇌</div>
-          <div class="rate-input-wrap">
-            <div class="rate-input-label">人民币 (¥)</div>
-            <input type="number" class="rate-input-field" id="calc-cny" placeholder="换算结果"
-              oninput="updateCalc('cny', this.value)">
-          </div>
-        </div>
-        <div id="current-rate-display" style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:8px;"></div>
-        <div class="rate-quick-calc">
-          <button class="rate-quick-btn" id="qc-0" onclick="document.getElementById('calc-local').value=100;updateCalc('local',100)"></button>
-          <button class="rate-quick-btn" id="qc-1" onclick="document.getElementById('calc-local').value=200;updateCalc('local',200)"></button>
-          <button class="rate-quick-btn" id="qc-2" onclick="document.getElementById('calc-local').value=500;updateCalc('local',500)"></button>
-        </div>
-      </div>
-
-      <!-- 分类费用条形图 -->
-      <div class="cat-summary-card">
-        <div class="card-title" style="margin-bottom:14px;"><span class="icon">📊</span>分类费用占比</div>
-        ${Object.entries(CAT_CONFIG).map(([k, v]) => {
-          const c = cats[k];
-          const mid = (c.minCNY + c.maxCNY) / 2;
-          const pct = catMaxMax > 0 ? Math.round(mid / catMaxMax * 100) : 0;
-          return `
-            <div class="cat-bar-row">
-              <div class="cat-bar-label">${v.icon} ${v.label}</div>
-              <div class="cat-bar-track">
-                <div class="cat-bar-fill" style="width:${pct}%;background:${v.color};"></div>
-              </div>
-              <div class="cat-bar-val">¥${Math.round(mid)}</div>
-            </div>`;
-        }).join('')}
-      </div>
-
-      <!-- 逐日明细 -->
-      <div class="section-label">逐日费用明细</div>
-      <div id="days-list">
-        ${BUDGET_DAYS.map(day => renderDayCard(day)).join('')}
-      </div>
-
-      <!-- 省钱攻略 -->
-      <div class="section-label" style="margin-top:4px;">💡 省钱小贴士</div>
-
-      <div class="saving-tip-card">
-        <div class="saving-tip-title">🚕 交通：Bolt比Grab便宜15–35%</div>
-        <div class="saving-tip-text">安装Bolt后同时开Grab对比价，日常市区短途用双条车（20–30฿）最省。曼谷高峰期叫车贵，地铁+步行可省下200–400฿。</div>
-      </div>
-
-      <div class="saving-tip-card">
-        <div class="saving-tip-title">💴 换汇：SuperRich比机场省5–10%</div>
-        <div class="saving-tip-text">先从国内带少量泰铢应急，到曼谷后在SuperRich（市区D4/D5多网点）换大额。1万泰铢在SuperRich比机场能多换约200–400元人民币。</div>
-      </div>
-
-      <div class="saving-tip-card">
-        <div class="saving-tip-title">🍱 餐饮：Terminal 21 B1 美食广场 50–100฿/人</div>
-        <div class="saving-tip-text">Terminal 21 B1美食广场是曼谷最便宜的高性价比美食聚集地，泰式炒饭/炒河粉/绿咖喱人均50–80฿，比外面同档次餐厅便宜40%。</div>
-      </div>
-
-      <div class="saving-tip-card">
-        <div class="saving-tip-title">🛒 购物：Big C/Makro/Lotus's比7-Eleven便宜</div>
-        <div class="saving-tip-text">日常用品（防晒/药品/零食）在Big C超市采购，比7-Eleven便宜20–40%。离走前在Siam Paragon B1集中扫货，免税申请TAX REFUND可退7%。</div>
-      </div>
-
-      <div class="saving-tip-card" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-left-color:#d97706;">
-        <div class="saving-tip-title" style="color:#92400e;">⚠️ 容易超支的陷阱</div>
-        <div class="saving-tip-text" style="color:#78350f;">• 格兰岛水上活动被坑（香蕉船报价前先问清单价）<br>• 机场换汇汇率差（1万฿多损失200–400元）<br>• 未打表的出租车（直接拒绝，换一辆）<br>• 行李超重（提前15kg内整合，超重费每KG约200฿）</div>
-      </div>
-
-      <div class="safe-bottom"></div>
-    `;
+    main.innerHTML = '<div class="page-header"><div class="page-header-title">💰 费用预算</div><div class="page-header-sub">8天预估 · 2人参考（可根据实际调整）</div></div>'
+      + '<div class="budget-hero"><div class="budget-hero-title">💰 全程预估总费用（1人）</div>'
+      + '<div class="budget-total-row"><div>'
+      + '<div class="budget-total-cny">¥' + Math.round(totalMid).toLocaleString() + '</div>'
+      + '<div class="budget-total-sub">区间：¥' + Math.round(totalMin).toLocaleString() + ' ~ ¥' + Math.round(totalMax).toLocaleString() + '</div>'
+      + '</div><div class="budget-per-day">'
+      + '<div class="budget-per-day-num">¥' + Math.round(totalMid/8) + '<span style="font-size:13px;font-weight:600;">/天</span></div>'
+      + '<div class="budget-per-day-label">日均参考</div>'
+      + '</div></div>'
+      + '<div class="budget-cat-row" id="budget-cat-chips-placeholder"></div></div>'
+      + '<div class="city-summary">'
+      + '<div class="city-sum-card"><div class="city-sum-emoji">🎰</div><div class="city-sum-name">澳门</div><div class="city-sum-val">¥' + Math.round((cityTotals.macau.min+cityTotals.macau.max)/2) + '</div><div class="city-sum-cny">1天</div></div>'
+      + '<div class="city-sum-card"><div class="city-sum-emoji">🏖️</div><div class="city-sum-name">芭提雅</div><div class="city-sum-val">¥' + Math.round((cityTotals.pattaya.min+cityTotals.pattaya.max)/2) + '</div><div class="city-sum-cny">2天</div></div>'
+      + '<div class="city-sum-card"><div class="city-sum-emoji">🏙️</div><div class="city-sum-name">曼谷</div><div class="city-sum-val">¥' + Math.round((cityTotals.bangkok.min+cityTotals.bangkok.max)/2) + '</div><div class="city-sum-cny">4天</div></div>'
+      + '</div>'
+      + '<div class="rate-card">'
+      + '<div class="rate-card-title"><i class="fas fa-calculator" style="color:var(--primary);"></i> 快速汇率计算器</div>'
+      + '<div class="rate-chips"><button class="rate-chip active" data-cur="THB" onclick="setCalcCurrency(\'THB\')">泰铢 ฿</button><button class="rate-chip" data-cur="MOP" onclick="setCalcCurrency(\'MOP\')">澳门元 P</button></div>'
+      + '<div class="rate-inputs" style="margin-top:10px;"><div class="rate-input-wrap"><div class="rate-input-label" id="calc-local-label">泰铢 (฿)</div><input type="number" class="rate-input-field" id="calc-local" placeholder="输入金额" oninput="updateCalc(\'local\', this.value)"></div>'
+      + '<div class="rate-arrow">⇌</div>'
+      + '<div class="rate-input-wrap"><div class="rate-input-label">人民币 (¥)</div><input type="number" class="rate-input-field" id="calc-cny" placeholder="换算结果" oninput="updateCalc(\'cny\', this.value)"></div></div>'
+      + '<div id="current-rate-display" style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:8px;"></div>'
+      + '<div class="rate-quick-calc">'
+      + '<button class="rate-quick-btn" id="qc-0" onclick="document.getElementById(\'calc-local\').value=100;updateCalc(\'local\',100)"></button>'
+      + '<button class="rate-quick-btn" id="qc-1" onclick="document.getElementById(\'calc-local\').value=200;updateCalc(\'local\',200)"></button>'
+      + '<button class="rate-quick-btn" id="qc-2" onclick="document.getElementById(\'calc-local\').value=500;updateCalc(\'local\',500)"></button>'
+      + '</div></div>'
+      + '<div class="cat-summary-card"><div class="card-title" style="margin-bottom:14px;"><span class="icon">📊</span>分类费用占比</div><div id="cat-bars-placeholder"></div></div>'
+      + '<div class="section-label">逐日费用明细</div>'
+      + '<div id="days-list"></div>'
+      + '<div class="section-label" style="margin-top:4px;">💡 省钱小贴士</div>'
+      + '<div class="saving-tip-card"><div class="saving-tip-title">🚕 交通：Bolt比Grab便宜15–35%</div><div class="saving-tip-text">安装Bolt后同时开Grab对比价，日常市区短途用双条车（20–30฿）最省。曼谷高峰期叫车贵，地铁+步行可省下200–400฿。</div></div>'
+      + '<div class="saving-tip-card"><div class="saving-tip-title">💴 换汇：SuperRich比机场省5–10%</div><div class="saving-tip-text">先从国内带少量泰铢应急，到曼谷后在SuperRich（市区D4/D5多网点）换大额。1万泰铢在SuperRich比机场能多换约200–400元人民币。</div></div>'
+      + '<div class="saving-tip-card"><div class="saving-tip-title">🍱 餐饮：Terminal 21 B1 美食广场 50–100฿/人</div><div class="saving-tip-text">Terminal 21 B1美食广场是曼谷最便宜的高性价比美食聚集地，泰式炒饭/炒河粉/绿咖喱人均50–80฿，比外面同档次餐厅便宜40%。</div></div>'
+      + '<div class="saving-tip-card"><div class="saving-tip-title">🛒 购物：Big C/Makro/Lotus\'s比7-Eleven便宜</div><div class="saving-tip-text">日常用品（防晒/药品/零食）在Big C超市采购，比7-Eleven便宜20–40%。离走前在Siam Paragon B1集中扫货，免税申请TAX REFUND可退7%。</div></div>'
+      + '<div class="saving-tip-card" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-left-color:#d97706;"><div class="saving-tip-title" style="color:#92400e;">⚠️ 容易超支的陷阱</div><div class="saving-tip-text" style="color:#78350f;">• 格兰岛水上活动被坑（香蕉船报价前先问清单价）<br>• 机场换汇汇率差（1万฿多损失200–400元）<br>• 未打表的出租车（直接拒绝，换一辆）<br>• 行李超重（提前15kg内整合，超重费每KG约200฿）</div></div>'
+      + '<div class="safe-bottom"></div>';
 
     // 初始化快速计算
     updateQuickCalc();
+
+    // 渲染分类chips（模板字面量无法用于动态生成，改为DOM操作）
+    var chipsEl = document.getElementById('budget-cat-chips-placeholder');
+    if (chipsEl) {
+      var chipsHtml = '';
+      var catKeys = Object.keys(CAT_CONFIG);
+      for (var ci = 0; ci < catKeys.length; ci++) {
+        var ck = catKeys[ci];
+        var cv = CAT_CONFIG[ck];
+        var cc = cats[ck];
+        var cmid = Math.round((cc.minCNY + cc.maxCNY) / 2);
+        chipsHtml += '<div class="budget-cat-chip">' + cv.icon + ' ' + cv.label + ' ¥' + cmid + '</div>';
+      }
+      chipsEl.outerHTML = chipsHtml;
+    }
+
+    // 渲染分类条形图
+    var barsEl = document.getElementById('cat-bars-placeholder');
+    if (barsEl) {
+      var barsHtml = '';
+      var barKeys = Object.keys(CAT_CONFIG);
+      for (var bi = 0; bi < barKeys.length; bi++) {
+        var bk = barKeys[bi];
+        var bv = CAT_CONFIG[bk];
+        var bc = cats[bk];
+        var bmid = (bc.minCNY + bc.maxCNY) / 2;
+        var bpct = catMaxMax > 0 ? Math.round(bmid / catMaxMax * 100) : 0;
+        barsHtml += '<div class="cat-bar-row"><div class="cat-bar-label">' + bv.icon + ' ' + bv.label + '</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + bpct + '%;background:' + bv.color + ';"></div></div><div class="cat-bar-val">¥' + Math.round(bmid) + '</div></div>';
+      }
+      barsEl.outerHTML = barsHtml;
+    }
+
+    // 渲染逐日卡片
+    var daysListEl = document.getElementById('days-list');
+    if (daysListEl) {
+      var daysHtml = '';
+      for (var ddi = 0; ddi < BUDGET_DAYS.length; ddi++) {
+        daysHtml += renderDayCard(BUDGET_DAYS[ddi]);
+      }
+      daysListEl.innerHTML = daysHtml;
+    }
   }
 
   function renderDayCard(day) {
-    const { minCNY, maxCNY, midCNY } = calcDayTotal(day);
-    const isOpen = openDays[day.id];
+    var _t = calcDayTotal(day);
+    var minCNY = _t.minCNY, maxCNY = _t.maxCNY, midCNY = _t.midCNY;
+    var isOpen = openDays[day.id];
 
     // 按类别分组项目
-    const grouped = {};
-    day.items.forEach(it => {
+    var grouped = {};
+    day.items.forEach(function(it) {
       if (!grouped[it.cat]) grouped[it.cat] = [];
       grouped[it.cat].push(it);
     });
 
-    return `
-      <div class="day-budget-card">
-        <div class="dbc-header" onclick="toggleDay(${day.id})">
-          <div class="dbc-emoji">${day.emoji}</div>
-          <div class="dbc-info">
-            <div class="dbc-title">Day${day.id} · ${day.date}</div>
-            <div class="dbc-sub">${day.city}</div>
-          </div>
-          <div class="dbc-amount-wrap">
-            <div class="dbc-amount">${fmtRMB(midCNY)}</div>
-            <div class="dbc-amount-cny">${fmtRMB(minCNY)}~${fmtRMB(maxCNY)}</div>
-          </div>
-          <div class="dbc-toggle" id="dbc-icon-${day.id}">${isOpen ? '▲' : '▼'}</div>
-        </div>
-        <div class="dbc-body" id="dbc-body-${day.id}" style="display:${isOpen ? 'block' : 'none'};">
-          ${Object.entries(grouped).map(([cat, items]) => `
-            ${items.map(it => `
-              <div class="dbc-row">
-                <div class="dbc-row-icon">${CAT_CONFIG[cat]?.icon || '📌'}</div>
-                <div style="flex:1;">
-                  <div class="dbc-row-name">${it.name}</div>
-                  ${it.note ? `<div style="font-size:10px;color:var(--text-tertiary);">${it.note}</div>` : ''}
-                </div>
-                <div style="text-align:right;">
-                  <div class="dbc-row-val">${fmtLocal(it.min, it.currency)} ~ ${fmtLocal(it.max, it.currency)}</div>
-                  <div class="dbc-row-note">≈ ${fmtRMB(toRMB(it.min, it.currency))}~${fmtRMB(toRMB(it.max, it.currency))}</div>
-                </div>
-              </div>`).join('')}
-          `).join('')}
-          <div class="dbc-divider"></div>
-          <div class="dbc-total-row">
-            <div class="dbc-total-label">Day${day.id} 小计</div>
-            <div style="text-align:right;">
-              <div class="dbc-total-val">${fmtRMB(midCNY)}</div>
-              <div class="dbc-total-cny">${fmtRMB(minCNY)} ~ ${fmtRMB(maxCNY)}</div>
-            </div>
-          </div>
-        </div>
-      </div>`;
+    var rowsHtml = '';
+    Object.keys(grouped).forEach(function(cat) {
+      grouped[cat].forEach(function(it) {
+        var catIcon = (CAT_CONFIG[cat] && CAT_CONFIG[cat].icon) || '📌';
+        var noteHtml = it.note ? '<div style="font-size:10px;color:var(--text-tertiary);">' + it.note + '</div>' : '';
+        rowsHtml += '<div class="dbc-row"><div class="dbc-row-icon">' + catIcon + '</div><div style="flex:1;"><div class="dbc-row-name">' + it.name + '</div>' + noteHtml + '</div><div style="text-align:right;"><div class="dbc-row-val">' + fmtLocal(it.min, it.currency) + ' ~ ' + fmtLocal(it.max, it.currency) + '</div><div class="dbc-row-note">≈ ' + fmtRMB(toRMB(it.min, it.currency)) + '~' + fmtRMB(toRMB(it.max, it.currency)) + '</div></div></div>';
+      });
+    });
+
+    return '<div class="day-budget-card">'
+      + '<div class="dbc-header" onclick="toggleDay(' + day.id + ')">'
+      + '<div class="dbc-emoji">' + day.emoji + '</div>'
+      + '<div class="dbc-info"><div class="dbc-title">Day' + day.id + ' · ' + day.date + '</div><div class="dbc-sub">' + day.city + '</div></div>'
+      + '<div class="dbc-amount-wrap"><div class="dbc-amount">' + fmtRMB(midCNY) + '</div><div class="dbc-amount-cny">' + fmtRMB(minCNY) + '~' + fmtRMB(maxCNY) + '</div></div>'
+      + '<div class="dbc-toggle" id="dbc-icon-' + day.id + '">' + (isOpen ? '▲' : '▼') + '</div>'
+      + '</div>'
+      + '<div class="dbc-body" id="dbc-body-' + day.id + '" style="display:' + (isOpen ? 'block' : 'none') + ';">'
+      + rowsHtml
+      + '<div class="dbc-divider"></div>'
+      + '<div class="dbc-total-row"><div class="dbc-total-label">Day' + day.id + ' 小计</div><div style="text-align:right;"><div class="dbc-total-val">' + fmtRMB(midCNY) + '</div><div class="dbc-total-cny">' + fmtRMB(minCNY) + ' ~ ' + fmtRMB(maxCNY) + '</div></div></div>'
+      + '</div></div>';
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function() {
     renderBudget();
-    const now = new Date();
-    const el = document.getElementById('headerDate');
-    if (el) el.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    var now = new Date();
+    var el = document.getElementById('headerDate');
+    if (el) el.textContent = (now.getMonth()+1) + '月' + now.getDate() + '日';
   });
   </script>
 
   <!-- 涂鸦悬浮按钮 -->
-  <a href="note.html" class="note-fab" title="涂鸦记录"><i class="fas fa-pen-nib"></i></a>
+  <a href="note.html" class="note-fab" title="涂鸦记录">✏️</a>
 </body>
 </html>

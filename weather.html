@@ -4,12 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1a3a5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TripLite">
+  <meta name="format-detection" content="telephone=no,email=no,address=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>天气提醒 · TripLite</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"></noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     /* ── 天气卡专用样式 ── */
     .weather-hero {
@@ -235,24 +243,24 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="/"            class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="/trip"         class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="/map"          class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
-    <a href="/checklist"    class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="/weather"      class="nav-item active"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
-    <a href="/emergency"    class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+    <a href="index.html"   class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"    class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"     class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="weather.html"  class="nav-item active"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
   <script src="js/data.js"></script>
   <script src="js/weather-service.js"></script>
   <script src="js/app.js"></script>
   <script>
-  let openDays    = {};  // 逐日展开状态
-  let openGuides  = {};  // 指南展开状态
-  let activeTab   = 'daily'; // 'daily' | 'guide' | 'compare'
-  let weatherDays = null;   // 当前渲染的天气数据（API或气候参考）
-  let dataSource  = 'climate'; // 'api' | 'cache' | 'climate' | 'error'
-  let isRefreshing = false;
+  var openDays    = {};  // 逐日展开状态
+  var openGuides  = {};  // 指南展开状态
+  var activeTab   = 'daily'; // 'daily' | 'guide' | 'compare'
+  var weatherDays = null;   // 当前渲染的天气数据（API或气候参考）
+  var dataSource  = 'climate'; // 'api' | 'cache' | 'climate' | 'error'
+  var isRefreshing = false;
 
   // ── UV 颜色 ──
   function uvColor(idx) {
@@ -272,90 +280,94 @@
 
   // ── 数据来源标签 ──
   function sourceTag(source, fresh) {
-    if (source === 'api')     return `<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🟢 实时预报</span>`;
-    if (source === 'cache')   return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🟡 ${fresh ? '缓存预报' : '缓存预报(过期)'}</span>`;
-    if (source === 'climate') return `<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🔵 气候参考</span>`;
-    return `<span style="background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">❌ 加载失败</span>`;
+    if (source === 'api')     return '<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🟢 实时预报</span>';
+    if (source === 'cache')   return '<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🟡 ' + (fresh ? '缓存预报' : '缓存预报(过期)') + '</span>';
+    if (source === 'climate') return '<span style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">🔵 气候参考</span>';
+    return '<span style="background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">❌ 加载失败</span>';
   }
 
   // ── 获取行程阶段 ──
   function getTripPhase(days) {
-    const now   = new Date();
-    const start = new Date('2026-04-26');
-    const end   = new Date('2026-05-03');
-    const diffDays = Math.ceil((start - now) / 86400000);
+    var now   = new Date();
+    var start = new Date('2026-04-26');
+    var end   = new Date('2026-05-03');
+    var diffDays = Math.ceil((start - now) / 86400000);
     if (now < start) {
-      if (diffDays > 30) return { icon: '🗓️', title: '行程尚早，提前了解气候',     sub: `距出发还有 ${diffDays} 天 · 临近出发前10天可看真实预报` };
-      if (diffDays > 7)  return { icon: '🧳', title: '即将出发，开始准备防晒装备', sub: `距出发还有 ${diffDays} 天 · 7天内预报准确度更高` };
-      return               { icon: '⚡', title: '出发在即！核查行装',             sub: `距出发还有 ${diffDays} 天 · 防晒/驱蚊液/折叠伞确认好` };
+      if (diffDays > 30) return { icon: '🗓️', title: '行程尚早，提前了解气候',     sub: '距出发还有 ' + diffDays + ' 天 · 临近出发前10天可看真实预报' };
+      if (diffDays > 7)  return { icon: '🧳', title: '即将出发，开始准备防晒装备', sub: '距出发还有 ' + diffDays + ' 天 · 7天内预报准确度更高' };
+      return               { icon: '⚡', title: '出发在即！核查行装',             sub: '距出发还有 ' + diffDays + ' 天 · 防晒/驱蚊液/折叠伞确认好' };
     }
     if (now <= end) {
-      const idx = Math.min(Math.floor((now - start) / 86400000), 7);
-      const d   = (days && days[idx]) || {};
-      return { icon: '✈️', title: `行程第 ${idx+1} 天 · ${d.city || ''}`, sub: `今日：${d.weatherIcon||''}${d.weather||''} ${d.tempHigh||'--'}°/${d.tempLow||'--'}° · ${d.riskLabel||''}` };
+      var idx = Math.min(Math.floor((now - start) / 86400000), 7);
+      var d   = (days && days[idx]) || {};
+      return { icon: '✈️', title: '行程第 ' + (idx+1) + ' 天 · ' + (d.city || ''), sub: '今日：' + (d.weatherIcon||'') + (d.weather||'') + ' ' + (d.tempHigh||'--') + '°/' + (d.tempLow||'--') + '° · ' + (d.riskLabel||'') };
     }
     return { icon: '🏠', title: '行程已结束，旅途愉快！', sub: '感谢使用 TripLite 旅行助手' };
   }
 
   // ── 主渲染（先用已有数据渲染骨架，再异步填充）──
   function renderWeatherPage() {
-    const main = document.getElementById('appMain');
-    const s    = WEATHER_DATA.summary;
+    var main = document.getElementById('appMain');
+    if (!main) return;
+    var s    = WEATHER_DATA.summary;
+
+    // 预先构建动态部分
+    var risksHtml = '';
+    var ri, r_item, rLevel;
+    for (ri = 0; ri < s.topRisks.length; ri++) {
+      r_item = s.topRisks[ri];
+      rLevel = r_item.level === 'danger' ? 'danger' : r_item.level === 'warning' ? 'warning' : 'info';
+      risksHtml += '<div class="risk-banner ' + rLevel + '">'
+        + '<span class="risk-banner-icon">' + r_item.icon + '</span>'
+        + '<div>'
+        + '<div style="font-weight:800;margin-bottom:2px;">' + r_item.risk + '</div>'
+        + '<div style="font-weight:400;font-size:12px;opacity:0.9;">' + r_item.desc + '</div>'
+        + '</div></div>';
+    }
+    var heroSub = s.period + ' · ' + s.season + '<br>' + s.overview;
+    var tabDailyClass  = activeTab === 'daily'   ? ' active' : '';
+    var tabGuideClass  = activeTab === 'guide'   ? ' active' : '';
+    var tabGearClass   = activeTab === 'gear'    ? ' active' : '';
+    var tabCmpClass    = activeTab === 'compare' ? ' active' : '';
 
     // 骨架先渲染，weather内容区用 id="weather-dynamic" 占位
-    main.innerHTML = `
-      <!-- 数据来源状态栏 -->
-      <div id="weather-status-bar" style="
-        display:flex;align-items:center;justify-content:space-between;
-        padding:8px 14px;background:var(--bg-card);border-radius:12px;
-        margin-bottom:10px;box-shadow:var(--shadow-sm);
-      ">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="weather-source-tag">${sourceTag('climate', false)}</span>
-          <span id="weather-update-time" style="font-size:11px;color:var(--text-muted);">加载中...</span>
-        </div>
-        <button id="weather-refresh-btn" onclick="refreshWeather()" style="
-          background:none;border:1px solid var(--border);border-radius:8px;
-          padding:5px 12px;font-size:12px;color:var(--text-secondary);cursor:pointer;
-        ">🔄 刷新</button>
-      </div>
-
-      <!-- Hero -->
-      <div class="weather-hero">
-        <div class="weather-hero-label">☀️ 天气预报 & 注意事项</div>
-        <div id="weather-hero-title" class="weather-hero-title">加载天气数据中...</div>
-        <div class="weather-hero-sub">${s.period} · ${s.season}<br>${s.overview}</div>
-      </div>
-
-      <!-- 阶段提示 -->
-      <div id="weather-phase-banner" class="phase-banner" style="margin-bottom:12px;">
-        <div class="phase-banner-icon">🌡️</div>
-        <div><div class="phase-banner-title">正在获取天气预报...</div></div>
-      </div>
-
-      <!-- 全程核心风险 -->
-      <div class="section-label" style="margin-bottom:8px;">⚡ 全程核心风险</div>
-      ${s.topRisks.map(r => `
-        <div class="risk-banner ${r.level === 'danger' ? 'danger' : r.level === 'warning' ? 'warning' : 'info'}">
-          <span class="risk-banner-icon">${r.icon}</span>
-          <div>
-            <div style="font-weight:800;margin-bottom:2px;">${r.risk}</div>
-            <div style="font-weight:400;font-size:12px;opacity:0.9;">${r.desc}</div>
-          </div>
-        </div>
-      `).join('')}
-
-      <!-- Tab 切换 -->
-      <div class="city-tabs" style="margin:14px 0 12px;overflow-x:auto;flex-wrap:nowrap;">
-        <button class="city-chip ${activeTab==='daily'  ?'active':''}" onclick="switchTab('daily',this)" style="white-space:nowrap;">📅 逐日天气</button>
-        <button class="city-chip ${activeTab==='guide'  ?'active':''}" onclick="switchTab('guide',this)" style="white-space:nowrap;">🛡️ 防暑防晒</button>
-        <button class="city-chip ${activeTab==='gear'   ?'active':''}" onclick="switchTab('gear',this)"  style="white-space:nowrap;">🎒 装备清单</button>
-        <button class="city-chip ${activeTab==='compare'?'active':''}" onclick="switchTab('compare',this)" style="white-space:nowrap;">📊 城市对比</button>
-      </div>
-
-      <div id="tabContent"></div>
-      <div class="safe-bottom"></div>
-    `;
+    main.innerHTML = ''
+      + '<!-- 数据来源状态栏 -->'
+      + '<div id="weather-status-bar" style="'
+      + 'display:flex;align-items:center;justify-content:space-between;'
+      + 'padding:8px 14px;background:var(--bg-card);border-radius:12px;'
+      + 'margin-bottom:10px;box-shadow:var(--shadow-sm);">'
+      + '<div style="display:flex;align-items:center;gap:8px;">'
+      + '<span id="weather-source-tag">' + sourceTag('climate', false) + '</span>'
+      + '<span id="weather-update-time" style="font-size:11px;color:var(--text-muted);">加载中...</span>'
+      + '</div>'
+      + '<button id="weather-refresh-btn" onclick="refreshWeather()" style="'
+      + 'background:none;border:1px solid var(--border);border-radius:8px;'
+      + 'padding:5px 12px;font-size:12px;color:var(--text-secondary);cursor:pointer;">'
+      + '🔄 刷新</button></div>'
+      + '<!-- Hero -->'
+      + '<div class="weather-hero">'
+      + '<div class="weather-hero-label">☀️ 天气预报 &amp; 注意事项</div>'
+      + '<div id="weather-hero-title" class="weather-hero-title">加载天气数据中...</div>'
+      + '<div class="weather-hero-sub">' + heroSub + '</div>'
+      + '</div>'
+      + '<!-- 阶段提示 -->'
+      + '<div id="weather-phase-banner" class="phase-banner" style="margin-bottom:12px;">'
+      + '<div class="phase-banner-icon">🌡️</div>'
+      + '<div><div class="phase-banner-title">正在获取天气预报...</div></div>'
+      + '</div>'
+      + '<!-- 全程核心风险 -->'
+      + '<div class="section-label" style="margin-bottom:8px;">⚡ 全程核心风险</div>'
+      + risksHtml
+      + '<!-- Tab 切换 -->'
+      + '<div class="city-tabs" style="margin:14px 0 12px;overflow-x:auto;flex-wrap:nowrap;">'
+      + '<button class="city-chip' + tabDailyClass + '" onclick="switchTab(\'daily\',this)" style="white-space:nowrap;">📅 逐日天气</button>'
+      + '<button class="city-chip' + tabGuideClass + '" onclick="switchTab(\'guide\',this)" style="white-space:nowrap;">🛡️ 防暑防晒</button>'
+      + '<button class="city-chip' + tabGearClass  + '" onclick="switchTab(\'gear\',this)"  style="white-space:nowrap;">🎒 装备清单</button>'
+      + '<button class="city-chip' + tabCmpClass   + '" onclick="switchTab(\'compare\',this)" style="white-space:nowrap;">📊 城市对比</button>'
+      + '</div>'
+      + '<div id="tabContent"></div>'
+      + '<div class="safe-bottom"></div>';
 
     renderTab();
 
@@ -364,48 +376,59 @@
   }
 
   // ── 异步加载天气数据 ──
-  async function loadWeatherData(force) {
-    const btn = document.getElementById('weather-refresh-btn');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ 加载中'; }
+  function loadWeatherData(force) {
+    var btn = document.getElementById('weather-refresh-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '\u23f3 \u52a0\u8f7d\u4e2d'; }
 
-    try {
-      const result = await WEATHER_SERVICE.getWeather(!!force);
+    function onSuccess(result) {
       weatherDays = result.days;
       dataSource  = result.source;
 
-      // 更新状态栏
-      const tagEl  = document.getElementById('weather-source-tag');
-      const timeEl = document.getElementById('weather-update-time');
-      const titleEl = document.getElementById('weather-hero-title');
-      if (tagEl)  tagEl.innerHTML  = sourceTag(result.source, result.fresh);
-      if (timeEl) timeEl.textContent = result.source === 'climate'
-        ? '气候参考（预报覆盖前）'
-        : `更新于 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}`;
-      if (titleEl) titleEl.textContent = result.source === 'api' || result.source === 'cache'
-        ? '实时天气预报（4/26–5/3）'
-        : '气候参考数据（预报未覆盖）';
+      var tagElW  = document.getElementById('weather-source-tag');
+      var timeElW = document.getElementById('weather-update-time');
+      var titleElW = document.getElementById('weather-hero-title');
+      if (tagElW)  tagElW.innerHTML  = sourceTag(result.source, result.fresh);
+      if (timeElW) {
+        if (result.source === 'climate') {
+          timeElW.textContent = '\u6c14\u5019\u53c2\u8003\uff08\u9884\u62a5\u8986\u76d6\u524d\uff09';
+        } else {
+          var nowW = new Date();
+          var hhW = nowW.getHours(); var mmW = nowW.getMinutes();
+          timeElW.textContent = '\u66f4\u65b0\u4e8e ' + (hhW < 10 ? '0'+hhW : hhW) + ':' + (mmW < 10 ? '0'+mmW : mmW);
+        }
+      }
+      if (titleElW) titleElW.textContent = result.source === 'api' || result.source === 'cache'
+        ? '\u5b9e\u65f6\u5929\u6c14\u9884\u62a5\uff084/26\u20135/3\uff09'
+        : '\u6c14\u5019\u53c2\u8003\u6570\u636e\uff08\u9884\u62a5\u672a\u8986\u76d6\uff09';
 
-      // 更新阶段横幅
-      const phase = getTripPhase(weatherDays);
-      const bannerEl = document.getElementById('weather-phase-banner');
-      if (bannerEl) bannerEl.innerHTML = `
-        <div class="phase-banner-icon">${phase.icon}</div>
-        <div>
-          <div class="phase-banner-title">${phase.title}</div>
-          <div class="phase-banner-sub">${phase.sub || ''}</div>
-        </div>
-      `;
+      var phaseW = getTripPhase(weatherDays);
+      var bannerElW = document.getElementById('weather-phase-banner');
+      if (bannerElW) bannerElW.innerHTML = '<div class="phase-banner-icon">' + phaseW.icon + '</div>'
+        + '<div><div class="phase-banner-title">' + phaseW.title + '</div>'
+        + '<div class="phase-banner-sub">' + (phaseW.sub || '') + '</div></div>';
 
-      // 刷新当前Tab
       renderTab();
-    } catch(e) {
+      if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd04 \u5237\u65b0'; }
+    }
+
+    function onError(e) {
       console.warn('[Weather] load error:', e);
       weatherDays = WEATHER_DATA.days;
       dataSource  = 'climate';
       renderTab();
+      if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd04 \u5237\u65b0'; }
     }
 
-    if (btn) { btn.disabled = false; btn.textContent = '🔄 刷新'; }
+    try {
+      var p = WEATHER_SERVICE.getWeather(!!force);
+      if (p && typeof p.then === 'function') {
+        p.then(onSuccess)['catch'](onError);
+      } else {
+        onSuccess(p);
+      }
+    } catch(e) {
+      onError(e);
+    }
   }
 
   function refreshWeather() {
@@ -414,107 +437,73 @@
 
   function switchTab(tab, btn) {
     activeTab = tab;
-    document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+    var chipsW = document.querySelectorAll('.city-chip');
+    for (var ciW = 0; ciW < chipsW.length; ciW++) chipsW[ciW].classList.remove('active');
     if (btn) btn.classList.add('active');
     renderTab();
   }
 
   function renderTab() {
-    const el = document.getElementById('tabContent');
+    var el = document.getElementById('tabContent');
     if (!el) return;
     if (activeTab === 'daily')   { renderDailyTab(el); return; }
     if (activeTab === 'guide')   { renderGuideTab(el); return; }
     if (activeTab === 'compare') { renderCompareTab(el); return; }
+    renderGearTab(el);
   }
 
   // ── 逐日天气（使用 weatherDays 或回退到 WEATHER_DATA.days）──
   function renderDailyTab(el) {
-    const days = (weatherDays && weatherDays.length) ? weatherDays : WEATHER_DATA.days;
-    el.innerHTML = days.map((d, i) => {
-      const isOpen = !!openDays[i];
-      const rc     = riskClass(d.riskLevel);
-      const uv     = d.uvIndex;
-      return `
-        <div class="day-weather-card">
-          <!-- 头部（始终可见） -->
-          <div class="dwc-header" onclick="toggleDay(${i})">
-            <div class="dwc-left">
-              <div class="dwc-icon">${d.weatherIcon}</div>
-              <div>
-                <div class="dwc-date">${d.date} ${d.emoji}</div>
-                <div class="dwc-city">${d.city}</div>
-              </div>
-            </div>
-            <div class="dwc-right">
-              <div class="dwc-temp">${d.tempHigh}° <span>/ ${d.tempLow}°</span></div>
-              <div class="${rc} dwc-risk">${d.riskLabel}</div>
-            </div>
-          </div>
-
-          <!-- 摘要徽章 -->
-          <div class="dwc-summary">
-            <span class="dwc-badge hot"><i class="fas fa-thermometer-half" style="font-size:10px;"></i>&nbsp;体感 ${d.feelsLike.split('，')[1] || d.feelsLike}</span>
-            <span class="dwc-badge uv" style="background:${uvColor(uv)}22;color:${uvColor(uv)};">
-              ☀️ UV ${uv} ${d.uvLabel}
-            </span>
-            <span class="dwc-badge rain"><i class="fas fa-tint" style="font-size:10px;"></i>&nbsp;降雨 ${d.rainChance}%</span>
-            <span class="dwc-badge wind"><i class="fas fa-wind" style="font-size:10px;"></i>&nbsp;${d.wind}</span>
-          </div>
-
-          <!-- 展开详情 -->
-          <div class="dwc-detail ${isOpen ? 'open' : ''}">
-            <!-- 体感说明 -->
-            <div style="font-size:12px;color:var(--text-secondary);background:var(--bg);padding:8px 10px;border-radius:8px;margin-bottom:12px;">
-              🌡️ <strong>实际体感：</strong>${d.feelsLike}&nbsp;&nbsp;💧 <strong>湿度：</strong>${d.humidity}%
-            </div>
-
-            <!-- UV 进度条 -->
-            <div style="margin-bottom:12px;">
-              <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">紫外线指数 UV ${uv} · ${d.uvLabel}</div>
-              <div class="uv-bar-wrap">
-                <div class="uv-bar-track" style="position:relative;">
-                  <div style="
-                    position:absolute;
-                    left:calc(${Math.min(uv/12*100,100)}% - 6px);
-                    top:-4px;
-                    width:12px;height:14px;
-                    background:white;
-                    border:2px solid ${uvColor(uv)};
-                    border-radius:3px;
-                  "></div>
-                </div>
-                <div class="uv-pointer-row">
-                  <span>低 0</span><span>中 3</span><span>高 6</span><span>很强 8</span><span>极强 11+</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 注意事项 -->
-            <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">📌 当天注意事项</div>
-            <div class="dwc-tips">
-              ${d.tips.map(t => `
-                <div class="dwc-tip-item">
-                  <div class="dwc-tip-dot"></div>
-                  <div>${t}</div>
-                </div>
-              `).join('')}
-            </div>
-
-            <!-- 穿搭建议 -->
-            <div class="dwc-outfit">
-              <div class="dwc-outfit-label">👔 穿搭建议</div>
-              ${d.outfit}
-            </div>
-
-            <!-- 今日必做 -->
-            <div class="dwc-mustdo">
-              <div class="dwc-mustdo-label">⚡ 今日天气必做</div>
-              ${d.mustDo}
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    var days = (weatherDays && weatherDays.length) ? weatherDays : WEATHER_DATA.days;
+    var html = '';
+    var di, d, isOpen, rc, uv, feelsShort, uvPct, uvCol, tipsHtml, ti;
+    for (di = 0; di < days.length; di++) {
+      d = days[di];
+      isOpen = !!openDays[di];
+      rc = riskClass(d.riskLevel);
+      uv = d.uvIndex;
+      feelsShort = d.feelsLike.split('\uff0c')[1] || d.feelsLike;
+      uvPct = Math.min(uv / 12 * 100, 100);
+      uvCol = uvColor(uv);
+      tipsHtml = '';
+      for (ti = 0; ti < d.tips.length; ti++) {
+        tipsHtml += '<div class="dwc-tip-item"><div class="dwc-tip-dot"></div><div>' + d.tips[ti] + '</div></div>';
+      }
+      html += '<div class="day-weather-card">'
+        + '<div class="dwc-header" onclick="toggleDay(' + di + ')">'
+        + '<div class="dwc-left">'
+        + '<div class="dwc-icon">' + d.weatherIcon + '</div>'
+        + '<div><div class="dwc-date">' + d.date + ' ' + d.emoji + '</div>'
+        + '<div class="dwc-city">' + d.city + '</div></div>'
+        + '</div>'
+        + '<div class="dwc-right">'
+        + '<div class="dwc-temp">' + d.tempHigh + '° <span>/ ' + d.tempLow + '°</span></div>'
+        + '<div class="' + rc + ' dwc-risk">' + d.riskLabel + '</div>'
+        + '</div></div>'
+        + '<div class="dwc-summary">'
+        + '<span class="dwc-badge hot"><i class="fas fa-thermometer-half" style="font-size:10px;"></i>&nbsp;\u4f53\u611f ' + feelsShort + '</span>'
+        + '<span class="dwc-badge uv" style="background:' + uvCol + '22;color:' + uvCol + ';">\u2600\ufe0f UV ' + uv + ' ' + d.uvLabel + '</span>'
+        + '<span class="dwc-badge rain"><i class="fas fa-tint" style="font-size:10px;"></i>&nbsp;\u964d\u96e8 ' + d.rainChance + '%</span>'
+        + '<span class="dwc-badge wind"><i class="fas fa-wind" style="font-size:10px;"></i>&nbsp;' + d.wind + '</span>'
+        + '</div>'
+        + '<div class="dwc-detail' + (isOpen ? ' open' : '') + '">'
+        + '<div style="font-size:12px;color:var(--text-secondary);background:var(--bg);padding:8px 10px;border-radius:8px;margin-bottom:12px;">'
+        + '\ud83c\udf21\ufe0f <strong>\u5b9e\u9645\u4f53\u611f\uff1a</strong>' + d.feelsLike + '&nbsp;&nbsp;\ud83d\udca7 <strong>\u6e7f\u5ea6\uff1a</strong>' + d.humidity + '%'
+        + '</div>'
+        + '<div style="margin-bottom:12px;">'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">\u7d2b\u5916\u7ebf\u6307\u6570 UV ' + uv + ' \u00b7 ' + d.uvLabel + '</div>'
+        + '<div class="uv-bar-wrap"><div class="uv-bar-track" style="position:relative;">'
+        + '<div style="position:absolute;left:calc(' + uvPct.toFixed(1) + '% - 6px);top:-4px;width:12px;height:14px;background:white;border:2px solid ' + uvCol + ';border-radius:3px;"></div>'
+        + '</div>'
+        + '<div class="uv-pointer-row"><span>\u4f4e 0</span><span>\u4e2d 3</span><span>\u9ad8 6</span><span>\u5f88\u5f3a 8</span><span>\u6781\u5f3a 11+</span></div>'
+        + '</div></div>'
+        + '<div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">\ud83d\udccc \u5f53\u5929\u6ce8\u610f\u4e8b\u9879</div>'
+        + '<div class="dwc-tips">' + tipsHtml + '</div>'
+        + '<div class="dwc-outfit"><div class="dwc-outfit-label">\ud83d\udc54 \u7a7f\u6454\u5efa\u8bae</div>' + d.outfit + '</div>'
+        + '<div class="dwc-mustdo"><div class="dwc-mustdo-label">\u26a1 \u4eca\u65e5\u5929\u6c14\u5fc5\u505a</div>' + d.mustDo + '</div>'
+        + '</div></div>';
+    }
+    el.innerHTML = html;
   }
 
   function toggleDay(i) {
@@ -522,320 +511,191 @@
     renderTab();
   }
 
-  // ── 🎒 装备清单（天气版）──
+  // ── 🎒 装备清单（天气版）── 辅助函数
+  function _gearItem(icon, name, note, must) {
+    var cls = must ? 'must' : 'suggest';
+    var dot = must ? '\ud83d\udd34' : '\ud83d\udfe1';
+    return '<div class="gear-item ' + cls + '"><div class="gear-icon">' + icon + '</div>'
+      + '<div><div class="gear-name">' + dot + ' ' + name + '</div>'
+      + '<div class="gear-note">' + note + '</div></div></div>';
+  }
+  function _cautionItem(cls, icon, text) {
+    return '<div class="caution-item ' + cls + '"><span class="caution-icon">' + icon + '</span><span class="caution-text">' + text + '</span></div>';
+  }
+  function _timeRow(time, cls, status, rec) {
+    return '<div class="time-activity-row"><div class="ta-time ' + cls + '">' + time + '</div>'
+      + '<div class="ta-rec"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">' + status + '</div><div>' + rec + '</div></div></div>';
+  }
   function renderGearTab(el) {
-    el.innerHTML = `
-      <!-- 核心防晒装备 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:4px;"><span class="icon">🧴</span>防晒核心装备</div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">标注🔴为必带，🟡为强烈建议，灰色可选</div>
-        <div class="gear-grid">
-          ${[
-            { icon:'🧴', name:'SPF50+ 防晒霜', note:'PA++++，至少200ml', must:true },
-            { icon:'🧴', name:'防晒补涂喷雾', note:'运动型/防水，方便随时补', must:true },
-            { icon:'🧢', name:'宽沿遮阳帽', note:'帽檐≥7cm，遮脸颈耳', must:true },
-            { icon:'🕶️', name:'UV400墨镜', note:'偏光更佳，全天护眼', must:true },
-            { icon:'👕', name:'防晒衣/长袖', note:'UPF40+，轻薄透气款', must:true },
-            { icon:'👡', name:'防滑凉鞋', note:'格兰岛出海必备水鞋', must:false },
-            { icon:'🩺', name:'晒后修复喷雾', note:'芦荟胶/小绿安瓶', must:false },
-            { icon:'🎽', name:'泳衣/防晒泳衣', note:'格兰岛海滩活动', must:false }
-          ].map(g => `
-            <div class="gear-item ${g.must ? 'must' : 'suggest'}">
-              <div class="gear-icon">${g.icon}</div>
-              <div>
-                <div class="gear-name">${g.must ? '🔴' : '🟡'} ${g.name}</div>
-                <div class="gear-note">${g.note}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 防暑补水装备 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">💧</span>防暑补水装备</div>
-        <div class="gear-grid">
-          ${[
-            { icon:'🍶', name:'保温水壶/杯', note:'500ml+，随时补充', must:true },
-            { icon:'🥤', name:'电解质饮料', note:'POCARI宝矿力，7-Eleven购', must:false },
-            { icon:'🌿', name:'藿香正气水', note:'轻度中暑/肠胃不适均可用', must:true },
-            { icon:'💊', name:'口服补液盐', note:'腹泻后快速补水电解质', must:false },
-            { icon:'❄️', name:'便携小风扇', note:'USB充电，降温神器', must:false },
-            { icon:'🌡️', name:'退热贴/冷敷贴', note:'中暑应急降温', must:false }
-          ].map(g => `
-            <div class="gear-item ${g.must ? 'must' : 'suggest'}">
-              <div class="gear-icon">${g.icon}</div>
-              <div>
-                <div class="gear-name">${g.must ? '🔴' : '🟡'} ${g.name}</div>
-                <div class="gear-note">${g.note}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 雨季应对装备 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🌧️</span>雨季应对装备</div>
-        <div class="gear-grid">
-          ${[
-            { icon:'☂️', name:'折叠晴雨伞', note:'轻量款，7-Eleven也能买', must:true },
-            { icon:'🧥', name:'轻薄雨衣/风衣', note:'比打伞更方便，防湿透', must:false },
-            { icon:'👜', name:'防水小包/袋', note:'手机/证件防水保护', must:true },
-            { icon:'👟', name:'速干运动鞋', note:'淋雨后快速干，避免水泡', must:false }
-          ].map(g => `
-            <div class="gear-item ${g.must ? 'must' : 'suggest'}">
-              <div class="gear-icon">${g.icon}</div>
-              <div>
-                <div class="gear-name">${g.must ? '🔴' : '🟡'} ${g.name}</div>
-                <div class="gear-note">${g.note}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 蚊虫防护 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🦟</span>蚊虫防护</div>
-        <div class="gear-grid">
-          ${[
-            { icon:'🧪', name:'驱蚊液 DEET 30%+', note:'黄昏后必用，防登革热', must:true },
-            { icon:'🩹', name:'止痒膏/清凉油', note:'被蚊咬后镇痛止痒', must:false },
-            { icon:'👕', name:'浅色长袖', note:'减少蚊虫叮咬吸引', must:false },
-            { icon:'💡', name:'电子驱蚊器', note:'酒店房间插座可用', must:false }
-          ].map(g => `
-            <div class="gear-item ${g.must ? 'must' : 'suggest'}">
-              <div class="gear-icon">${g.icon}</div>
-              <div>
-                <div class="gear-name">${g.must ? '🔴' : '🟡'} ${g.name}</div>
-                <div class="gear-note">${g.note}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 分时段天气活动建议 -->
-      <div class="section-label" style="margin-top:4px;margin-bottom:8px;">⏰ 每日最佳活动时段</div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:12px;"><span class="icon">🌅</span>按时段安排活动（曼谷/芭提雅通用）</div>
-        <div>
-          ${[
-            { time:'06:00–08:00', cls:'safe', status:'🌅 晨间黄金期', rec:'<strong>最佳景点时间</strong>：大皇宫 07:30 入场、清晨散步、早餐出行。气温 28–30°C，UV 低，最舒适。' },
-            { time:'08:00–10:30', cls:'warm', status:'⬆️ 升温期',     rec:'<strong>户外景点抓紧</strong>：卧佛寺、郑王庙建议此时参观，戴帽+防晒出门，有水随时喝。' },
-            { time:'10:30–14:30', cls:'hot',  status:'🔴 高温危险期', rec:'<strong>必须进室内</strong>：咖啡馆、商场、酒店休息。大皇宫参观须在11:30前进室内，格兰岛进岛上餐厅。' },
-            { time:'14:30–16:30', cls:'rain', status:'⛈️ 雷阵雨高峰', rec:'<strong>室内活动首选</strong>：按摩（推荐此时段，1–2小时正好避雨）、商场购物、午休。备好折叠伞。' },
-            { time:'16:30–18:30', cls:'nice', status:'😊 黄金下午茶', rec:'<strong>夜市准备期</strong>：雨后转凉，出发去 Jodd Fairs/唐人街，打 Grab 避开晚高峰拥堵时段。' },
-            { time:'18:30–22:00', cls:'nice', status:'🌆 夜间最佳',   rec:'<strong>夜市/海鲜/按摩</strong>：气温降至 28–30°C，Walking Street、唐人街、滨水夜市最热闹，体验最佳。' }
-          ].map(t => `
-            <div class="time-activity-row">
-              <div class="ta-time ${t.cls}">${t.time}</div>
-              <div class="ta-rec">
-                <div style="font-size:12px;font-weight:700;margin-bottom:2px;">${t.status}</div>
-                <div>${t.rec}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 气温体感速查表 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🌡️</span>实际气温 vs 体感速查</div>
-        <div class="temp-scale">
-          <div class="temp-scale-block" style="background:#93c5fd;flex:1.5">22°</div>
-          <div class="temp-scale-block" style="background:#6ee7b7;flex:1.5">27°</div>
-          <div class="temp-scale-block" style="background:#fde68a;flex:1.5">30°</div>
-          <div class="temp-scale-block" style="background:#fca5a5;flex:2">35°</div>
-          <div class="temp-scale-block" style="background:#f87171;flex:2">38°+</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:12px;">
-          <span>舒适</span><span>偏热</span><span>热</span><span>酷热</span><span>危险</span>
-        </div>
-        <div class="caution-list">
-          ${[
-            { cls:'green', icon:'✅', text:'<strong>22–27°C（澳门）</strong>：最舒适，正常户外活动无压力，防晒SPF30+即可' },
-            { cls:'yellow', icon:'⚠️', text:'<strong>28–32°C（泰国早晚）</strong>：体感热，多喝水，户外持续活动&gt;1小时注意补水' },
-            { cls:'red', icon:'🔴', text:'<strong>33–36°C（午间最热）</strong>：中暑高风险，防晒+遮阳+补水+限制户外时间到&lt;30分钟' },
-            { cls:'red', icon:'🚨', text:'<strong>37°C+（体感40°C+）</strong>：极危险，立即进室内，出汗停止/头晕是中暑前兆，立刻就医' }
-          ].map(c => `
-            <div class="caution-item ${c.cls}">
-              <span class="caution-icon">${c.icon}</span>
-              <span class="caution-text">${c.text}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 特殊场景注意事项 -->
-      <div class="section-label" style="margin-top:4px;margin-bottom:8px;">📍 特殊场景注意事项</div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🏝️</span>格兰岛出海（4/28）</div>
-        <div class="caution-list">
-          ${[
-            { cls:'red',    icon:'🔆', text:'<strong>出发前查天气App</strong>（AccuWeather/Windy），风力超3级、早上已下雨请取消' },
-            { cls:'red',    icon:'🧴', text:'<strong>防水防晒霜必须用</strong>：出发前20分涂+下水后每2小时补，海面反射UV是陆地1.5倍' },
-            { cls:'yellow', icon:'⛵', text:'<strong>最后一班公共渡船18:00</strong>，建议13:30–14:30返回，不要玩到天黑' },
-            { cls:'blue',   icon:'💦', text:'<strong>准备2L以上饮水</strong>：岛上价格高（30–50฿/瓶），在码头附近便利店买好再上船' },
-            { cls:'yellow', icon:'🌊', text:'<strong>备晕船药</strong>（乘船前30分钟服用），浪大时有人晕船' }
-          ].map(c => `
-            <div class="caution-item ${c.cls}">
-              <span class="caution-icon">${c.icon}</span>
-              <span class="caution-text">${c.text}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🏛️</span>大皇宫参观（4/30）</div>
-        <div class="caution-list">
-          ${[
-            { cls:'red',    icon:'⏰', text:'<strong>必须07:30出发</strong>，08:30进场，11:30前完成参观，避开极热时段' },
-            { cls:'red',    icon:'👗', text:'<strong>着装检查</strong>：有袖上衣（无袖/背心不行）+长裤/过膝裙，现场有租借但排队耽误时间' },
-            { cls:'yellow', icon:'🎫', text:'<strong>防诈骗</strong>：门口有人称"今天皇宫关闭，带你去佛寺"——全是骗局，直接走' },
-            { cls:'blue',   icon:'🧴', text:'<strong>防晒喷雾进殿用</strong>：殿内脱鞋后地面很烫，注意；殿外广场全是暴晒，每次出来就补防晒' },
-            { cls:'green',  icon:'💧', text:'<strong>提前在外买水</strong>：宫内饮水点少，自带500ml+矿泉水，入场后尽快喝完' }
-          ].map(c => `
-            <div class="caution-item ${c.cls}">
-              <span class="caution-icon">${c.icon}</span>
-              <span class="caution-text">${c.text}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:4px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">🌆</span>夜市 / 夜间活动</div>
-        <div class="caution-list">
-          ${[
-            { cls:'yellow', icon:'🌡️', text:'<strong>夜间仍有28–30°C</strong>：热带夜晚不凉爽，继续喝水，衣服选择透气款' },
-            { cls:'blue',   icon:'🌧️', text:'<strong>傍晚可能有雨</strong>：Jodd Fairs/唐人街等户外夜市出发前查天气，带折叠伞' },
-            { cls:'yellow', icon:'🦟', text:'<strong>夜市蚊虫多</strong>：唐人街绿化区、芭提雅草丛黄昏后驱蚊液一定要涂' },
-            { cls:'green',  icon:'🍹', text:'<strong>泰式饮料消暑</strong>：Thai Tea泰奶（约30–50฿）、鲜椰子水（约50–80฿）是最佳解暑选择' }
-          ].map(c => `
-            <div class="caution-item ${c.cls}">
-              <span class="caution-icon">${c.icon}</span>
-              <span class="caution-text">${c.text}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+    el.innerHTML = ''
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:4px;"><span class="icon">\ud83e\uddf4</span>\u9632\u6653\u6838\u5fc3\u88c5\u5907</div>'
+      + '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">\u6807\u6ce8\ud83d\udd34\u4e3a\u5fc5\u5e26\uff0c\ud83d\udfe1\u4e3a\u5f3a\u70c8\u5efa\u8bae\uff0c\u7070\u8272\u53ef\u9009</div>'
+      + '<div class="gear-grid">'
+      + _gearItem('\ud83e\uddf4','SPF50+ \u9632\u6653\u971c','PA++++\uff0c\u81f3\u5c11200ml',true)
+      + _gearItem('\ud83e\uddf4','\u9632\u6653\u8865\u6d82\u55b7\u96fe','\u8fd0\u52a8\u578b/\u9632\u6c34\uff0c\u65b9\u4fbf\u968f\u65f6\u8865',true)
+      + _gearItem('\ud83e\udde2','\u5bbd\u6cbf\u9065\u9633\u5e3d','\u5e3d\u6a90\u22657cm\uff0c\u9057\u8138\u98a1\u8033',true)
+      + _gearItem('\ud83d\udd76\ufe0f','UV400\u58a8\u955c','\u504f\u5149\u66f4\u4f73\uff0c\u5168\u5929\u62a4\u773c',true)
+      + _gearItem('\ud83d\udc55','\u9632\u6653\u8863/\u957f\u8896','UPF40+\uff0c\u8f7b\u8584\u900f\u6c14\u6b3e',true)
+      + _gearItem('\ud83d\udc61','\u9632\u6ed1\u51c9\u978b','\u683c\u5170\u5c9b\u51fa\u6d77\u5fc5\u5907\u6c34\u978b',false)
+      + _gearItem('\ud83e\ude7a','\u6652\u540e\u4fee\u590d\u55b7\u96fe','\u82a6\u835f\u80f6/\u5c0f\u7ef胶\u5b89\u74f6',false)
+      + _gearItem('\ud83c\udfbd','\u6cf3\u8863/\u9632\u6653\u6cf3\u8863','\u683c\u5170\u5c9b\u6d77\u6ee9\u6d3b\u52a8',false)
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83d\udca7</span>\u9632\u6691\u8865\u6c34\u88c5\u5907</div>'
+      + '<div class="gear-grid">'
+      + _gearItem('\ud83e\udeb6','\u4fdd\u6e29\u6c34\u58f6/\u676f','500ml+\uff0c\u968f\u65f6\u8865\u5145',true)
+      + _gearItem('\ud83e\xdd64','\u7535\u89e3\u8d28\u996e\u6599','POCARI\u5b9d\u77ff\u529b\uff0c7-Eleven\u8d2d',false)
+      + _gearItem('\ud83c\udf3f','\u970f\u9999\u6b63\u6c14\u6c34','\u8f7b\u5ea6\u4e2d\u6691/\u80a0\u80c3\u4e0d\u9002\u5747\u53ef\u7528',true)
+      + _gearItem('\ud83d\udc8a','\u53e3\u670d\u8865\u6db2\u76d0','\u8179\u6cfb\u540e\u5feb\u901f\u8865\u6c34\u7535\u89e3\u8d28',false)
+      + _gearItem('\u2744\ufe0f','\u4fbf\u643a\u5c0f\u98ce\u6247','USB\u5145\u7535\uff0c\u964d\u6e29\u795e\u5668',false)
+      + _gearItem('\ud83c\udf21\ufe0f','\u9000\u70ed\u8d34/\u51b7\u6577\u8d34','\u4e2d\u6691\u5e94\u6025\u964d\u6e29',false)
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83c\udf27\ufe0f</span>\u96e8\u5b63\u5e94\u5bf9\u88c5\u5907</div>'
+      + '<div class="gear-grid">'
+      + _gearItem('\u2602\ufe0f','\u6298\u53e0\u6674\u96e8\u4f1e','\u8f7b\u91cf\u6b3e\uff0c7-Eleven\u4e5f\u80fd\u4e70',true)
+      + _gearItem('\ud83e\udde5','\u8f7b\u8584\u96e8\u8863/\u98ce\u8863','\u6bd4\u6253\u4f1e\u66f4\u65b9\u4fbf\uff0c\u9632\u6e7f\u900f',false)
+      + _gearItem('\ud83d\udc5c','\u9632\u6c34\u5c0f\u5305/\u888b','\u624b\u673a/\u8bc1\u4ef6\u9632\u6c34\u4fdd\u62a4',true)
+      + _gearItem('\ud83d\udc9f','\u901f\u5e72\u8fd0\u52a8\u978b','\u6de1\u96e8\u540e\u5feb\u901f\u5e72\uff0c\u907f\u514d\u6c34\u6ce1',false)
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83e\udda0</span>\u86ca\u866b\u9632\u62a4</div>'
+      + '<div class="gear-grid">'
+      + _gearItem('\ud83e\uddea','\u9a71\u868a\u6db2 DEET 30%+','\u9ec4\u660f\u540e\u5fc5\u7528\uff0c\u9632\u767b\u9769\u70ed',true)
+      + _gearItem('\ud83e\ude79','\u6b62\u75d2\u818f/\u6e05\u51c9\u6cb9','\u88ab\u868a\u548f\u540e\u9547\u75db\u6b62\u75d2',false)
+      + _gearItem('\ud83d\udc55','\u6d45\u8272\u957f\u8896','\u51cf\u5c11\u868a\u866b\u53ae\u548f\u5438\u5f15',false)
+      + _gearItem('\ud83d\udca1','\u7535\u5b50\u9a71\u868a\u5668','\u9152\u5e97\u623f\u95f4\u63d2\u5ea7\u53ef\u7528',false)
+      + '</div></div>'
+      + '<div class="section-label" style="margin-top:4px;margin-bottom:8px;">\u23f0 \u6bcf\u65e5\u6700\u4f73\u6d3b\u52a8\u65f6\u6bb5</div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83c\udf05</span>\u6309\u65f6\u6bb5\u5b89\u6392\u6d3b\u52a8\uff08\u66fc\u8c37/\u82ad\u63d0\u96c5\u901a\u7528\uff09</div>'
+      + '<div>'
+      + _timeRow('06:00\u201308:00','safe','\ud83c\udf05 \u6668\u95f4\u9ec4\u91d1\u671f','<strong>\u6700\u4f73\u666f\u70b9\u65f6\u95f4</strong>\uff1a\u5927\u7687\u5bab 07:30 \u5165\u573a\u3001\u6e05\u6668\u6563\u6b65\u3001\u65e9\u9910\u51fa\u884c\u3002\u6c14\u6e29 28\u201330\u00b0C\uff0cUV \u4f4e\uff0c\u6700\u8212\u9002\u3002')
+      + _timeRow('08:00\u201310:30','warm','\u2b06\ufe0f \u5347\u6e29\u671f','<strong>\u6237\u5916\u666f\u70b9\u6293\u7d27</strong>\uff1a\u5367\u4f5b\u5bfa\u3001\u90d1\u738b\u5e99\u5efa\u8bae\u6b64\u65f6\u53c2\u89c2\uff0c\u6234\u5e3d+\u9632\u6653\u51fa\u95e8\uff0c\u6709\u6c34\u968f\u65f6\u559d\u3002')
+      + _timeRow('10:30\u201314:30','hot','\ud83d\udd34 \u9ad8\u6e29\u5371\u9669\u671f','<strong>\u5fc5\u987b\u8fdb\u5ba4\u5185</strong>\uff1a\u548f\u5561\u9986\u3001\u5546\u573a\u3001\u9152\u5e97\u4f11\u606f\u3002\u5927\u7687\u5bab\u53c2\u89c2\u987b\u572811:30\u524d\u8fdb\u5ba4\u5185\uff0c\u683c\u5170\u5c9b\u8fdb\u5c9b\u4e0a\u9910\u5385\u3002')
+      + _timeRow('14:30\u201316:30','rain','\u26c8\ufe0f \u96f7\u9635\u96e8\u9ad8\u5cf0','<strong>\u5ba4\u5185\u6d3b\u52a8\u9996\u9009</strong>\uff1a\u6309\u6469\uff08\u63a8\u8350\u6b64\u65f6\u6bb5\uff0c1\u20132\u5c0f\u65f6\u6b63\u597d\u907f\u96e8\uff09\u3001\u5546\u573a\u8d2d\u7269\u3001\u5348\u4f11\u3002\u5907\u597d\u6298\u53e0\u4f1e\u3002')
+      + _timeRow('16:30\u201318:30','nice','\ud83d\ude0a \u9ec4\u91d1\u4e0b\u5348\u8336','<strong>\u591c\u5e02\u51c6\u5907\u671f</strong>\uff1a\u96e8\u540e\u8f6c\u51c9\uff0c\u51fa\u53d1\u53bb Jodd Fairs/\u5510\u4eba\u8857\uff0c\u6253 Grab \u907f\u5f00\u665a\u9ad8\u5cf0\u62e5\u5835\u65f6\u6bb5\u3002')
+      + _timeRow('18:30\u201322:00','nice','\ud83c\udf06 \u591c\u95f4\u6700\u4f73','<strong>\u591c\u5e02/\u6d77\u9c9c/\u6309\u6469</strong>\uff1a\u6c14\u6e29\u964d\u81f3 28\u201330\u00b0C\uff0cWalking Street\u3001\u5510\u4eba\u8857\u3001\u6ee8\u6c34\u591c\u5e02\u6700\u70ed\u95f9\uff0c\u4f53\u9a8c\u6700\u4f73\u3002')
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83c\udf21\ufe0f</span>\u5b9e\u9645\u6c14\u6e29 vs \u4f53\u611f\u901f\u67e5</div>'
+      + '<div class="temp-scale">'
+      + '<div class="temp-scale-block" style="background:#93c5fd;flex:1.5">22\u00b0</div>'
+      + '<div class="temp-scale-block" style="background:#6ee7b7;flex:1.5">27\u00b0</div>'
+      + '<div class="temp-scale-block" style="background:#fde68a;flex:1.5">30\u00b0</div>'
+      + '<div class="temp-scale-block" style="background:#fca5a5;flex:2">35\u00b0</div>'
+      + '<div class="temp-scale-block" style="background:#f87171;flex:2">38\u00b0+</div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:12px;">'
+      + '<span>\u8212\u9002</span><span>\u504f\u70ed</span><span>\u70ed</span><span>\u9177\u70ed</span><span>\u5371\u9669</span></div>'
+      + '<div class="caution-list">'
+      + _cautionItem('green','\u2705','<strong>22\u201327\u00b0C\uff08\u6fb3\u95e8\uff09</strong>\uff1a\u6700\u8212\u9002\uff0c\u6b63\u5e38\u6237\u5916\u6d3b\u52a8\u65e0\u538b\u529b\uff0c\u9632\u6653SPF30+\u5373\u53ef')
+      + _cautionItem('yellow','\u26a0\ufe0f','<strong>28\u201332\u00b0C\uff08\u6cf0\u56fd\u65e9\u665a\uff09</strong>\uff1a\u4f53\u611f\u70ed\uff0c\u591a\u559d\u6c34\uff0c\u6237\u5916\u6301\u7eed\u6d3b\u52a8&gt;1\u5c0f\u65f6\u6ce8\u610f\u8865\u6c34')
+      + _cautionItem('red','\ud83d\udd34','<strong>33\u201336\u00b0C\uff08\u5348\u95f4\u6700\u70ed\uff09</strong>\uff1a\u4e2d\u6691\u9ad8\u98ce\u9669\uff0c\u9632\u6653+\u9065\u9633+\u8865\u6c34+\u9650\u5236\u6237\u5916\u65f6\u95f4\u5230&lt;30\u5206\u949f')
+      + _cautionItem('red','\ud83d\udea8','<strong>37\u00b0C+\uff08\u4f53\u611f40\u00b0C+\uff09</strong>\uff1a\u6781\u5371\u9669\uff0c\u7acb\u5373\u8fdb\u5ba4\u5185\uff0c\u51fa\u6c57\u505c\u6b62/\u5934\u6655\u662f\u4e2d\u6691\u524d\u5146\uff0c\u7acb\u523b\u5c31\u533b')
+      + '</div></div>'
+      + '<div class="section-label" style="margin-top:4px;margin-bottom:8px;">\ud83d\udccd \u7279\u6b8a\u573a\u666f\u6ce8\u610f\u4e8b\u9879</div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83c\udfdd\ufe0f</span>\u683c\u5170\u5c9b\u51fa\u6d77\uff084/28\uff09</div>'
+      + '<div class="caution-list">'
+      + _cautionItem('red','\ud83d\udd06','<strong>\u51fa\u53d1\u524d\u67e5\u5929\u6c14App</strong>\uff08AccuWeather/Windy\uff09\uff0c\u98ce\u529b\u85673\u7ea7\u3001\u65e9\u4e0a\u5df2\u4e0b\u96e8\u8bf7\u53d6\u6d88')
+      + _cautionItem('red','\ud83e\uddf4','<strong>\u9632\u6c34\u9632\u6653\u971c\u5fc5\u987b\u7528</strong>\uff1a\u51fa\u53d1\u524d20\u5206\u6d82+\u4e0b\u6c34\u540e\u6bcf2\u5c0f\u65f6\u8865\uff0c\u6d77\u9762\u53cd\u5c04UV\u662f\u9646\u57301.5\u500d')
+      + _cautionItem('yellow','\u26f5','<strong>\u6700\u540e\u4e00\u73ed\u516c\u5171\u6e21\u750118:00</strong>\uff0c\u5efa\u8bae13:30\u201314:30\u8fd4\u56de\uff0c\u4e0d\u8981\u73a9\u5230\u5929\u9ed1')
+      + _cautionItem('blue','\ud83d\udca6','<strong>\u51c6\u59072L\u4ee5\u4e0a\u996e\u6c34</strong>\uff1a\u5c9b\u4e0a\u4ef7\u683c\u9ad8\uff0830\u201350\u0e3f/\u74f6\uff09\uff0c\u5728\u7801\u5934\u9644\u8fd1\u4fbf\u5229\u5e97\u4e70\u597d\u518d\u4e0a\u8239')
+      + _cautionItem('yellow','\ud83c\udf0a','<strong>\u5907\u6655\u8239\u836f</strong>\uff08\u4e58\u8239\u524d30\u5206\u949f\u670d\u7528\uff09\uff0c\u6d6a\u5927\u65f6\u6709\u4eba\u6655\u8239')
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83c\udfdb\ufe0f</span>\u5927\u7687\u5bab\u53c2\u89c2\uff084/30\uff09</div>'
+      + '<div class="caution-list">'
+      + _cautionItem('red','\u23f0','<strong>\u5fc5\u987507:30\u51fa\u53d1</strong>\uff0c08:30\u8fdb\u573a\uff0c11:30\u524d\u5b8c\u6210\u53c2\u89c2\uff0c\u907f\u5f00\u6781\u70ed\u65f6\u6bb5')
+      + _cautionItem('red','\ud83d\udc57','<strong>\u7740\u88c5\u68c0\u67e5</strong>\uff1a\u6709\u8896\u4e0a\u8863\uff08\u65e0\u8896/\u80cc\u5fc3\u4e0d\u884c\uff09+\u957f\u88e4/\u8fc7\u819d\u88d9\uff0c\u73b0\u573a\u6709\u79df\u501f\u4f46\u6392\u961f\u8017\u65f6\u95f4')
+      + _cautionItem('yellow','\ud83c\udf9f\ufe0f','<strong>\u9632\u8be8\u9a97</strong>\uff1a\u95e8\u53e3\u6709\u4eba\u79f0\u201c\u4eca\u5929\u7687\u5bab\u5173\u95ed\uff0c\u5e26\u4f60\u53bb\u4f5b\u5bfa\u201d\u2014\u2014\u5168\u662f\u9a97\u5c40\uff0c\u76f4\u63a5\u8d70')
+      + _cautionItem('blue','\ud83e\uddf4','<strong>\u9632\u6653\u55b7\u96fe\u8fdb\u6bbf\u7528</strong>\uff1a\u6bbf\u5185\u8131\u978b\u540e\u5730\u9762\u5f88\u70eb\uff0c\u6ce8\u610f\uff1b\u6bbf\u5916\u5e7f\u573a\u5168\u662f\u66b4\u6653\uff0c\u6bcf\u6b21\u51fa\u6765\u5c31\u8865\u9632\u6653')
+      + _cautionItem('green','\ud83d\udca7','<strong>\u63d0\u524d\u5728\u5916\u4e70\u6c34</strong>\uff1a\u5bab\u5185\u996e\u6c34\u70b9\u5c11\uff0c\u81ea\u5e26500ml+\u77ff\u6cc9\u6c34\uff0c\u5165\u573a\u540e\u5c3d\u5feb\u559d\u5b8c')
+      + '</div></div>'
+      + '<div class="card" style="margin-bottom:4px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83c\udf06</span>\u591c\u5e02 / \u591c\u95f4\u6d3b\u52a8</div>'
+      + '<div class="caution-list">'
+      + _cautionItem('yellow','\ud83c\udf21\ufe0f','<strong>\u591c\u95f4\u4ecd\u672628\u201330\u00b0C</strong>\uff1a\u70ed\u5e26\u591c\u6652\u4e0d\u51c9\u723d\uff0c\u7ee7\u7eed\u559d\u6c34\uff0c\u8863\u670d\u9009\u62e9\u900f\u6c14\u6b3e')
+      + _cautionItem('blue','\ud83c\udf27\ufe0f','<strong>\u508d\u665a\u53ef\u80fd\u6709\u96e8</strong>\uff1aJodd Fairs/\u5510\u4eba\u8857\u7b49\u6237\u5916\u591c\u5e02\u51fa\u53d1\u524d\u67e5\u5929\u6c14\uff0c\u5e26\u6298\u53e0\u4f1e')
+      + _cautionItem('yellow','\ud83e\udda0','<strong>\u591c\u5e02\u868a\u866b\u591a</strong>\uff1a\u5510\u4eba\u8857\u7eff\u5316\u533a\u3001\u82ad\u63d0\u96c5\u8349\u4e1b\u9ec4\u660f\u540e\u9a71\u868a\u6db2\u4e00\u5b9a\u8981\u6d82')
+      + _cautionItem('green','\ud83c\udf79','<strong>\u6cf0\u5f0f\u996e\u6599\u6d88\u6691</strong>\uff1aThai Tea\u6cf0\u5976\uff08\u7ea630\u201350\u0e3f\uff09\u3001\u9c9c\u6930\u5b50\u6c34\uff08\u7ea650\u201380\u0e3f\uff09\u662f\u6700\u4f73\u89e3\u6691\u9009\u62e9')
+      + '</div></div>';
   }
 
   // ── 防暑防晒指南 ──
+  function _guideCard(key, data, useDataStep) {
+    var isOpen = !!openGuides[key];
+    var chevron = isOpen ? 'up' : 'down';
+    var bodyClass = isOpen ? ' open' : '';
+    var stepsHtml = '';
+    var si, item, lbl;
+    for (si = 0; si < data.items.length; si++) {
+      item = data.items[si];
+      lbl = useDataStep ? item.step : item.label;
+      stepsHtml += '<div class="guide-step"><span class="guide-step-label">' + lbl + '</span>'
+        + '<span class="guide-step-desc">' + item.desc + '</span></div>';
+    }
+    return '<div class="guide-card">'
+      + '<div class="guide-header" onclick="toggleGuide(\'' + key + '\')">'
+      + '<div class="guide-header-left">'
+      + '<span class="guide-header-icon">' + data.icon + '</span>'
+      + '<span class="guide-header-title">' + data.title + '</span>'
+      + '</div>'
+      + '<i class="fas fa-chevron-' + chevron + '" style="color:var(--text-muted);font-size:13px;"></i>'
+      + '</div>'
+      + '<div class="guide-body' + bodyClass + '">' + stepsHtml + '</div>'
+      + '</div>';
+  }
   function renderGuideTab(el) {
-    const g = WEATHER_DATA.heatGuide;
-    const guides = [
+    var g = WEATHER_DATA.heatGuide;
+    var guides = [
       { key: 'sunscreen', data: g.sunscreen },
       { key: 'hydration', data: g.hydration },
       { key: 'heatstroke', data: g.heatstroke },
       { key: 'rain', data: g.rain }
     ];
-
-    // 额外的固定注意事项卡
-    const extras = [
-      {
-        icon: '🕶️',
-        title: '眼部防护',
-        items: [
-          { label: '必备', desc: 'UV400 墨镜，热带强光直射眼睛易造成日光性视网膜炎，儿童和成人均需佩戴' },
-          { label: '注意', desc: '沙滩/海面反光更强，偏光镜更佳，全天候佩戴不仅防晒也防尘' },
-          { label: '替代方案', desc: '没带墨镜可在芭提雅/曼谷便利店购买，150–300฿有售' }
-        ]
-      },
-      {
-        icon: '🧢',
-        title: '遮阳帽选择',
-        items: [
-          { label: '推荐', desc: '宽沿帽（帽檐≥7cm），能同时遮脸颊、颈部、耳朵，比棒球帽防护更全面' },
-          { label: '海岛', desc: '格兰岛出海建议戴有绑带的帽子，海风容易把帽子吹走' },
-          { label: '大皇宫', desc: '帽子属于正式参观，殿内一般需摘帽，进出殿时注意' }
-        ]
-      },
-      {
-        icon: '🩺',
-        title: '常备药物建议',
-        items: [
-          { label: '防暑', desc: '藿香正气水/胶囊（国内带）：轻度中暑、肠胃不适均可用；十滴水：随身携带急救中暑' },
-          { label: '肠胃', desc: '止泻药（蒙脱石散/思密达）：换水土、吃海鲜后腹泻备用；口服补液盐：腹泻后补水电解质' },
-          { label: '皮肤', desc: '薄荷冷却喷雾（晒后镇静）、小绿安瓶（晒后修复）、驱蚊液（Deet30%+）' },
-          { label: '急救', desc: '创可贴、止痛药（布洛芬）、抗过敏药（氯雷他定）；海鲜过敏史者携带肾上腺素笔' }
-        ]
-      },
-      {
-        icon: '🍽️',
-        title: '饮食注意事项',
-        items: [
-          { label: '高温期', desc: '气温超35°C时少吃过于油腻食物，以清淡为主；海鲜当天吃当天的，不吃隔夜' },
-          { label: '辛辣', desc: '泰国咖喱和冬阴功汤很辣，肠胃敏感者第一次点"不辣"（Mai pet），适应后再加辣' },
-          { label: '生冷', desc: '路边摊冰沙/果汁卫生状况参差，建议选择有明火处理或正规包装的食物' },
-          { label: '饮水', desc: '泰国自来水不可直饮，买瓶装水；酒店提供的瓶装水或净水机水才安全' }
-        ]
-      },
-      {
-        icon: '🦟',
-        title: '蚊虫防护',
-        items: [
-          { label: '风险区域', desc: '芭提雅海边草丛、曼谷夜市、郑王庙周边绿化区是蚊虫高发区，尤其黄昏后' },
-          { label: '防护方法', desc: 'Deet 30%+ 驱蚊液全身涂抹，防晒霜与驱蚊液分开涂（先防晒后驱蚊）' },
-          { label: '登革热', desc: '东南亚登革热由白纹伊蚊传播，白天也活跃，出现高烧+头痛+皮疹立即就医' },
-          { label: '预防', desc: '穿浅色衣物减少吸引，酒店房间关窗开空调，外出前检查驱蚊液有没有涂全' }
-        ]
-      }
+    var extras = [
+      { icon: '\ud83d\udd76\ufe0f', title: '\u773c\u90e8\u9632\u62a4', items: [
+        { label: '\u5fc5\u5907', desc: 'UV400 \u58a8\u955c\uff0c\u70ed\u5e26\u5f3a\u5149\u76f4\u5c04\u773c\u775b\u6613\u9020\u6210\u65e5\u5149\u6027\u89c6\u7f51\u819c\u708e\uff0c\u513f\u7ae5\u548c\u6210\u4eba\u5747\u9700\u4f69\u6234' },
+        { label: '\u6ce8\u610f', desc: '\u6c99\u6ee9/\u6d77\u9762\u53cd\u5149\u66f4\u5f3a\uff0c\u504f\u5149\u955c\u66f4\u4f73\uff0c\u5168\u5929\u5019\u4f69\u6234\u4e0d\u4ec5\u9632\u6653\u4e5f\u9632\u5c18' },
+        { label: '\u66ff\u4ee3\u65b9\u6848', desc: '\u6ca1\u5e26\u58a8\u955c\u53ef\u5728\u82ad\u63d0\u96c5/\u66fc\u8c37\u4fbf\u5229\u5e97\u8d2d\u4e70\uff0c150\u2013300\u0e3f\u6709\u552e' }
+      ]},
+      { icon: '\ud83e\udde2', title: '\u9065\u9633\u5e3d\u9009\u62e9', items: [
+        { label: '\u63a8\u8350', desc: '\u5bbd\u6cbf\u5e3d\uff08\u5e3d\u6a90\u22657cm\uff09\uff0c\u80fd\u540c\u65f6\u9057\u8138\u98a1\u3001\u9888\u90e8\u3001\u8033\u6735\uff0c\u6bd4\u68d2\u7403\u5e3d\u9632\u62a4\u66f4\u5168\u9762' },
+        { label: '\u6d77\u5c9b', desc: '\u683c\u5170\u5c9b\u51fa\u6d77\u5efa\u8bae\u6234\u6709\u7ed1\u5e26\u7684\u5e3d\u5b50\uff0c\u6d77\u98ce\u5bb9\u6613\u628a\u5e3d\u5b50\u5439\u8d70' },
+        { label: '\u5927\u7687\u5bab', desc: '\u5e3d\u5b50\u5c5e\u4e8e\u6b63\u5f0f\u53c2\u89c2\uff0c\u6bbf\u5185\u4e00\u822c\u9700\u6458\u5e3d\uff0c\u8fdb\u51fa\u6bbf\u65f6\u6ce8\u610f' }
+      ]},
+      { icon: '\ud83e\ude7a', title: '\u5e38\u5907\u836f\u7269\u5efa\u8bae', items: [
+        { label: '\u9632\u6691', desc: '\u970f\u9999\u6b63\u6c14\u6c34/\u80f6\u56ca\uff08\u56fd\u5185\u5e26\uff09\uff1a\u8f7b\u5ea6\u4e2d\u6691\u3001\u80a0\u80c3\u4e0d\u9002\u5747\u53ef\u7528\uff1b\u5341\u6ef4\u6c34\uff1a\u968f\u8eab\u643a\u5e26\u6025\u6551\u4e2d\u6691' },
+        { label: '\u80a0\u80c3', desc: '\u6b62\u6cd5\u836f\uff08\u8499\u8131\u77f3\u6563/\u601d\u5bc6\u8fbe\uff09\uff1a\u6362\u6c34\u571f\u3001\u5403\u6d77\u9c9c\u540e\u8179\u6cfb\u5907\u7528\uff1b\u53e3\u670d\u8865\u6db2\u76d0\uff1a\u8179\u6cfb\u540e\u8865\u6c34\u7535\u89e3\u8d28' },
+        { label: '\u76ae\u80a4', desc: '\u8584\u8377\u51b7\u5374\u55b7\u96fe\uff08\u6652\u540e\u9547\u9759\uff09\u3001\u5c0f\u7ef3\u5b89\u74f6\uff08\u6652\u540e\u4fee\u590d\uff09\u3001\u9a71\u868a\u6db2\uff08Deet30%+\uff09' },
+        { label: '\u6025\u6551', desc: '\u521b\u53ef\u8d34\u3001\u6b62\u75db\u836f\uff08\u5e03\u6d1b\u82ac\uff09\u3001\u6297\u8fc7\u654f\u836f\uff08\u6c2f\u96f7\u4ed6\u5b9a\uff09\uff1b\u6d77\u9c9c\u8fc7\u654f\u53f2\u8005\u643a\u5e26\u80be\u4e0a\u817a\u7d20\u7b14' }
+      ]},
+      { icon: '\ud83c\udf7d\ufe0f', title: '\u996e\u98df\u6ce8\u610f\u4e8b\u9879', items: [
+        { label: '\u9ad8\u6e29\u671f', desc: '\u6c14\u6e29\u503635\u00b0C\u65f6\u5c11\u5403\u8fc7\u4e8e\u6cb9\u817b\u98df\u7269\uff0c\u4ee5\u6e05\u6de1\u4e3a\u4e3b\uff1b\u6d77\u9c9c\u5f53\u5929\u5403\u5f53\u5929\u7684\uff0c\u4e0d\u5403\u9694\u591c' },
+        { label: '\u8f9b\u8fa3', desc: '\u6cf0\u56fd\u548b\u55b1\u548c\u51ac\u9634\u529f\u6c64\u5f88\u8fa3\uff0c\u80a0\u80c3\u654f\u611f\u8005\u7b2c\u4e00\u6b21\u70b9\u201c\u4e0d\u8fa3\u201d\uff08Mai pet\uff09\uff0c\u9002\u5e94\u540e\u518d\u52a0\u8fa3' },
+        { label: '\u751f\u51b7', desc: '\u8def\u8fb9\u6444\u51b0\u6c99/\u679c\u6c41\u536b\u751f\u72b6\u51b5\u53c2\u5dee\uff0c\u5efa\u8bae\u9009\u62e9\u6709\u660e\u706b\u5904\u7406\u6216\u6b63\u89c4\u5305\u88c5\u7684\u98df\u7269' },
+        { label: '\u996e\u6c34', desc: '\u6cf0\u56fd\u81ea\u6765\u6c34\u4e0d\u53ef\u76f4\u996e\uff0c\u4e70\u74f6\u88c5\u6c34\uff1b\u9152\u5e97\u63d0\u4f9b\u7684\u74f6\u88c5\u6c34\u6216\u51c0\u6c34\u673a\u6c34\u624d\u5b89\u5168' }
+      ]},
+      { icon: '\ud83e\udda0', title: '\u868a\u866b\u9632\u62a4', items: [
+        { label: '\u98ce\u9669\u533a\u57df', desc: '\u82ad\u63d0\u96c5\u6d77\u8fb9\u8349\u4e1b\u3001\u66fc\u8c37\u591c\u5e02\u3001\u90d1\u738b\u5e99\u5468\u8fb9\u7eff\u5316\u533a\u662f\u868a\u866b\u9ad8\u53d1\u533a\uff0c\u5c24\u5176\u9ec4\u660f\u540e' },
+        { label: '\u9632\u62a4\u65b9\u6cd5', desc: 'Deet 30%+ \u9a71\u868a\u6db2\u5168\u8eab\u6d82\u6479\uff0c\u9632\u6653\u971c\u4e0e\u9a71\u868a\u6db2\u5206\u5f00\u6d82\uff08\u5148\u9632\u6653\u540e\u9a71\u868a\uff09' },
+        { label: '\u767b\u9769\u70ed', desc: '\u4e1c\u5357\u4e9a\u767b\u9769\u70ed\u7531\u767d\u7eb9\u4f0a\u868a\u4f20\u64ad\uff0c\u767d\u5929\u4e5f\u6d3b\u8dc3\uff0c\u51fa\u73b0\u9ad8\u70e7+\u5934\u75db+\u76ae\u8f92\u7acb\u5373\u5c31\u533b' },
+        { label: '\u9884\u9632', desc: '\u7a7f\u6d45\u8272\u8863\u7269\u51cf\u5c11\u5438\u5f15\uff0c\u9152\u5e97\u623f\u95f4\u5173\u7a97\u5f00\u7a7a\u8c03\uff0c\u5916\u51fa\u524d\u68c0\u67e5\u9a71\u868a\u6db2\u6709\u6ca1\u6709\u6d82\u5168' }
+      ]}
     ];
-
-    el.innerHTML = `
-      <!-- 主指南（可折叠） -->
-      ${guides.map(({ key, data }) => {
-        const isOpen = !!openGuides[key];
-        return `
-          <div class="guide-card">
-            <div class="guide-header" onclick="toggleGuide('${key}')">
-              <div class="guide-header-left">
-                <span class="guide-header-icon">${data.icon}</span>
-                <span class="guide-header-title">${data.title}</span>
-              </div>
-              <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" style="color:var(--text-muted);font-size:13px;"></i>
-            </div>
-            <div class="guide-body ${isOpen ? 'open' : ''}">
-              ${data.items.map(item => `
-                <div class="guide-step">
-                  <span class="guide-step-label">${item.step}</span>
-                  <span class="guide-step-desc">${item.desc}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }).join('')}
-
-      <!-- 额外注意事项（可折叠） -->
-      ${extras.map(e => {
-        const isOpen = !!openGuides['extra_' + e.icon];
-        return `
-          <div class="guide-card">
-            <div class="guide-header" onclick="toggleGuide('extra_${e.icon}')">
-              <div class="guide-header-left">
-                <span class="guide-header-icon">${e.icon}</span>
-                <span class="guide-header-title">${e.title}</span>
-              </div>
-              <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" style="color:var(--text-muted);font-size:13px;"></i>
-            </div>
-            <div class="guide-body ${isOpen ? 'open' : ''}">
-              ${e.items.map(item => `
-                <div class="guide-step">
-                  <span class="guide-step-label">${item.label}</span>
-                  <span class="guide-step-desc">${item.desc}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    `;
+    var html = '';
+    var gi2, gItem;
+    for (gi2 = 0; gi2 < guides.length; gi2++) {
+      gItem = guides[gi2];
+      html += _guideCard(gItem.key, gItem.data, true);
+    }
+    for (gi2 = 0; gi2 < extras.length; gi2++) {
+      html += _guideCard('extra_' + extras[gi2].icon, extras[gi2], false);
+    }
+    el.innerHTML = html;
   }
 
   function toggleGuide(key) {
@@ -845,78 +705,75 @@
 
   // ── 城市对比 ──
   function renderCompareTab(el) {
-    const cc = WEATHER_DATA.cityComparison;
-    el.innerHTML = `
-      <!-- 温度对比卡 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:12px;"><span class="icon">🌡️</span>气温对比（4月底–5月初）</div>
-        ${cc.map(c => `
-          <div style="margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <span style="font-size:14px;font-weight:700;">${c.emoji} ${c.city}</span>
-              <span style="font-size:14px;font-weight:800;color:var(--danger);">${c.avgTemp}</span>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-              <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fef9c3;color:#a16207;font-weight:600;">UV：${c.uvRisk}</span>
-              <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-weight:600;">降雨：${c.rainRisk}</span>
-              <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fee2e2;color:#b91c1c;font-weight:600;">中暑：${c.heatRisk}</span>
-            </div>
-            <div style="font-size:12px;color:var(--text-secondary);background:var(--bg);padding:6px 10px;border-radius:8px;">💡 ${c.verdict}</div>
-          </div>
-        `).join('<hr style="border:none;border-top:1px solid var(--border-light);margin:4px 0 14px;">')}
-      </div>
-
-      <!-- 天气App推荐 -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">📱</span>出行前推荐查看的天气App</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          ${[
-            { name: 'AccuWeather', desc: '精准度高，有"RealFeel体感温度"和分钟级降雨预报，适合规划格兰岛出海', badge: '推荐', color: '#ef4444' },
-            { name: '墨迹天气', desc: '国内用户熟悉，界面简洁，可查询芭提雅/曼谷当地城市', badge: '国内用户', color: '#3b82f6' },
-            { name: 'Weather.com / The Weather Channel', desc: '全球覆盖，UV指数预报详细，适合规划户外活动时间', badge: '详细', color: '#10b981' },
-            { name: 'Windy.com', desc: '查询海面风速和浪高，格兰岛出海前必看，风力>3级需谨慎', badge: '出海必查', color: '#f59e0b' }
-          ].map(app => `
-            <div style="display:flex;gap:10px;align-items:flex-start;">
-              <span style="background:${app.color};color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;margin-top:2px;">${app.badge}</span>
-              <div>
-                <div style="font-size:13px;font-weight:700;margin-bottom:2px;">${app.name}</div>
-                <div style="font-size:12px;color:var(--text-secondary);">${app.desc}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- 最关键时间段速查 -->
-      <div class="card">
-        <div class="card-title" style="margin-bottom:10px;"><span class="icon">⏰</span>每日最危险时段速查</div>
-        <div style="display:flex;flex-direction:column;gap:0;">
-          ${[
-            { time: '06:00–08:00', status: '✅ 安全', desc: '晨间出行最佳，UV低，气温适中，大皇宫最佳出发时间', color: '#d1fae5', tc: '#065f46' },
-            { time: '08:00–10:00', status: '⚠️ 开始升温', desc: 'UV逐渐增强，户外需戴帽+防晒，此时段完成主要景点观览', color: '#fef3c7', tc: '#92400e' },
-            { time: '10:00–15:00', status: '🔴 最高风险', desc: '气温35–38°C，UV极强，不在室外长时间停留，进室内吹空调', color: '#fee2e2', tc: '#991b1b' },
-            { time: '15:00–17:00', status: '⚡ 雷阵雨高峰', desc: '午后对流雨，备伞，雨停后仍然炎热，注意降温', color: '#dbeafe', tc: '#1e40af' },
-            { time: '17:00–19:00', status: '😌 逐渐好转', desc: '气温缓慢下降，是出发去夜市/按摩/唐人街的最佳时机', color: '#d1fae5', tc: '#065f46' },
-            { time: '19:00–22:00', status: '✅ 较舒适', desc: '夜间28–30°C，户外可接受，短袖即可，仍建议随身带水', color: '#d1fae5', tc: '#065f46' }
-          ].map(t => `
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-light);">
-              <div style="background:${t.color};color:${t.tc};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;min-width:80px;text-align:center;margin-top:1px;">${t.time}</div>
-              <div>
-                <div style="font-size:12px;font-weight:700;color:${t.tc};margin-bottom:2px;">${t.status}</div>
-                <div style="font-size:12px;color:var(--text-secondary);">${t.desc}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+    var cc = WEATHER_DATA.cityComparison;
+    var ccHtml = '';
+    var ci4, c4;
+    for (ci4 = 0; ci4 < cc.length; ci4++) {
+      c4 = cc[ci4];
+      if (ci4 > 0) ccHtml += '<hr style="border:none;border-top:1px solid var(--border-light);margin:4px 0 14px;">';
+      ccHtml += '<div style="margin-bottom:14px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+        + '<span style="font-size:14px;font-weight:700;">' + c4.emoji + ' ' + c4.city + '</span>'
+        + '<span style="font-size:14px;font-weight:800;color:var(--danger);">' + c4.avgTemp + '</span>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">'
+        + '<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fef9c3;color:#a16207;font-weight:600;">UV\uff1a' + c4.uvRisk + '</span>'
+        + '<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-weight:600;">\u964d\u96e8\uff1a' + c4.rainRisk + '</span>'
+        + '<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:#fee2e2;color:#b91c1c;font-weight:600;">\u4e2d\u6691\uff1a' + c4.heatRisk + '</span>'
+        + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);background:var(--bg);padding:6px 10px;border-radius:8px;">\ud83d\udca1 ' + c4.verdict + '</div>'
+        + '</div>';
+    }
+    var apps = [
+      { name: 'AccuWeather', desc: '\u7cbe\u51c6\u5ea6\u9ad8\uff0c\u6709\u201cRealFeel\u4f53\u611f\u6e29\u5ea6\u201d\u548c\u5206\u949f\u7ea7\u964d\u96e8\u9884\u62a5\uff0c\u9002\u5408\u89c4\u5212\u683c\u5170\u5c9b\u51fa\u6d77', badge: '\u63a8\u8350', color: '#ef4444' },
+      { name: '\u58a8\u8ff9\u5929\u6c14', desc: '\u56fd\u5185\u7528\u6237\u719f\u60c1\uff0c\u754c\u9762\u7b80\u6d01\uff0c\u53ef\u67e5\u8be2\u82ad\u63d0\u96c5/\u66fc\u8c37\u5f53\u5730\u57ce\u5e02', badge: '\u56fd\u5185\u7528\u6237', color: '#3b82f6' },
+      { name: 'Weather.com / The Weather Channel', desc: '\u5168\u7403\u8986\u76d6\uff0cUV\u6307\u6570\u9884\u62a5\u8be6\u7ec6\uff0c\u9002\u5408\u89c4\u5212\u6237\u5916\u6d3b\u52a8\u65f6\u95f4', badge: '\u8be6\u7ec6', color: '#10b981' },
+      { name: 'Windy.com', desc: '\u67e5\u8be2\u6d77\u9762\u98ce\u901f\u548c\u6d6a\u9ad8\uff0c\u683c\u5170\u5c9b\u51fa\u6d77\u524d\u5fc5\u770b\uff0c\u98ce\u529b>3\u7ea7\u9700\u8c28\u614e', badge: '\u51fa\u6d77\u5fc5\u67e5', color: '#f59e0b' }
+    ];
+    var appsHtml = '';
+    var ai;
+    for (ai = 0; ai < apps.length; ai++) {
+      appsHtml += '<div style="display:flex;gap:10px;align-items:flex-start;">'
+        + '<span style="background:' + apps[ai].color + ';color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;margin-top:2px;">' + apps[ai].badge + '</span>'
+        + '<div><div style="font-size:13px;font-weight:700;margin-bottom:2px;">' + apps[ai].name + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);">' + apps[ai].desc + '</div></div></div>';
+    }
+    var slots = [
+      { time:'06:00\u201308:00', status:'\u2705 \u5b89\u5168', desc:'\u6668\u95f4\u51fa\u884c\u6700\u4f73\uff0cUV\u4f4e\uff0c\u6c14\u6e29\u9002\u4e2d\uff0c\u5927\u7687\u5bab\u6700\u4f73\u51fa\u53d1\u65f6\u95f4', color:'#d1fae5', tc:'#065f46' },
+      { time:'08:00\u201310:00', status:'\u26a0\ufe0f \u5f00\u59cb\u5347\u6e29', desc:'UV\u9010\u6e10\u589e\u5f3a\uff0c\u6237\u5916\u9700\u6234\u5e3d+\u9632\u6653\uff0c\u6b64\u65f6\u6bb5\u5b8c\u6210\u4e3b\u8981\u666f\u70b9\u89c2\u89c8', color:'#fef3c7', tc:'#92400e' },
+      { time:'10:00\u201315:00', status:'\ud83d\udd34 \u6700\u9ad8\u98ce\u9669', desc:'\u6c14\u6e2935\u201338\u00b0C\uff0cUV\u6781\u5f3a\uff0c\u4e0d\u5728\u5ba4\u5916\u957f\u65f6\u95f4\u505c\u7559\uff0c\u8fdb\u5ba4\u5185\u5439\u7a7a\u8c03', color:'#fee2e2', tc:'#991b1b' },
+      { time:'15:00\u201317:00', status:'\u26a1 \u96f7\u9635\u96e8\u9ad8\u5cf0', desc:'\u5348\u540e\u5bf9\u6d41\u96e8\uff0c\u5907\u4f1e\uff0c\u96e8\u505c\u540e\u4ecd\u7136\u708e\u70ed\uff0c\u6ce8\u610f\u964d\u6e29', color:'#dbeafe', tc:'#1e40af' },
+      { time:'17:00\u201319:00', status:'\ud83d\ude0c \u9010\u6e10\u597d\u8f6c', desc:'\u6c14\u6e29\u7f13\u6162\u4e0b\u964d\uff0c\u662f\u51fa\u53d1\u53bb\u591c\u5e02/\u6309\u6469/\u5510\u4eba\u8857\u7684\u6700\u4f73\u65f6\u673a', color:'#d1fae5', tc:'#065f46' },
+      { time:'19:00\u201322:00', status:'\u2705 \u8f83\u8212\u9002', desc:'\u591c\u95f428\u201330\u00b0C\uff0c\u6237\u5916\u53ef\u63a5\u53d7\uff0c\u77ed\u8896\u5373\u53ef\uff0c\u4ecd\u5efa\u8bae\u968f\u8eab\u5e26\u6c34', color:'#d1fae5', tc:'#065f46' }
+    ];
+    var slotsHtml = '';
+    var si2;
+    for (si2 = 0; si2 < slots.length; si2++) {
+      slotsHtml += '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-light);">'
+        + '<div style="background:' + slots[si2].color + ';color:' + slots[si2].tc + ';font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;min-width:80px;text-align:center;margin-top:1px;">' + slots[si2].time + '</div>'
+        + '<div><div style="font-size:12px;font-weight:700;color:' + slots[si2].tc + ';margin-bottom:2px;">' + slots[si2].status + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);">' + slots[si2].desc + '</div></div></div>';
+    }
+    el.innerHTML = '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83c\udf21\ufe0f</span>\u6c14\u6e29\u5bf9\u6bd4\uff084\u6708\u5e95\u20135\u6708\u521d\uff09</div>'
+      + ccHtml + '</div>'
+      + '<div class="card" style="margin-bottom:12px;">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\ud83d\udcf1</span>\u51fa\u884c\u524d\u63a8\u8350\u67e5\u770b\u7684\u5929\u6c14App</div>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;">' + appsHtml + '</div></div>'
+      + '<div class="card">'
+      + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\u23f0</span>\u6bcf\u65e5\u6700\u5371\u9669\u65f6\u6bb5\u901f\u67e5</div>'
+      + '<div style="display:flex;flex-direction:column;gap:0;">' + slotsHtml + '</div></div>';
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function() {
     renderWeatherPage();
-    const now = new Date();
-    document.getElementById('headerDate').textContent = `${now.getMonth()+1}月${now.getDate()}日`;
+    var now = new Date();
+    var headerDateEl = document.getElementById('headerDate');
+    if (headerDateEl) headerDateEl.textContent = (now.getMonth()+1) + '月' + now.getDate() + '日';
   });
   </script>
+
+  <!-- 涂鸦悬浮按钮 -->
+  <a href="note.html" class="note-fab" title="涂鸦记录">✏️</a>
 </body>
 </html>
