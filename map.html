@@ -111,8 +111,15 @@
       for (mi = 0; mi < markers.length; mi++) markers[mi].remove();
       markers = [];
       
-      var filtered = city === 'all' ? MAP_DATA.pois : MAP_DATA.pois.filter(function(p){ return p.city === city; });
-      
+      var allPois_m = MAP_DATA.pois;
+      var filtered = [];
+      if (city === 'all') {
+        filtered = allPois_m;
+      } else {
+        for (var fi_m = 0; fi_m < allPois_m.length; fi_m++) {
+          if (allPois_m[fi_m].city === city) filtered.push(allPois_m[fi_m]);
+        }
+      }
       var pi_m, poi_m, iconHtml_m, icon_m, marker_m;
       for (pi_m = 0; pi_m < filtered.length; pi_m++) {
         poi_m = filtered[pi_m];
@@ -177,8 +184,15 @@
       var list = document.getElementById('poisList');
       if (!list) return;
       
-      var filtered = city === 'all' ? MAP_DATA.pois : MAP_DATA.pois.filter(function(p){ return p.city === city; });
-      
+      var allPois_r = MAP_DATA.pois;
+      var filtered = [];
+      if (city === 'all') {
+        filtered = allPois_r;
+      } else {
+        for (var fi_r = 0; fi_r < allPois_r.length; fi_r++) {
+          if (allPois_r[fi_r].city === city) filtered.push(allPois_r[fi_r]);
+        }
+      }
       var typeLabels = {
         attraction: '🎯 景点',
         stay: '🏨 住宿',
@@ -228,7 +242,15 @@
       var section = document.getElementById('routeSection');
       if (!section) return;
       
-      var filtered = city === 'all' ? MAP_DATA.routes : MAP_DATA.routes.filter(function(r) { return r.city === city; });
+      var allRoutes = MAP_DATA.routes;
+      var filtered = [];
+      if (city === 'all') {
+        filtered = allRoutes;
+      } else {
+        for (var ri_f = 0; ri_f < allRoutes.length; ri_f++) {
+          if (allRoutes[ri_f].city === city) filtered.push(allRoutes[ri_f]);
+        }
+      }
       
       if (filtered.length === 0) {
         section.innerHTML = '';
@@ -236,17 +258,20 @@
       }
       
       var routeHtml = '<div class="section-label">推荐路线</div>';
-      filtered.forEach(function(route) {
+      var ri2, route, si, s;
+      for (ri2 = 0; ri2 < filtered.length; ri2++) {
+        route = filtered[ri2];
         routeHtml += '<div class="route-card"><div class="route-title">' + route.emoji + ' ' + route.title + '</div><div class="route-steps">';
-        route.steps.forEach(function(s, i) {
-          routeHtml += '<div class="route-step"><div class="route-step-num">' + (i + 1) + '</div><div class="route-step-info">';
+        for (si = 0; si < route.steps.length; si++) {
+          s = route.steps[si];
+          routeHtml += '<div class="route-step"><div class="route-step-num">' + (si + 1) + '</div><div class="route-step-info">';
           routeHtml += '<div class="route-step-name">' + s.name + '</div>';
           routeHtml += '<div class="route-step-desc">' + s.desc + '</div>';
           if (s.transport) routeHtml += '<span class="route-transport">' + s.transport + '</span>';
           routeHtml += '</div></div>';
-        });
+        }
         routeHtml += '</div></div>';
-      });
+      }
       section.innerHTML = routeHtml;
     }
     
@@ -254,10 +279,10 @@
       if (leafletMap) {
         try {
           leafletMap.setView([lat, lng], 15);
-          markers.forEach(function(m) {
-            var latlng = m.getLatLng();
-            if (latlng.lat === lat && latlng.lng === lng) { m.openPopup(); }
-          });
+          for (var mi2 = 0; mi2 < markers.length; mi2++) {
+            var latlng = markers[mi2].getLatLng();
+            if (latlng.lat === lat && latlng.lng === lng) { markers[mi2].openPopup(); }
+          }
         } catch(e) {}
       }
       try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { window.scrollTo(0, 0); }

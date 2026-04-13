@@ -344,6 +344,14 @@ var WEATHER_SERVICE = (function() {
       }
     }
 
+    // 行程超过10天才覆盖，直接用气候参考，不发API请求
+    var daysLeft = daysUntilTrip();
+    if (daysLeft > 10 && !forceRefresh) {
+      if (typeof WEATHER_DATA !== 'undefined' && WEATHER_DATA && WEATHER_DATA.days) {
+        return Promise.resolve({ days: WEATHER_DATA.days, source: 'climate', fresh: false });
+      }
+    }
+
     // 先快速探测API是否可用，不可用立即降级
     return probeApiAvailable().then(function(apiOk) {
       if (!apiOk) {

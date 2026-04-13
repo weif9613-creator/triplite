@@ -11,7 +11,7 @@
 //   D8 5/3  02:50 飞回上海
 // ============================================
 
-const TRIP_DATA = {
+var TRIP_DATA = {
   meta: {
     title: '澳门 · 芭提雅 · 曼谷',
     startDate: '2026-04-26',
@@ -884,7 +884,7 @@ const TRIP_DATA = {
 // ============================================
 // 地图数据（与新行程对应）
 // ============================================
-const MAP_DATA = {
+var MAP_DATA = {
   overview: {
     center: [15.0, 104.0],
     zoom: 5
@@ -1288,7 +1288,7 @@ const MAP_DATA = {
 // ============================================
 // Checklist 数据 v1.1 · 全面校验补充版
 // ============================================
-const CHECKLIST_DATA = [
+var CHECKLIST_DATA = [
   {
     id: 'documents',
     title: '📄 证件与订单',
@@ -1489,7 +1489,7 @@ const CHECKLIST_DATA = [
 // ============================================
 // 住宿数据（更新芭提雅提前、曼谷后置）
 // ============================================
-const STAY_DATA = {
+var STAY_DATA = {
   cities: [
     {
       id: 'macau',
@@ -1656,7 +1656,7 @@ const STAY_DATA = {
 // ============================================
 // 应急数据（不变）
 // ============================================
-const EMERGENCY_DATA = [
+var EMERGENCY_DATA = [
   {
     id: 'airport',
     title: '✈️ 机场与航班',
@@ -1769,30 +1769,30 @@ const EMERGENCY_DATA = [
 // 工具函数
 // ============================================
 function getCurrentDayIndex() {
-  const today = new Date();
-  const startDate = new Date(TRIP_DATA.meta.startDate);
-  const diffTime = today - startDate;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  var today = new Date();
+  var startDate = new Date(TRIP_DATA.meta.startDate);
+  var diffTime = today - startDate;
+  var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   if (diffDays < 0) return 0;
   if (diffDays >= TRIP_DATA.days.length) return TRIP_DATA.days.length - 1;
   return diffDays;
 }
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return `${d.getMonth()+1}/${d.getDate()}`;
+  var d = new Date(dateStr);
+  return (d.getMonth()+1) + '/' + d.getDate();
 }
 
 function getEnergyLabel(level) {
-  const labels = ['', '轻松', '中等', '高强度', '超高强度'];
+  var labels = ['', '轻松', '中等', '高强度', '超高强度'];
   return labels[level] || '中等';
 }
 
 function copyToClipboard(text) {
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => showToast('已复制 ✓'));
+    navigator.clipboard.writeText(text).then(function() { showToast('已复制 ✓'); });
   } else {
-    const el = document.createElement('textarea');
+    var el = document.createElement('textarea');
     el.value = text;
     document.body.appendChild(el);
     el.select();
@@ -1803,7 +1803,7 @@ function copyToClipboard(text) {
 }
 
 function showToast(msg) {
-  let toast = document.getElementById('copyToast');
+  var toast = document.getElementById('copyToast');
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'copyToast';
@@ -1812,13 +1812,13 @@ function showToast(msg) {
   }
   toast.textContent = msg;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
 }
 
 // ============================================
 // 天气数据（基于4–5月气候规律）
 // ============================================
-const WEATHER_DATA = {
+var WEATHER_DATA = {
 
   // ── 总体概述 ──
   summary: {

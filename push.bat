@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.9: 修复SW缓存-改为网络优先确保部署后刷新即见新内容-修复行程地图页空白-画笔按钮改emoji"
+git commit -m "v2.1: 修复涂鸦页文字放置不显示(JS换行语法错误)-修复getMergedDataURL读取×字符-修复togglePagesPanel等ES6语法"
 echo.
 
 echo [4/4] 推送到 GitHub...
