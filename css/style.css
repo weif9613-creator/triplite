@@ -58,33 +58,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 p { margin: 0; }
 h1,h2,h3,h4 { margin: 0; }
 
-/* === 涂鸦悬浮按钮 === */
-.note-fab {
-  position: fixed;
-  right: 16px;
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  z-index: 90;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
-  box-shadow: 0 4px 16px rgba(124,58,237,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: transform 0.15s, box-shadow 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.note-fab:active {
-  transform: scale(0.88);
-  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
-}
-.note-fab:hover { transform: scale(1.05); }
-
 /* === Header === */
 .app-header {
   position: fixed;
@@ -366,27 +339,6 @@ h1,h2,h3,h4 { margin: 0; }
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 12px;
-}
-/* 3列模式（7个按钮用） */
-.quick-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-/* 7个按钮时最后一个（预算）居中 */
-.quick-grid-3 > a:nth-child(7):last-child {
-  grid-column: 2;
-}
-/* 3列时按钮缩小内边距 */
-.quick-grid-3 .quick-btn {
-  padding: 13px 8px;
-}
-.quick-grid-3 .quick-btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  font-size: 17px;
-}
-.quick-grid-3 .quick-btn-label {
-  font-size: 11px;
 }
 .quick-btn {
   display: flex;

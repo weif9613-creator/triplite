@@ -11,16 +11,17 @@ function setActiveNav() {
     item.classList.remove('active');
     const href = item.getAttribute('href') || '';
     if (!href) return;
-    // 路径归一化：去掉 .html 后缀做对比
-    const hrefBase = href.replace(/\.html$/, '').replace(/^\.\//, '');
-    const pathBase = path.replace(/\.html$/, '').replace(/\/$/, '') || '/index';
-    // 首页特殊处理
-    const isHome = hrefBase === 'index' || hrefBase === '/' || hrefBase === '';
-    const pathIsHome = path === '/' || path.endsWith('/index.html') || path.endsWith('/index') || path === '';
-    if (isHome && pathIsHome) { item.classList.add('active'); return; }
-    // 其他页面：路径末尾匹配
-    if (!isHome && pathBase.endsWith('/' + hrefBase)) {
+    // 首页判断
+    if (href === '/' && (path === '/' || path.endsWith('/index.html') || path.endsWith('/'))) {
       item.classList.add('active');
+      return;
+    }
+    // 无后缀路径匹配（如 /checklist 匹配 /checklist 和 /checklist.html）
+    if (href !== '/') {
+      const base = href.replace(/\.html$/, '');
+      if (path === base || path === base + '.html' || path.startsWith(base + '?') || path.startsWith(base + '.html?')) {
+        item.classList.add('active');
+      }
     }
   });
 }

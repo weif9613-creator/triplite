@@ -25,47 +25,18 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="index.html"    class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="trip.html"     class="nav-item active"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="map.html"      class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
-    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="weather.html"  class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
-    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+    <a href="/"             class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="/trip"          class="nav-item active"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="/map"           class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="/checklist"     class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="/weather"       class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="/emergency"     class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
   <script>
     // 行程页逻辑
-
-    // ── 单日天气速览小卡（使用WEATHER_DATA气候参考）──
-    function renderDayWeatherBadge(dayIdx) {
-      if (typeof WEATHER_DATA === 'undefined' || !WEATHER_DATA.days) return '';
-      const w = WEATHER_DATA.days[dayIdx];
-      if (!w) return '';
-      const uvC = w.uvIndex >= 11 ? '#7c3aed' : w.uvIndex >= 8 ? '#ef4444' : w.uvIndex >= 6 ? '#f97316' : '#eab308';
-      const riskBg = w.riskLevel === 'danger'
-        ? 'background:#fee2e2;border-left:3px solid #ef4444;'
-        : w.riskLevel === 'medium'
-        ? 'background:#fef3c7;border-left:3px solid #f59e0b;'
-        : 'background:#f0fdf4;border-left:3px solid #16a34a;';
-      const mustDoTips = w.mustDo || '注意防晒补水';
-      return `
-        <div style="${riskBg}border-radius:12px;padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
-          <div style="font-size:26px;flex-shrink:0;">${w.weatherIcon || '🌡️'}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-              <span style="font-size:14px;font-weight:800;color:var(--text-primary);">${w.tempHigh}°/${w.tempLow}°</span>
-              <span style="font-size:12px;color:var(--text-secondary);">${w.weather || ''}</span>
-              <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${uvC}22;color:${uvC};font-weight:700;">UV ${w.uvIndex}</span>
-              <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-weight:600;">🌧️ ${w.rainChance}%</span>
-            </div>
-            <div style="font-size:11px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">⚡ ${mustDoTips}</div>
-          </div>
-          <a href="weather.html" style="font-size:11px;color:var(--primary-light);font-weight:700;flex-shrink:0;">详情→</a>
-        </div>`;
-    }
-
     function getQueryParam(name) {
       const url = new URL(location.href);
       return url.searchParams.get(name);
@@ -102,7 +73,7 @@
                     <div class="tl-title">${d.title}</div>
                   </div>
                 </div>
-                <div class="tl-subtitle" style="margin-bottom:6px;">${d.summary.length > 70 ? d.summary.substring(0, 70) + '…' : d.summary}</div>
+                <div class="tl-subtitle" style="margin-bottom:6px;">${d.summary.substring(0, 50)}...</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                   <span class="tl-badge ${d.cityCode}">${d.city}</span>
                   ${d.tags.map(t => `<span class="tag gray" style="font-size:10px;">${t}</span>`).join('')}
@@ -131,49 +102,14 @@
       });
     }
 
-    // 活动描述折叠：超过120字折叠，点击展开
-    function renderActivityDesc(desc) {
-      if (!desc) return '';
-      const LIMIT = 120;
-      if (desc.length <= LIMIT) {
-        return `<div class="activity-desc" style="white-space:pre-line;">${desc}</div>`;
-      }
-      const preview = desc.substring(0, LIMIT);
-      const uid = 'adesc_' + Math.random().toString(36).substr(2, 6);
-      return `
-        <div class="activity-desc" style="white-space:pre-line;">
-          <span id="${uid}_pre">${preview}…</span>
-          <span id="${uid}_full" style="display:none;">${desc}</span>
-          <span id="${uid}_btn" onclick="event.stopPropagation();toggleActDesc('${uid}')"
-            style="color:var(--primary-light);font-size:11px;cursor:pointer;font-weight:600;user-select:none;"> 展开▾</span>
-        </div>`;
-    }
-
-    function toggleActDesc(uid) {
-      const pre = document.getElementById(uid + '_pre');
-      const full = document.getElementById(uid + '_full');
-      const btn = document.getElementById(uid + '_btn');
-      if (!pre || !full || !btn) return;
-      const isExpanded = full.style.display !== 'none';
-      pre.style.display = isExpanded ? '' : 'none';
-      full.style.display = isExpanded ? 'none' : '';
-      btn.textContent = isExpanded ? ' 展开▾' : ' 收起▴';
-    }
-
-    // 警告文本中注入超链接
-    function injectLinks(text) {
-      return text
-        .replace(/royalgrandpalace\.th/g, '<a href="http://www.royalgrandpalace.th" target="_blank" rel="noopener" style="color:var(--primary-light);font-weight:600;">royalgrandpalace.th ↗</a>')
-        .replace(/tourismthailand\.org/g, '<a href="https://www.tourismthailand.org" target="_blank" rel="noopener" style="color:var(--primary-light);font-weight:600;">tourismthailand.org ↗</a>')
-        .replace(/tdac\.immigration\.go\.th/g, '<a href="https://tdac.immigration.go.th" target="_blank" rel="noopener" style="color:var(--primary-light);font-weight:600;">tdac.immigration.go.th ↗</a>')
-        .replace(/bts\.co\.th\/eng\/routemap/g, '<a href="https://www.bts.co.th/eng/routemap" target="_blank" rel="noopener" style="color:var(--primary-light);font-weight:600;">BTS路线图 ↗</a>');
-    }
-
     function showDayDetail(dayId) {
       const day = TRIP_DATA.days.find(d => d.id === dayId);
       if (!day) return;
       
       const main = document.getElementById('appMain');
+      
+      const periodColors = { am: 'am', pm: 'pm', night: 'night' };
+      const typeColors = { must: 'danger', suggest: 'suggest', optional: 'optional' };
       
       main.innerHTML = `
         <!-- 返回按钮 -->
@@ -197,9 +133,6 @@
           </div>
         </div>
         
-        <!-- 当日天气速览 -->
-        ${renderDayWeatherBadge(day.id - 1)}
-        
         <!-- 今日亮点 -->
         ${day.highlights.length > 0 ? `
         <div class="card">
@@ -222,7 +155,7 @@
                 <div class="activity-dot ${a.type}"></div>
                 <div style="flex:1;">
                   <div class="activity-name">${a.name}</div>
-                  ${renderActivityDesc(a.desc)}
+                  <div class="activity-desc" style="white-space:pre-line;">${a.desc}</div>
                   <div class="activity-meta">
                     ${a.type === 'must' ? '<span class="tag red" style="font-size:10px;">必做</span>' : ''}
                     ${a.type === 'suggest' ? '<span class="tag amber" style="font-size:10px;">建议</span>' : ''}
@@ -244,7 +177,7 @@
               <div class="alert-icon">${w.type === 'danger' ? '🚨' : w.type === 'warning' ? '⚠️' : w.type === 'success' ? '✅' : 'ℹ️'}</div>
               <div class="alert-content">
                 <div class="alert-title">${w.title}</div>
-                <div class="alert-text" style="white-space:pre-line;">${injectLinks(w.text)}</div>
+                <div class="alert-text" style="white-space:pre-line;">${w.text}</div>
               </div>
             </div>
           `).join('')}
@@ -299,8 +232,5 @@
       if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
     });
   </script>
-
-  <!-- 涂鸦悬浮按钮 -->
-  <a href="note.html" class="note-fab" title="涂鸦记录"><i class="fas fa-pen-nib"></i></a>
 </body>
 </html>

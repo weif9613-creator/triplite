@@ -55,12 +55,12 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="index.html"    class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="trip.html"     class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="map.html"      class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
-    <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="weather.html"  class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
-    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+    <a href="/"             class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="/trip"          class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="/map"           class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="/checklist"     class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="/weather"       class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="/emergency"     class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
   <script src="js/data.js"></script>
@@ -71,36 +71,36 @@
     // 每家酒店的周边距离数据（补充）
     const HOTEL_NEARBY = {
       // ── 澳门 ──
-      '艺居酒店（已选·推荐）': {
-        walk: ['官也街手信街 步行15分钟', '龙环葡韵 步行20分钟', '便利店/餐厅 步行5分钟'],
-        taxi:  ['澳门国际机场 打的约5分钟/约30–40澳门元', '氹仔旧城区 打的约8分钟', '路氹城美食广场 打的约10分钟'],
-        note: '下飞机→酒店最快最近，明天赶飞机也省事，全程氹仔岛活动无需过桥'
+      '澳门喜来登大酒店': {
+        walk: ['路氹城美食广场 步行4分钟', '银河商场 步行5分钟', '便利店 步行2分钟'],
+        taxi:  ['大三巴牌坊 车程20分钟', '议事亭前地 车程22分钟', '澳门机场 车程10分钟'],
+        note: '机场穿梭巴士：北出口停车场，11:00–21:00，每15–20分钟'
       },
-      '澳门机场美居酒店': {
-        walk: ['澳门国际机场航站楼 步行5分钟（直连）', '便利店 步行5分钟'],
-        taxi:  ['官也街 打的约10分钟', '龙环葡韵 打的约12分钟', '路氹城 打的约15分钟'],
-        note: '走廊直通机场，早班飞机最方便，隔音良好'
+      '澳门万豪酒店': {
+        walk: ['四季购物中心 步行3分钟', '便利店 步行3分钟', '路氹城大街 步行5分钟'],
+        taxi:  ['大三巴牌坊 车程20分钟', '澳门机场 车程10分钟'],
+        note: '毗邻四季，周边餐厅丰富，设施完善'
       },
-      '氹仔精品民宿/商务酒店（省钱档）': {
-        walk: ['官也街 步行5–10分钟', '便利店 步行3分钟', '氹仔本地餐厅 步行5分钟'],
-        taxi:  ['澳门机场 打的约10分钟', '龙环葡韵 步行或打的约10分钟'],
-        note: '官也街购物最方便，预算有限的首选，把省下的钱留给泰国'
+      '路氹城商务酒店（省钱档）': {
+        walk: ['便利店 步行5分钟', '餐厅 步行5–10分钟'],
+        taxi:  ['大三巴牌坊 车程20–25分钟', '澳门机场 车程8–12分钟'],
+        note: '仅作睡觉用途，位置交通均可接受'
       },
       // ── 芭提雅 ──
-      'Centara Avenue Hotel Pattaya': {
-        walk: ['Beach Road海滩 步行5分钟', '7-Eleven 步行1分钟', '街边泰餐 步行3分钟', 'Central Festival商场 步行8分钟'],
-        taxi:  ['Bali Hai码头 双条车20฿约15分钟', '蒂芙尼秀场 Grab约50฿5分钟', '真理寺 Grab约60฿10分钟'],
-        note: '位置最优：海滩+码头+秀场三者最均衡，首推'
+      'Aya Boutique Hotel Pattaya': {
+        walk: ['芭提雅海滩 步行8分钟', '7-Eleven 步行2分钟', '街边泰餐 步行3分钟'],
+        taxi:  ['Bali Hai码头 双条车/Grab 15–20分钟约50฿', 'Central Festival商场 步行10分钟', '真理寺 Grab约15分钟'],
+        note: '双条车站就在Beach Road，去码头和格兰岛方便'
       },
-      'Amara Bangkok Hotel Pattaya': {
-        walk: ['Beach Road海滩 步行8分钟', '便利店 步行3分钟', 'Big C超市 步行10分钟'],
-        taxi:  ['Bali Hai码头 Grab约70฿10分钟', '蒂芙尼秀场 Grab约60฿8分钟', '真理寺 Grab约40฿6分钟'],
-        note: '泳池是加分项，格兰岛回来直接泡；去码头建议Grab省时间'
+      'Amara Bangkok Pattaya': {
+        walk: ['芭提雅海滩 步行10分钟', '便利店 步行3分钟', 'Central Festival 步行8分钟'],
+        taxi:  ['Bali Hai码头 双条车约20–25分钟', '真理寺 Grab约8分钟', 'Nang Nual餐厅 Grab约15分钟'],
+        note: '泳池是加分项，出海晒完回来可直接跳泳池'
       },
       'Flipper Lodge Hotel': {
-        walk: ['Beach Road海滩 步行8分钟', '餐厅 步行3分钟', '7-Eleven 步行2分钟'],
-        taxi:  ['Bali Hai码头 双条车20฿约20分钟', '蒂芙尼秀场 Grab约50฿5分钟', 'Central Festival 步行8分钟'],
-        note: '省钱首选，位置与首推相近，省下的钱够多吃两顿海鲜'
+        walk: ['芭提雅海滩 步行10分钟', '餐厅 步行5分钟', '7-Eleven 步行3分钟'],
+        taxi:  ['Bali Hai码头 双条车约20分钟', 'Central Festival 步行10分钟'],
+        note: '最省钱选项，步行圈餐厅丰富，去Bali Hai需要双条车'
       },
       // ── 曼谷 ──
       'Grande Centre Point Terminal 21': {
@@ -135,15 +135,15 @@
           <div style="display:flex;flex-direction:column;gap:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
               <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/26（1晚）</span>
-              <span>🎰 澳门 · <strong style="color:#86efac;">✅ 艺居酒店（已定）</strong></span>
+              <span>🎰 澳门 · 氹仔/路氹区</span>
             </div>
             <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
               <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/27–4/28（2晚）</span>
-              <span>🏖️ 芭提雅 · Central Beach Road沿线</span>
+              <span>🏖️ 芭提雅 · Central/North区靠海</span>
             </div>
             <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">
               <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/29–5/1（3晚）</span>
-              <span>🏙️ 曼谷 · Asok/Sukhumvit BTS步行圈</span>
+              <span>🏙️ 曼谷 · Asok/Sukhumvit区</span>
             </div>
           </div>
         </div>
@@ -206,64 +206,27 @@
       const cityData = STAY_DATA.cities.find(c => c.id === cityId);
       const content = document.getElementById('stayCityContent');
       if (!content || !cityData) return;
-
-      // 澳门已定好，单独处理
-      if (cityId === 'macau') {
-        content.innerHTML = `
-          <div class="hero-card" style="margin-bottom:14px;">
-            <div style="font-size:12px;opacity:0.75;margin-bottom:6px;font-weight:600;">4/26（1晚）· 氹仔岛</div>
-            <div style="font-size:20px;font-weight:800;margin-bottom:8px;">🎰 艺居酒店 · 已定好</div>
-            <div style="font-size:13px;opacity:0.85;line-height:1.7;">位于氹仔岛，距澳门国际机场约5分钟，下飞机直接到，明天早上出发也方便。今天只在氹仔活动，不过桥。</div>
-          </div>
-          <div class="alert-card success" style="margin-bottom:10px;">
-            <div class="alert-icon">✅</div>
-            <div class="alert-content">
-              <div class="alert-title">住宿已定，今天这样走</div>
-              <div class="alert-text">① 落地→打的5分钟到艺居酒店放行李<br>② 步行或打的→官也街买手信（步行15分钟）<br>③ 官也街步行10分钟→龙环葡韵拍照<br>④ 打的回路氹城吃晚饭→22:30前回酒店休息</div>
-            </div>
-          </div>
-          <div class="alert-card info">
-            <div class="alert-icon">✈️</div>
-            <div class="alert-content">
-              <div class="alert-title">明天出发提醒</div>
-              <div class="alert-text">艺居酒店距机场极近，步行或打的5分钟。出发前把护照、TDAC二维码截图、机票确认邮件放好随身包，提前1.5小时到机场。</div>
-            </div>
-          </div>
-        `;
-        return;
-      }
       
       content.innerHTML = `
         <!-- 区域总结卡 -->
         <div class="hero-card" style="margin-bottom:14px;">
           <div style="font-size:12px;opacity:0.75;margin-bottom:6px;font-weight:600;">${cityData.dates} · ${cityData.stayNights}晚</div>
-          <div style="font-size:20px;font-weight:800;margin-bottom:6px;">${cityData.emoji} ${cityData.name} · ${cityData.area}</div>
-          <div style="font-size:13px;opacity:0.85;line-height:1.7;margin-bottom:12px;">${cityData.reason}</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:6px;">${cityData.emoji} ${cityData.name} · ${cityData.area}</div>
+          <div style="font-size:13px;opacity:0.85;line-height:1.6;margin-bottom:12px;">${cityData.reason}</div>
           <div class="hero-tags">
             <span class="hero-tag">预算 ${cityData.budgetRange}</span>
             <span class="hero-tag">${cityData.stayNights}晚</span>
           </div>
         </div>
-
-        <!-- 每日行程路线 -->
-        ${cityData.schedule ? `
-        <div class="section-label">📅 住这里·每天怎么走</div>
-        <div style="margin-bottom:14px;">
-          ${cityData.schedule.map((s, i) => `
-            <div style="background:var(--bg-card);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:4px solid ${i===0?'#0ea5e9':'#10b981'};">
-              <div style="font-size:12px;font-weight:800;color:${i===0?'#0369a1':'#059669'};margin-bottom:6px;">${s.time}</div>
-              <div style="font-size:12px;color:var(--text-primary);line-height:1.9;">${s.plan.replace(/→/g,' <span style="color:#94a3b8;">→</span> ')}</div>
-            </div>
-          `).join('')}
-        </div>
-        ` : ''}
         
-        <!-- 酒店对比 -->
-        <div class="section-label">🏨 候选酒店（${cityData.hotels.length}家对比）</div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">价格为参考均价，以预订平台实时为准。<strong>优先选"免费取消"房型。</strong></div>
+        <!-- 酒店列表标题 -->
+        <div class="section-label">候选酒店（${cityData.hotels.length}家参考）</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">价格为参考均价，以预订平台实时为准。<strong>推荐选"免费取消"房型。</strong></div>
         
+        <!-- 酒店卡片列表 -->
         ${cityData.hotels.map((hotel, idx) => renderHotelCard(hotel, idx, cityData.hotels.length)).join('')}
         
+        <!-- 该城市特别说明 -->
         ${getCitySpecialNote(cityId)}
       `;
     }
@@ -305,11 +268,17 @@
               ${hotel.pros.map(p => `<div class="hotel-pro">${p}</div>`).join('')}
             </div>
 
-            <!-- 实际出行路线 -->
-            ${hotel.route ? `
-            <div style="background:#f0f9ff;border-radius:10px;padding:10px 12px;margin-top:10px;border-left:3px solid #0ea5e9;">
-              <div style="font-size:11px;font-weight:800;color:#0369a1;margin-bottom:6px;">🗺️ 从这里出发怎么走</div>
-              <div style="font-size:12px;color:#1e3a5f;line-height:1.9;white-space:pre-line;">${hotel.route}</div>
+            <!-- 周边距离明细 -->
+            ${nearby ? `
+            <div style="background:var(--bg);border-radius:10px;padding:10px;margin-top:8px;">
+              <div class="hotel-nearby-title">📍 周边实际距离</div>
+              <div class="dist-row">
+                ${nearby.walk.map(w => `<span class="dist-chip walk"><span class="d-icon">🚶</span>${w}</span>`).join('')}
+              </div>
+              <div class="dist-row">
+                ${nearby.taxi.map(t => `<span class="dist-chip taxi"><span class="d-icon">🚗</span>${t}</span>`).join('')}
+              </div>
+              ${nearby.note ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:6px;padding:6px;background:rgba(0,0,0,0.04);border-radius:6px;">💡 ${nearby.note}</div>` : ''}
             </div>
             ` : ''}
 
@@ -381,23 +350,20 @@
         `,
         pattaya: `
           <div class="alert-card info" style="margin-top:4px;">
-            <div class="alert-icon">💃</div>
+            <div class="alert-icon">⛵</div>
             <div class="alert-content">
-              <div class="alert-title">蒂芙尼秀 · 提前购票攻略</div>
-              <div class="alert-text">
-                <strong>建议在出发前用Klook购票</strong>，比现场便宜约100–200฿：<br>
-                • Klook搜"Tiffany's Show Pattaya"，选19:30场<br>
-                • 门票约500–700฿/人（含1杯饮料）<br>
-                • 秀场地址：Pattaya 2nd Road北段，从Central区酒店Grab约50฿5分钟<br>
-                • 演出约75分钟，21:15结束，之后可顺路去Walking Street入口逛逛
-              </div>
+              <div class="alert-title">芭提雅住宿 · 为什么选中/北芭提雅</div>
+              <div class="alert-text">你的核心景点是格兰岛（Koh Larn）。出发码头Bali Hai在<strong>南芭提雅</strong>，从中/北区去码头：<br>
+                • 双条车约20–30泰铢，约20分钟<br>
+                • Grab约50–80泰铢，约10分钟<br>
+                住中/北芭提雅：去海滩步行，去码头打车，两边都照顾到。</div>
             </div>
           </div>
           <div class="alert-card warning" style="margin-top:8px;">
             <div class="alert-icon">📅</div>
             <div class="alert-content">
               <div class="alert-title">4/29上午退房节奏</div>
-              <div class="alert-text">上午可选真理寺参观（08:00出发，10:30结束，Grab约50฿），12:00前退房整理行李，午饭后出发曼谷。<strong>包车直达约1.5–2小时900–1200฿</strong>，或北站大巴+BTS约2.5–3小时80–130฿。</div>
+              <div class="alert-text">上午可选真理寺（08:00–10:30），12:00前退房，午饭后出发去曼谷Asok。包车直达约1.5–2小时，或北站大巴+BTS约2.5–3小时。</div>
             </div>
           </div>
         `
@@ -412,8 +378,5 @@
       if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
     });
   </script>
-
-  <!-- 涂鸦悬浮按钮 -->
-  <a href="note.html" class="note-fab" title="涂鸦记录"><i class="fas fa-pen-nib"></i></a>
 </body>
 </html>

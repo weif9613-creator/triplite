@@ -52,7 +52,7 @@ function renderHome() {
     <div class="card fade-in">
       <div class="card-header">
         <div class="card-title"><span class="icon">📋</span>今日要点</div>
-        <a href="trip.html?day=${today.id}" style="font-size:13px;color:var(--primary-light);font-weight:600;">查看详情 →</a>
+        <a href="/trip?day=${today.id}" style="font-size:13px;color:var(--primary-light);font-weight:600;">查看详情 →</a>
       </div>
       <div class="step-list">
         ${today.times.map(t => t.activities.filter(a => a.type === 'must').map(a => `
@@ -109,37 +109,29 @@ function renderHome() {
     <!-- 快捷按钮 -->
     <div class="section-label">快捷入口</div>
     <div class="quick-grid fade-in">
-      <a href="trip.html" class="quick-btn">
+      <a href="/trip" class="quick-btn">
         <div class="quick-btn-icon blue"><i class="fas fa-route"></i></div>
         <span class="quick-btn-label">查看行程</span>
       </a>
-      <a href="map.html" class="quick-btn">
+      <a href="/map" class="quick-btn">
         <div class="quick-btn-icon teal"><i class="fas fa-map-marker-alt"></i></div>
         <span class="quick-btn-label">地图路线</span>
       </a>
-      <a href="checklist.html" class="quick-btn">
+      <a href="/checklist" class="quick-btn">
         <div class="quick-btn-icon amber"><i class="fas fa-check-square"></i></div>
         <span class="quick-btn-label">行前清单</span>
       </a>
-      <a href="weather.html" class="quick-btn">
+      <a href="/weather" class="quick-btn">
         <div class="quick-btn-icon" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);"><i class="fas fa-cloud-sun" style="color:white;"></i></div>
         <span class="quick-btn-label">天气提醒</span>
       </a>
-      <a href="stay.html" class="quick-btn">
+      <a href="/stay" class="quick-btn">
         <div class="quick-btn-icon" style="background:linear-gradient(135deg,#059669,#10b981);"><i class="fas fa-bed" style="color:white;"></i></div>
         <span class="quick-btn-label">住宿建议</span>
       </a>
-      <a href="emergency.html" class="quick-btn">
+      <a href="/emergency" class="quick-btn">
         <div class="quick-btn-icon rose"><i class="fas fa-shield-alt"></i></div>
         <span class="quick-btn-label">应急帮助</span>
-      </a>
-      <a href="budget.html" class="quick-btn">
-        <div class="quick-btn-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b);"><i class="fas fa-coins" style="color:white;"></i></div>
-        <span class="quick-btn-label">费用预算</span>
-      </a>
-      <a href="note.html" class="quick-btn">
-        <div class="quick-btn-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);"><i class="fas fa-pen-nib" style="color:white;"></i></div>
-        <span class="quick-btn-label">涂鸦笔记</span>
       </a>
     </div>
     
@@ -148,7 +140,7 @@ function renderHome() {
     <div class="timeline fade-in">
       ${TRIP_DATA.days.map((d, i) => `
         <div class="tl-item ${i < dayIdx ? 'done' : i === dayIdx ? 'current' : 'future'}">
-          <div class="tl-card ${i === dayIdx ? 'current' : ''}" onclick="location.href='trip.html?day=${d.id}'">
+          <div class="tl-card ${i === dayIdx ? 'current' : ''}" onclick="location.href='/trip?day=${d.id}'">
             <div class="tl-date">${d.shortDate} ${d.emoji}</div>
             <div class="tl-title">${d.title}</div>
             <div class="tl-subtitle">${d.city}</div>
@@ -163,8 +155,8 @@ function renderHome() {
     <div class="alert-card info fade-in" style="margin-top:4px;">
       <div class="alert-icon">📲</div>
       <div class="alert-content">
-        <div class="alert-title">TDAC提醒（4/25–4/26完成，抵泰前72小时内有效）</div>
-        <div class="alert-text">入境泰国前必须在线填写电子入境卡，建议4/25–4/26之间完成（确保在72小时窗口内）。<br><a href="https://tdac.immigration.go.th" target="_blank" style="color:var(--primary-light);font-weight:600;">点击前往官网填写 →</a></div>
+        <div class="alert-title">TDAC提醒（4/24–4/26完成）</div>
+        <div class="alert-text">入境泰国前必须在线填写电子入境卡，建议4/24–4/26之间完成。<br><a href="https://tdac.immigration.go.th" target="_blank" style="color:var(--primary-light);font-weight:600;">点击前往官网填写 →</a></div>
       </div>
     </div>
     
@@ -187,24 +179,26 @@ function renderTodayWeather(dayIdx) {
   const riskTc = w.riskLevel === 'danger' ? '#b91c1c' : w.riskLevel === 'medium' ? '#92400e' : '#065f46';
   const uvC = w.uvIndex >= 11 ? '#7c3aed' : w.uvIndex >= 8 ? '#ef4444' : w.uvIndex >= 6 ? '#f97316' : w.uvIndex >= 3 ? '#eab308' : '#22c55e';
 
-  // 异步更新（如有天气服务），不延迟直接调用，API快速探测失败则立即fallback
+  // 异步更新（如有天气服务）
   if (typeof WEATHER_SERVICE !== 'undefined') {
-    WEATHER_SERVICE.getWeather().then(result => {
-      const liveW = result.days && result.days[dayIdx];
-      if (!liveW) return;
-      const card = document.getElementById('home-weather-card');
-      if (!card) return;
-      const isApi = result.source === 'api' || result.source === 'cache';
-      const rc2 = liveW.riskLevel === 'danger'
-        ? 'background:#fee2e2;border-left:4px solid #ef4444;'
-        : liveW.riskLevel === 'medium'
-        ? 'background:#fef3c7;border-left:4px solid #f59e0b;'
-        : 'background:#d1fae5;border-left:4px solid #10b981;';
-      const tc2 = liveW.riskLevel === 'danger' ? '#b91c1c' : liveW.riskLevel === 'medium' ? '#92400e' : '#065f46';
-      const uvc2 = liveW.uvIndex >= 11 ? '#7c3aed' : liveW.uvIndex >= 8 ? '#ef4444' : liveW.uvIndex >= 6 ? '#f97316' : liveW.uvIndex >= 3 ? '#eab308' : '#22c55e';
-      card.style.cssText = `${rc2}border-radius:14px;margin-bottom:12px;padding:14px;`;
-      card.innerHTML = buildWeatherCardInner(liveW, tc2, uvc2, isApi);
-    }).catch(()=>{});
+    setTimeout(() => {
+      WEATHER_SERVICE.getWeather().then(result => {
+        const liveW = result.days && result.days[dayIdx];
+        if (!liveW) return;
+        const card = document.getElementById('home-weather-card');
+        if (!card) return;
+        const isApi = result.source === 'api' || result.source === 'cache';
+        const rc2 = liveW.riskLevel === 'danger'
+          ? 'background:#fee2e2;border-left:4px solid #ef4444;'
+          : liveW.riskLevel === 'medium'
+          ? 'background:#fef3c7;border-left:4px solid #f59e0b;'
+          : 'background:#d1fae5;border-left:4px solid #10b981;';
+        const tc2 = liveW.riskLevel === 'danger' ? '#b91c1c' : liveW.riskLevel === 'medium' ? '#92400e' : '#065f46';
+        const uvc2 = liveW.uvIndex >= 11 ? '#7c3aed' : liveW.uvIndex >= 8 ? '#ef4444' : liveW.uvIndex >= 6 ? '#f97316' : liveW.uvIndex >= 3 ? '#eab308' : '#22c55e';
+        card.style.cssText = `${rc2}border-radius:14px;margin-bottom:12px;padding:14px;`;
+        card.innerHTML = buildWeatherCardInner(liveW, tc2, uvc2, isApi);
+      }).catch(()=>{});
+    }, 500);
   }
 
   return `<div id="home-weather-card" class="fade-in" style="${riskStyle}border-radius:14px;margin-bottom:12px;padding:14px;">
@@ -235,7 +229,7 @@ function buildWeatherCardInner(w, riskTc, uvC, isLive) {
     <div style="font-size:12px;background:rgba(255,255,255,0.6);border-radius:8px;padding:7px 10px;color:var(--text-primary);line-height:1.6;">
       <strong>⚡ 今日必做：</strong>${w.mustDo}
     </div>
-    <a href="weather.html" style="display:block;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:${riskTc};padding:6px;border-radius:8px;background:rgba(255,255,255,0.5);">查看全程8天天气详情 →</a>
+    <a href="/weather" style="display:block;margin-top:8px;text-align:center;font-size:12px;font-weight:700;color:${riskTc};padding:6px;border-radius:8px;background:rgba(255,255,255,0.5);">查看全程8天天气详情 →</a>
   `;
 }
 

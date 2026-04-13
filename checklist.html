@@ -25,12 +25,12 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="index.html"    class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="trip.html"     class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="map.html"      class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
-    <a href="checklist.html" class="nav-item active"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="weather.html"  class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
-    <a href="emergency.html" class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
+    <a href="/"             class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="/trip"          class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="/map"           class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="/checklist"     class="nav-item active"><i class="fas fa-check-square"></i><span>清单</span></a>
+    <a href="/weather"       class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="/emergency"     class="nav-item"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
   <script src="js/data.js"></script>
@@ -92,7 +92,6 @@
     const PHASE_MAP = {
       // 证件
       'passport': 'before7',
-      'hk-macau-permit': 'before7',
       'passport-photo': 'before7',
       'flight-macau': 'before7',
       'flight-bkk': 'before7',
@@ -100,19 +99,13 @@
       'hotel-macau': 'before7',
       'hotel-pattaya': 'before7',
       'hotel-bkk': 'before7',
-      'travel-insurance': 'before7',
       'id-card': 'before7',
       // 入境
-      'macau-entry': 'before7',
-      'macau-departure': 'before3',
       'tdac': 'before3',
       'tdac-qr': 'before3',
-      'thai-border-qa': 'before3',
-      'return-china-customs': 'before7',
-      'customs-quota': 'before7',
+      'macau-entry': 'before7',
       'pattaya-address': 'before3',
       'return-ticket': 'before3',
-      'customs-limit': 'before3',
       // 网络
       'esim': 'before3',
       'grab': 'before7',
@@ -120,10 +113,7 @@
       'translate-app': 'before3',
       'hotel-wifi': 'during',
       'emergency-number': 'before3',
-      'emergency-contacts': 'before3',
       // 支付
-      'rate-anchor': 'before7',
-      'alipay-intl': 'before7',
       'visa-card': 'before7',
       'bank-notice': 'before7',
       'cash-baht': 'before3',
@@ -131,54 +121,26 @@
       'backup-card': 'before7',
       'exchange-rate': 'before7',
       // 行李
-      'luggage-weight': 'before3',
-      // App（出境前）
-      'app-klook': 'before3',
-      'app-weather': 'before3',
-      // 安全
-      'valuables-split': 'before7',
-      'scam-awareness': 'before7',
-      'water-safety': 'before7',
-      'songthaew-usage': 'before7',
-      'thai-ordering-phrases': 'before7',
-      'dengue-protection': 'before7',
-      'kohlan-valuables': 'before3',
-      'tipping-guide': 'before7',
-      // 行李
       'light-clothes': 'before7',
       'temple-outfit': 'before3',
       'sandals': 'before7',
       'sneakers': 'before7',
       'swimwear': 'before3',
-      'snorkel-gear': 'before3',
       'sunscreen': 'before3',
       'sunglasses': 'before7',
       'hat': 'before7',
       'charger': 'day0',
       'powerbank': 'day0',
-      'mini-fan': 'before3',
-      'waterproof-phone-case': 'before3',
       'medicine': 'before3',
-      'laundry-supplies': 'before3',
       'quick-dry-towel': 'before3',
-      'cooling-spray': 'before3',
-      'daily-bag-checklist': 'before3',
-      'depart-day-check': 'day0',
-      'photo-storage': 'before7',
-      // App（出境前与途中）
+      // App
       'app-grab': 'before7',
       'app-googlemaps': 'before7',
       'app-translate': 'before7',
       'app-booking': 'before7',
       'app-flightradar': 'before7',
-      'app-bolt': 'before7',
-      'app-grab-pass': 'during',
-      'app-indrive': 'before7',
-      'app-superrich': 'before7',
       'app-xe': 'before7',
-      'app-triplite': 'before3',
-      // 支付（补充）
-      'tax-refund': 'before7'
+      'app-triplite': 'before3'
     };
 
     function getTotalStats() {
@@ -247,12 +209,12 @@
         <div class="card" style="margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <div>
-              <div data-pct style="font-size:24px;font-weight:800;color:${pct === 100 ? 'var(--success)' : 'var(--primary-light)'};">${pct}%</div>
+              <div style="font-size:24px;font-weight:800;color:${pct === 100 ? 'var(--success)' : 'var(--primary-light)'};">${pct}%</div>
               <div style="font-size:12px;color:var(--text-secondary);">准备完成度</div>
             </div>
             <div style="text-align:right;">
-              <div data-must-progress style="font-size:15px;font-weight:700;color:var(--danger);">必做项 ${stats.mustDone}/${stats.must}</div>
-              <div data-all-progress style="font-size:12px;color:var(--text-secondary);">全部项 ${stats.checked}/${stats.total}</div>
+              <div style="font-size:15px;font-weight:700;color:var(--danger);">必做项 ${stats.mustDone}/${stats.must}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">全部项 ${stats.checked}/${stats.total}</div>
             </div>
           </div>
           <div class="progress-bar">
@@ -295,7 +257,7 @@
           <div class="alert-icon">🚨</div>
           <div class="alert-content">
             <div class="alert-title">还有 ${stats.must - stats.mustDone} 项必做事项未完成</div>
-            <div class="alert-text">特别注意：TDAC入境卡须在4/27抵达泰国前72小时内（建议4/25–4/26）填写，过早会失效；护照有效期需在5/3之后还剩6个月以上（即2026年11月3日之后）。</div>
+            <div class="alert-text">特别注意：TDAC入境卡须在4/27抵达泰国前填写；护照有效期需在5/3之后还剩6个月以上。</div>
           </div>
         </div>
         ` : `
@@ -313,35 +275,27 @@
 
         <!-- 底部重要提示 -->
         <div class="card" style="margin-top:8px;border-left:4px solid var(--danger);">
-          <div class="card-title" style="margin-bottom:10px;"><span class="icon">⚡</span>出发前最重要的7件事</div>
+          <div class="card-title" style="margin-bottom:10px;"><span class="icon">⚡</span>出发前最重要的5件事</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
               <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span>
-              <span><strong>🔴 港澳通行证（回乡证）</strong> – 进澳门必须用，不是身份证！没有的立刻去派出所办急件（3个工作日）</span>
+              <span><strong>TDAC电子入境卡</strong> – 4/27抵达曼谷前必须填，官网 tdac.immigration.go.th，全英文填写</span>
             </div>
             <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
               <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span>
-              <span><strong>🔴 TDAC电子入境卡</strong> – 4/27抵达泰国前72小时内填（推荐4/25–26在澳门填），官网 <a href="https://tdac.immigration.go.th" target="_blank" rel="noopener" style="color:#b45309;font-weight:700;">tdac.immigration.go.th ↗</a>，全英文填写，截图QR码</span>
+              <span><strong>护照检查</strong> – 有效期必须在2026年11月3日之后（还剩6个月+）</span>
             </div>
             <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span>
-              <span><strong>护照有效期</strong> – 必须在2026年11月3日之后（还剩6个月+），不够立刻换新！</span>
+              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span>
+              <span><strong>Grab安装并绑卡</strong> – 整趟旅行的打车核心，提前注册，不然到了不能用</span>
             </div>
             <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
               <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</span>
-              <span><strong>Grab安装并绑卡</strong> – 整趟旅行的打车核心，提前注册+绑定信用卡，到了没网注册不了</span>
+              <span><strong>银行卡开通境外消费</strong> – 手机银行App里操作，否则刷卡会被拒</span>
             </div>
             <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</span>
-              <span><strong>银行卡开通境外消费</strong> – 手机银行App里操作，否则境外刷卡会被风控拒绝</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">6</span>
-              <span><strong>出境网络方案</strong> – eSIM/国际漫游/泰国落地买SIM，三选一，提前确认，否则落地没网Grab都用不了</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">7</span>
-              <span><strong>4/30大皇宫着装</strong> – 提前从行李箱找出长裤/过膝裙，单独放好备用。现场借衣要排30–60分钟！</span>
+              <span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</span>
+              <span><strong>4/30大皇宫着装</strong> – 提前从行李箱找出长裤/过膝裙，单独放好备用</span>
             </div>
           </div>
         </div>
@@ -402,7 +356,7 @@
 
           <div style="display:flex;align-items:center;gap:8px;background:#fef3c7;border-radius:8px;padding:8px 10px;">
             <span style="font-size:16px;">💡</span>
-            <span style="font-size:12px;color:#92400e;">查看<a href="weather.html" style="color:#b45309;font-weight:700;">天气页面</a>获取逐日天气详情和防暑防晒完整指南 →</span>
+            <span style="font-size:12px;color:#92400e;">查看<a href="/weather" style="color:#b45309;font-weight:700;">天气页面</a>获取逐日天气详情和防暑防晒完整指南 →</span>
           </div>
         </div>
         
@@ -436,7 +390,7 @@
         if (itemsToShow.length === 0) return '';
         
         return `
-          <div class="checklist-group" data-group-id="${group.id}">
+          <div class="checklist-group">
             <div class="checklist-group-header" onclick="toggleGroup('${group.id}')">
               <div class="checklist-group-title">
                 <span style="font-size:18px;">${group.icon}</span>
@@ -455,145 +409,43 @@
       }).join('');
     }
     
-    // 描述文字中注入超链接
-    function injectDescLinks(text) {
-      return text
-        .replace(/tdac\.immigration\.go\.th/g, '<a href="https://tdac.immigration.go.th" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--primary-light);font-weight:600;">tdac.immigration.go.th ↗</a>')
-        .replace(/royalgrandpalace\.th/g, '<a href="http://www.royalgrandpalace.th" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--primary-light);font-weight:600;">royalgrandpalace.th ↗</a>')
-        .replace(/bts\.co\.th\/eng\/routemap/g, '<a href="https://www.bts.co.th/eng/routemap" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--primary-light);font-weight:600;">BTS路线图 ↗</a>');
-    }
-
     function renderCheckItem(item) {
       const isChecked = checkedState[item.id];
       const phase = PHASE_MAP[item.id] || 'before7';
       const phaseInfo = getPhaseLabel(phase);
-      // desc 超过100字时折叠，避免大量长文本同时渲染影响性能
-      const descHtml = item.desc ? (() => {
-        const processedDesc = injectDescLinks(item.desc);
-        const short = item.desc.length > 100;
-        const preview = short ? item.desc.substring(0, 100) + '…' : item.desc;
-        const previewProcessed = injectDescLinks(preview);
-        if (!short) return `<div class="check-desc" style="white-space:pre-line;">${processedDesc}</div>`;
-        return `
-          <div class="check-desc" style="white-space:pre-line;">
-            <span class="desc-preview">${previewProcessed}</span>
-            <span class="desc-full" style="display:none;">${processedDesc}</span>
-            <span class="desc-toggle" onclick="event.stopPropagation();toggleDesc(this)" style="color:var(--primary-light);font-size:11px;cursor:pointer;font-weight:600;"> 展开▾</span>
-          </div>`;
-      })() : '';
       return `
         <div class="check-item ${isChecked ? 'checked' : ''} ${item.must ? 'must-item' : ''}" 
-             data-item-id="${item.id}"
              onclick="toggleItem('${item.id}')">
           <div class="check-box">
             ${isChecked ? '<i class="fas fa-check"></i>' : ''}
           </div>
-          <div style="flex:1;min-width:0;">
+          <div style="flex:1;">
             <div style="display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;">
               <span class="check-name">${item.name}</span>
               ${item.must ? '<span class="check-badge must">必须</span>' : ''}
               ${item.tag && !item.must ? `<span class="check-badge tip">${item.tag}</span>` : ''}
               <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg);color:var(--text-secondary);font-weight:600;">${phaseInfo.icon} ${phaseInfo.label}</span>
             </div>
-            ${descHtml}
+            ${item.desc ? `<div class="check-desc">${item.desc}</div>` : ''}
           </div>
         </div>
       `;
     }
     
-    function toggleDesc(btn) {
-      const descDiv = btn.closest('.check-desc');
-      const preview = descDiv.querySelector('.desc-preview');
-      const full = descDiv.querySelector('.desc-full');
-      const isExpanded = full.style.display !== 'none';
-      preview.style.display = isExpanded ? '' : 'none';
-      full.style.display = isExpanded ? 'none' : '';
-      btn.textContent = isExpanded ? ' 展开▾' : ' 收起▴';
-    }
-    
     function toggleItem(itemId) {
       checkedState[itemId] = !checkedState[itemId];
       saveCheckedState(checkedState);
-      
-      // 精准更新单个 item DOM，避免重建全页
-      const el = document.querySelector(`[data-item-id="${itemId}"]`);
-      if (el) {
-        const isChecked = checkedState[itemId];
-        if (isChecked) {
-          el.classList.add('checked');
-        } else {
-          el.classList.remove('checked');
-        }
-        const box = el.querySelector('.check-box');
-        if (box) box.innerHTML = isChecked ? '<i class="fas fa-check"></i>' : '';
-        
-        // 更新分组进度
-        const groupEl = el.closest('.checklist-group');
-        if (groupEl) {
-          const groupId = groupEl.dataset.groupId;
-          const group = CHECKLIST_DATA.find(g => g.id === groupId);
-          if (group) {
-            const s = getGroupStats(group);
-            const prog = groupEl.querySelector('.checklist-progress');
-            if (prog) {
-              prog.textContent = `${s.checked}/${s.total}`;
-              if (s.checked === s.total) prog.classList.add('done');
-              else prog.classList.remove('done');
-            }
-          }
-        }
-        
-        // 更新全局进度条（轻量更新）
-        updateProgressDisplay();
-        
-        // 如果只看未完成模式，勾选后隐藏该item
-        if (showOnlyUnchecked && checkedState[itemId]) {
-          el.style.display = 'none';
-        }
-      } else {
-        // 找不到DOM元素时降级为全量渲染
-        renderChecklist();
-      }
-    }
-    
-    function updateProgressDisplay() {
-      const stats = getTotalStats();
-      const pct = Math.round((stats.checked / stats.total) * 100);
-      const pctEl = document.querySelector('[data-pct]');
-      if (pctEl) pctEl.textContent = pct + '%';
-      const fill = document.querySelector('.progress-fill');
-      if (fill) {
-        fill.style.width = pct + '%';
-        fill.style.background = pct === 100 ? 'var(--success)' : 'linear-gradient(90deg,var(--primary),var(--primary-light))';
-      }
-      const mustEl = document.querySelector('[data-must-progress]');
-      if (mustEl) mustEl.textContent = `必做项 ${stats.mustDone}/${stats.must}`;
-      const allEl = document.querySelector('[data-all-progress]');
-      if (allEl) allEl.textContent = `全部项 ${stats.checked}/${stats.total}`;
+      renderChecklist();
     }
     
     function toggleGroup(groupId) {
       openGroups[groupId] = !openGroups[groupId];
-      // 只切换对应分组的展开状态，不重建全部
-      const itemsEl = document.getElementById(`group_${groupId}`);
-      if (itemsEl) {
-        if (openGroups[groupId]) {
-          itemsEl.classList.add('open');
-        } else {
-          itemsEl.classList.remove('open');
-        }
-        const groupEl = itemsEl.closest('.checklist-group');
-        const icon = groupEl ? groupEl.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
-        if (icon) {
-          icon.classList.toggle('fa-chevron-up', openGroups[groupId]);
-          icon.classList.toggle('fa-chevron-down', !openGroups[groupId]);
-        }
-      }
+      renderGroups();
     }
     
     function toggleShowUnchecked() {
       showOnlyUnchecked = !showOnlyUnchecked;
-      renderChecklist(); // 此操作需要重建（显示/隐藏逻辑复杂）
+      renderChecklist();
     }
     
     function resetAll() {
@@ -611,8 +463,5 @@
       if (headerDate) headerDate.textContent = `${now.getMonth()+1}月${now.getDate()}日`;
     });
   </script>
-
-  <!-- 涂鸦悬浮按钮 -->
-  <a href="note.html" class="note-fab" title="涂鸦记录"><i class="fas fa-pen-nib"></i></a>
 </body>
 </html>
