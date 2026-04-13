@@ -108,12 +108,40 @@ const WEATHER_SERVICE = (() => {
     } catch(e) { return null; }
   }
 
+  // ── API 可用性缓存（本次会话内只探测一次）──
+  let _apiAvailable = null; // null=未探测, true=可用, false=不可用
+
+  // ── 带超时的 fetch 封装（3秒超时，快速失败）──
+  function fetchWithTimeout(url, timeoutMs = 3000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { signal: controller.signal })
+      .finally(() => clearTimeout(timer));
+  }
+
+  // ── 探测API是否可用（轻量HEAD请求，超时1.5秒）──
+  async function probeApiAvailable() {
+    if (_apiAvailable !== null) return _apiAvailable;
+    const city = CITIES.macau;
+    const url = `${BASE_URL}/weather/3d?location=${city.lon},${city.lat}&key=${API_KEY}&lang=zh&unit=m`;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 1500);
+      const res = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(t);
+      _apiAvailable = res.ok;
+    } catch(e) {
+      _apiAvailable = false;
+    }
+    return _apiAvailable;
+  }
+
   // ── 和风天气：获取某城市10天预报 ──
   async function fetchForecast(cityKey) {
     const city = CITIES[cityKey];
     if (!city) return null;
     const url = `${BASE_URL}/weather/10d?location=${city.lon},${city.lat}&key=${API_KEY}&lang=zh&unit=m`;
-    const res  = await fetch(url);
+    const res  = await fetchWithTimeout(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     if (json.code !== '200') throw new Error(`API code ${json.code}`);
@@ -127,7 +155,7 @@ const WEATHER_SERVICE = (() => {
     // 和风v7 indices: type=5 是紫外线
     const url = `${BASE_URL}/indices/3d?type=5&location=${city.lon},${city.lat}&key=${API_KEY}&lang=zh`;
     try {
-      const res  = await fetch(url);
+      const res  = await fetchWithTimeout(url);
       const json = await res.json();
       if (json.code !== '200') return {};
       // 返回 { '2026-04-26': level, ... }
@@ -283,6 +311,16 @@ const WEATHER_SERVICE = (() => {
         refreshInBackground();
         return { days: cached.data, source: 'cache', fresh: false };
       }
+    }
+
+    // 先快速探测API是否可用，不可用立即降级（避免等待N秒超时）
+    const apiOk = await probeApiAvailable();
+    if (!apiOk) {
+      console.warn('[Weather] API probe failed, using climate fallback');
+      if (WEATHER_DATA && WEATHER_DATA.days) {
+        return { days: WEATHER_DATA.days, source: 'climate', fresh: false };
+      }
+      return { days: [], source: 'error', fresh: false };
     }
 
     // 无缓存或强制刷新，联网获取

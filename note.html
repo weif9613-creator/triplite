@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#1a3a5c">
+  <title>涂鸦记录 · TripLite</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a5c;
+      --primary-light: #3b82f6;
+      --bg-page: #f0f4f8;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --radius: 14px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden; /* 防止页面滚动干扰画布 */
+      background: #1a3a5c;
+      font-family: 'Inter', -apple-system, sans-serif;
+      touch-action: none; /* 全局禁用浏览器默认触摸行为 */
+    }
+
+    /* ── 顶部工具栏 ── */
+    #toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(26,58,92,0.97);
+      backdrop-filter: blur(10px);
+      padding: 10px 12px;
+      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #toolbar::-webkit-scrollbar { display: none; }
+
+    .tb-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .tb-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+    .tb-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .tb-btn:active { transform: scale(0.88); }
+    .tb-btn.active {
+      background: rgba(59,130,246,0.8);
+      border-color: #3b82f6;
+    }
+    .tb-btn.danger:active { background: rgba(239,68,68,0.8); }
+
+    /* 颜色点 */
+    .color-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-dot.active {
+      border-color: white;
+      transform: scale(1.15);
+    }
+    .color-dot:active { transform: scale(0.9); }
+
+    /* 笔刷大小滑块 */
+    #sizeSlider {
+      width: 70px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #sizeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+
+    /* ── 画布区域 ── */
+    #canvas-wrap {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      background: #fff;
+      touch-action: none;
+    }
+
+    #drawCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* 文字输入模式时显示的蒙层提示 */
+    #text-hint {
+      position: fixed;
+      bottom: calc(80px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+      display: none;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    /* ── 浮动文字输入框 ── */
+    #textInputBox {
+      position: fixed;
+      z-index: 300;
+      background: white;
+      border: 2px solid var(--primary-light);
+      border-radius: 12px;
+      padding: 8px 10px;
+      min-width: 140px;
+      max-width: calc(100vw - 40px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: none;
+    }
+    #textInput {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 16px; /* 防止iOS自动缩放 */
+      font-family: 'Inter', sans-serif;
+      color: #1e293b;
+      background: transparent;
+      resize: none;
+      min-height: 32px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .text-input-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      align-items: center;
+    }
+    .text-input-actions button {
+      flex: 1;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ti-confirm { background: #3b82f6; color: white; }
+    .ti-cancel  { background: #f1f5f9; color: #64748b; }
+    .text-size-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .ts-chip {
+      flex: 1;
+      text-align: center;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1.5px solid #e2e8f0;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f8fafc;
+      color: #475569;
+    }
+    .ts-chip.active { border-color: #3b82f6; background: #eff6ff; color: #2563eb; }
+
+    /* ── 底部工具栏 ── */
+    #bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(26,58,92,0.97);
+      backdrop-filter: blur(10px);
+      padding: 10px 16px;
+      padding-bottom: calc(10px + var(--safe-bottom));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bb-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border: none;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.15s;
+      color: white;
+    }
+    .bb-btn:active { transform: scale(0.92); }
+    .bb-btn i { font-size: 18px; }
+    .bb-btn.blue   { background: #2563eb; }
+    .bb-btn.green  { background: #059669; }
+    .bb-btn.amber  { background: #d97706; }
+    .bb-btn.gray   { background: rgba(255,255,255,0.15); }
+    .bb-btn.red    { background: #dc2626; }
+
+    /* ── 画布切换页码 ── */
+    #page-indicator {
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top, 0px));
+      right: 12px;
+      z-index: 99;
+      background: rgba(26,58,92,0.85);
+      color: white;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    /* ── 保存提示 ── */
+    #save-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(5,150,105,0.95);
+      color: white;
+      padding: 16px 28px;
+      border-radius: 18px;
+      font-size: 15px;
+      font-weight: 800;
+      z-index: 500;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+    #save-toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* ── 背景选择面板 ── */
+    #bg-panel {
+      position: fixed;
+      bottom: calc(70px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      display: none;
+      width: calc(100vw - 32px);
+      max-width: 380px;
+    }
+    #bg-panel h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 10px;
+    }
+    .bg-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .bg-item {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #475569;
+      overflow: hidden;
+    }
+    .bg-item.active { border-color: #3b82f6; }
+    .bg-item:active { opacity: 0.7; }
+
+    /* ── 多页管理面板 ── */
+    #pages-panel {
+      position: fixed;
+      bottom: calc(70px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      display: none;
+      width: calc(100vw - 32px);
+      max-width: 380px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    #pages-panel h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .page-thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .page-thumb {
+      aspect-ratio: 0.7;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: #f8fafc;
+    }
+    .page-thumb.active { border-color: #3b82f6; }
+    .page-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .page-thumb-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      text-align: center;
+      font-size: 10px;
+      padding: 3px;
+    }
+    .page-thumb-del {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(220,38,38,0.85);
+      color: white;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .add-page-btn {
+      aspect-ratio: 0.7;
+      border-radius: 8px;
+      border: 2px dashed #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #f8fafc;
+      color: #94a3b8;
+      gap: 4px;
+      font-size: 11px;
+    }
+    .add-page-btn i { font-size: 20px; }
+
+    /* ── 蒙层（关闭面板用）── */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(0,0,0,0.3);
+      display: none;
+    }
+
+    /* 画布内容区域适配工具栏高度 */
+    #canvas-wrap {
+      top: calc(56px + env(safe-area-inset-top, 0px));
+      bottom: calc(64px + var(--safe-bottom));
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── 顶部工具栏 ── -->
+<div id="toolbar">
+  <!-- 工具选择 -->
+  <div class="tb-section">
+    <div class="tb-btn active" id="btn-pen" onclick="setTool('pen')" title="画笔">
+      <i class="fas fa-pen"></i>
+    </div>
+    <div class="tb-btn" id="btn-marker" onclick="setTool('marker')" title="马克笔">
+      <i class="fas fa-highlighter"></i>
+    </div>
+    <div class="tb-btn" id="btn-eraser" onclick="setTool('eraser')" title="橡皮">
+      <i class="fas fa-eraser"></i>
+    </div>
+    <div class="tb-btn" id="btn-text" onclick="setTool('text')" title="文字">
+      <i class="fas fa-font"></i>
+    </div>
+  </div>
+
+  <div class="tb-divider"></div>
+
+  <!-- 颜色 -->
+  <div class="tb-section" id="colorSection">
+    <div class="color-dot active" style="background:#1e293b" data-color="#1e293b" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#ef4444" data-color="#ef4444" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#f97316" data-color="#f97316" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#eab308" data-color="#eab308" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#22c55e" data-color="#22c55e" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#3b82f6" data-color="#3b82f6" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#a855f7" data-color="#a855f7" onclick="setColor(this)"></div>
+    <div class="color-dot" style="background:#ffffff;border:2px solid rgba(255,255,255,0.5);" data-color="#ffffff" onclick="setColor(this)"></div>
+  </div>
+
+  <div class="tb-divider"></div>
+
+  <!-- 笔刷大小 -->
+  <div class="tb-section">
+    <span style="font-size:10px;color:rgba(255,255,255,0.7);">粗细</span>
+    <input type="range" id="sizeSlider" min="2" max="30" value="4" oninput="setBrushSize(this.value)">
+    <div id="sizePreview" style="width:14px;height:14px;border-radius:50%;background:white;flex-shrink:0;transition:all 0.2s;"></div>
+  </div>
+
+  <div class="tb-divider"></div>
+
+  <!-- 撤销/清除 -->
+  <div class="tb-section">
+    <div class="tb-btn" onclick="undo()" title="撤销">
+      <i class="fas fa-undo"></i>
+    </div>
+    <div class="tb-btn danger" onclick="clearCanvas()" title="清空">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+  </div>
+</div>
+
+<!-- 页码指示器 -->
+<div id="page-indicator">第 1 / 1 页</div>
+
+<!-- 文字输入模式提示 -->
+<div id="text-hint">✏️ 点击画面任意位置输入文字</div>
+
+<!-- ── 画布 ── -->
+<div id="canvas-wrap">
+  <canvas id="drawCanvas"></canvas>
+</div>
+
+<!-- ── 浮动文字输入框 ── -->
+<div id="textInputBox">
+  <div class="text-size-row">
+    <div class="ts-chip active" data-size="16" onclick="setTextSize(this)">小</div>
+    <div class="ts-chip" data-size="22" onclick="setTextSize(this)">中</div>
+    <div class="ts-chip" data-size="30" onclick="setTextSize(this)">大</div>
+    <div class="ts-chip" data-size="42" onclick="setTextSize(this)">特大</div>
+  </div>
+  <textarea id="textInput" placeholder="输入文字…" rows="2"></textarea>
+  <div class="text-input-actions">
+    <button class="ti-confirm" onclick="confirmText()">✅ 放置</button>
+    <button class="ti-cancel"  onclick="cancelText()">取消</button>
+  </div>
+</div>
+
+<!-- ── 底部工具栏 ── -->
+<div id="bottom-bar">
+  <button class="bb-btn gray" onclick="togglePagesPanel()">
+    <i class="fas fa-layer-group"></i>
+    <span>多页</span>
+  </button>
+  <button class="bb-btn gray" onclick="toggleBgPanel()">
+    <i class="fas fa-image"></i>
+    <span>背景</span>
+  </button>
+  <button class="bb-btn green" onclick="saveImage()">
+    <i class="fas fa-download"></i>
+    <span>保存图片</span>
+  </button>
+  <button class="bb-btn blue" onclick="shareImage()">
+    <i class="fas fa-share-alt"></i>
+    <span>分享</span>
+  </button>
+  <a href="index.html" class="bb-btn gray" style="text-decoration:none;">
+    <i class="fas fa-home"></i>
+    <span>首页</span>
+  </a>
+</div>
+
+<!-- ── 背景选择面板 ── -->
+<div id="bg-panel">
+  <h4>🎨 选择背景</h4>
+  <div class="bg-grid" id="bgGrid">
+    <!-- 由 JS 生成 -->
+  </div>
+</div>
+
+<!-- ── 多页管理面板 ── -->
+<div id="pages-panel">
+  <h4>
+    <span>📄 画布页面</span>
+    <span style="font-size:11px;color:#64748b;font-weight:500;">点击切换·长按删除</span>
+  </h4>
+  <div class="page-thumb-grid" id="pageThumbGrid">
+    <!-- 由 JS 生成 -->
+  </div>
+</div>
+
+<!-- 蒙层 -->
+<div id="overlay" onclick="closeAllPanels()"></div>
+
+<!-- 保存提示 -->
+<div id="save-toast">✅ 图片已保存<br><span style="font-size:12px;font-weight:500;">长按图片可发送到相册</span></div>
+
+<script>
+// ====================================================
+// TripLite 涂鸦记录模块
+// ====================================================
+
+// ── 状态 ──
+const state = {
+  tool: 'pen',        // pen | marker | eraser | text
+  color: '#1e293b',
+  brushSize: 4,
+  textSize: 16,
+  textColor: '#1e293b',
+  isDrawing: false,
+  lastX: 0,
+  lastY: 0,
+  textPos: { x: 0, y: 0 },
+  bgStyle: 'white'    // white | grid | lines | dot | dark | ...
+};
+
+// ── 多页管理 ──
+let pages = [];       // 每页存储 dataURL
+let currentPage = 0;
+const MAX_PAGES = 10;
+
+// ── 撤销栈 ──
+let undoStack = [];
+const MAX_UNDO = 20;
+
+// ── DOM ──
+const canvas  = document.getElementById('drawCanvas');
+const ctx     = canvas.getContext('2d');
+const wrap    = document.getElementById('canvas-wrap');
+const textBox = document.getElementById('textInputBox');
+const textIn  = document.getElementById('textInput');
+
+// ── 初始化 ──
+function init() {
+  resizeCanvas();
+  initPage();
+  window.addEventListener('resize', debounce(resizeCanvas, 200));
+  window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 300));
+
+  // 绑定画布事件
+  canvas.addEventListener('mousedown',  onStart);
+  canvas.addEventListener('mousemove',  onMove);
+  canvas.addEventListener('mouseup',    onEnd);
+  canvas.addEventListener('mouseleave', onEnd);
+
+  canvas.addEventListener('touchstart',  onStart, { passive: false });
+  canvas.addEventListener('touchmove',   onMove,  { passive: false });
+  canvas.addEventListener('touchend',    onEnd,   { passive: false });
+  canvas.addEventListener('touchcancel', onEnd,   { passive: false });
+
+  // 初始化背景面板
+  buildBgPanel();
+
+  // 更新笔刷预览
+  updateBrushPreview();
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+// ── 画布尺寸适配 ──
+function resizeCanvas() {
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  // 保存当前内容
+  const snap = pages[currentPage] || null;
+
+  canvas.width  = w * window.devicePixelRatio;
+  canvas.height = h * window.devicePixelRatio;
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  // 重绘背景 + 恢复内容
+  drawBackground(state.bgStyle);
+  if (snap) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+    img.src = snap;
+  }
+}
+
+// ── 页面初始化 ──
+function initPage() {
+  if (pages.length === 0) {
+    pages.push(null);
+    currentPage = 0;
+  }
+  undoStack = [];
+  drawBackground(state.bgStyle);
+  updatePageIndicator();
+}
+
+function loadPage(idx) {
+  // 保存当前页
+  saveCurrent();
+  currentPage = idx;
+  undoStack = [];
+  const snap = pages[idx];
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  drawBackground(state.bgStyle);
+  if (snap) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+    img.src = snap;
+  }
+  updatePageIndicator();
+}
+
+function saveCurrent() {
+  pages[currentPage] = canvas.toDataURL('image/png');
+}
+
+function updatePageIndicator() {
+  document.getElementById('page-indicator').textContent = `第 ${currentPage+1} / ${pages.length} 页`;
+}
+
+// ── 背景绘制 ──
+const BG_STYLES = [
+  { id: 'white',   label: '白纸',   draw: (ctx, w, h) => { ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); } },
+  { id: 'cream',   label: '米色',   draw: (ctx, w, h) => { ctx.fillStyle='#fffbeb'; ctx.fillRect(0,0,w,h); } },
+  { id: 'dark',    label: '深色',   draw: (ctx, w, h) => { ctx.fillStyle='#1e293b'; ctx.fillRect(0,0,w,h); } },
+  { id: 'blue',    label: '蓝色',   draw: (ctx, w, h) => { ctx.fillStyle='#eff6ff'; ctx.fillRect(0,0,w,h); } },
+  { id: 'grid',    label: '方格纸', draw: (ctx, w, h) => {
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#dbeafe'; ctx.lineWidth=0.8;
+    const g=24;
+    for(let x=0;x<w;x+=g){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke(); }
+    for(let y=0;y<h;y+=g){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); }
+  }},
+  { id: 'lines',   label: '横线纸', draw: (ctx, w, h) => {
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#bfdbfe'; ctx.lineWidth=0.8;
+    const g=32;
+    for(let y=g;y<h;y+=g){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); }
+    ctx.strokeStyle='#ef4444'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(50,0);ctx.lineTo(50,h);ctx.stroke();
+  }},
+  { id: 'dot',     label: '点阵纸', draw: (ctx, w, h) => {
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#93c5fd';
+    const g=20;
+    for(let x=g;x<w;x+=g) for(let y=g;y<h;y+=g){ ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);ctx.fill(); }
+  }},
+  { id: 'map',     label: '地图格', draw: (ctx, w, h) => {
+    ctx.fillStyle='#f0fdf4'; ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#86efac'; ctx.lineWidth=1;
+    const g=30;
+    for(let x=0;x<w;x+=g){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke(); }
+    for(let y=0;y<h;y+=g){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); }
+    ctx.strokeStyle='#16a34a'; ctx.lineWidth=1.5;
+    for(let x=0;x<w;x+=g*5){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke(); }
+    for(let y=0;y<h;y+=g*5){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); }
+  }}
+];
+
+function drawBackground(styleId) {
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const bg = BG_STYLES.find(b => b.id === styleId) || BG_STYLES[0];
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0); // 重置DPR变换
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.clearRect(0, 0, w, h);
+  bg.draw(ctx, w, h);
+  ctx.restore();
+}
+
+function buildBgPanel() {
+  const grid = document.getElementById('bgGrid');
+  grid.innerHTML = '';
+  BG_STYLES.forEach(bg => {
+    const d = document.createElement('div');
+    d.className = 'bg-item' + (bg.id === state.bgStyle ? ' active' : '');
+    d.dataset.bg = bg.id;
+    // 小预览canvas
+    const c = document.createElement('canvas');
+    c.width = 60; c.height = 80;
+    const pc = c.getContext('2d');
+    bg.draw(pc, 60, 80);
+    d.appendChild(c);
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;font-weight:700;padding:2px;background:rgba(255,255,255,0.8);color:#475569;';
+    lbl.textContent = bg.label;
+    d.style.position = 'relative';
+    d.appendChild(lbl);
+    d.onclick = () => selectBg(bg.id, d);
+    grid.appendChild(d);
+  });
+}
+
+function selectBg(id, el) {
+  state.bgStyle = id;
+  document.querySelectorAll('.bg-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  const snap = canvas.toDataURL();
+  // 重绘背景并叠加内容
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  drawBackground(id);
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+  img.src = snap;
+  // 存一版（背景已变）
+  saveCurrent();
+  closeAllPanels();
+}
+
+// ── 工具切换 ──
+function setTool(tool) {
+  state.tool = tool;
+  ['pen','marker','eraser','text'].forEach(t => {
+    document.getElementById('btn-'+t).classList.toggle('active', t === tool);
+  });
+  // 文字模式提示
+  const hint = document.getElementById('text-hint');
+  hint.style.display = tool === 'text' ? 'block' : 'none';
+  canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+// ── 颜色 ──
+function setColor(el) {
+  state.color = el.dataset.color;
+  state.textColor = el.dataset.color;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  if (state.tool === 'eraser') setTool('pen');
+}
+
+// ── 笔刷大小 ──
+function setBrushSize(v) {
+  state.brushSize = parseInt(v);
+  updateBrushPreview();
+}
+function updateBrushPreview() {
+  const p = document.getElementById('sizePreview');
+  const s = Math.max(6, Math.min(state.brushSize * 2, 26));
+  p.style.width = s + 'px';
+  p.style.height = s + 'px';
+}
+
+// ── 坐标提取（兼容鼠标和触摸）──
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  let x, y;
+  if (e.touches && e.touches.length > 0) {
+    x = e.touches[0].clientX - rect.left;
+    y = e.touches[0].clientY - rect.top;
+  } else if (e.changedTouches && e.changedTouches.length > 0) {
+    x = e.changedTouches[0].clientX - rect.left;
+    y = e.changedTouches[0].clientY - rect.top;
+  } else {
+    x = e.clientX - rect.left;
+    y = e.clientY - rect.top;
+  }
+  return { x, y };
+}
+
+// ── 绘图事件 ──
+function onStart(e) {
+  e.preventDefault();
+  const pos = getPos(e);
+
+  if (state.tool === 'text') {
+    state.textPos = pos;
+    openTextBox(pos);
+    return;
+  }
+
+  // 保存撤销快照
+  pushUndo();
+
+  state.isDrawing = true;
+  state.lastX = pos.x;
+  state.lastY = pos.y;
+
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+
+  if (state.tool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = state.brushSize * 3;
+  } else if (state.tool === 'marker') {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = state.brushSize * 3;
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = state.brushSize;
+  }
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
+
+  // 点点效果
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, (ctx.lineWidth / 2), 0, Math.PI * 2);
+  ctx.fillStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
+  ctx.fill();
+}
+
+function onMove(e) {
+  e.preventDefault();
+  if (!state.isDrawing) return;
+  const pos = getPos(e);
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (state.tool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = state.brushSize * 3;
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else if (state.tool === 'marker') {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = state.brushSize * 3;
+    ctx.strokeStyle = state.color;
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = state.brushSize;
+    ctx.strokeStyle = state.color;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(state.lastX, state.lastY);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+
+  state.lastX = pos.x;
+  state.lastY = pos.y;
+}
+
+function onEnd(e) {
+  e.preventDefault();
+  if (!state.isDrawing) return;
+  state.isDrawing = false;
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ── 文字输入 ──
+let textFontSize = 16;
+
+function setTextSize(el) {
+  textFontSize = parseInt(el.dataset.size);
+  document.querySelectorAll('.ts-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  textIn.style.fontSize = textFontSize + 'px';
+}
+
+function openTextBox(pos) {
+  const box = textBox;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let left = pos.x;
+  let top  = pos.y;
+
+  // 防止超出右边界
+  if (left + 180 > vw) left = vw - 180;
+  if (left < 10) left = 10;
+  // 防止超出下边界（考虑键盘弹出）
+  if (top + 200 > vh * 0.6) top = Math.max(20, pos.y - 220);
+
+  box.style.left = left + 'px';
+  box.style.top  = top + 'px';
+  box.style.display = 'block';
+  textIn.style.fontSize = textFontSize + 'px';
+  textIn.value = '';
+  setTimeout(() => textIn.focus(), 80);
+}
+
+function confirmText() {
+  const text = textIn.value.trim();
+  if (!text) { cancelText(); return; }
+
+  pushUndo();
+
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.font = `${textFontSize * window.devicePixelRatio * 0}${textFontSize}px Inter, -apple-system, sans-serif`;
+  ctx.font = `bold ${textFontSize}px Inter, -apple-system, sans-serif`;
+  ctx.fillStyle = state.textColor;
+  ctx.textBaseline = 'top';
+
+  // 支持换行
+  const lines = text.split('\n');
+  const lineH = textFontSize * 1.4;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, state.textPos.x, state.textPos.y + i * lineH);
+  });
+
+  cancelText();
+}
+
+function cancelText() {
+  textBox.style.display = 'none';
+  textIn.blur();
+}
+
+// ── 撤销 ──
+function pushUndo() {
+  undoStack.push(canvas.toDataURL());
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+}
+
+function undo() {
+  if (undoStack.length === 0) {
+    showToast('已经是最初状态了', '#f59e0b');
+    return;
+  }
+  const snap = undoStack.pop();
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  drawBackground(state.bgStyle);
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+  img.src = snap;
+}
+
+// ── 清空 ──
+function clearCanvas() {
+  if (!confirm('确定清空当前画布？')) return;
+  pushUndo();
+  drawBackground(state.bgStyle);
+}
+
+// ── 保存为图片 ──
+function saveImage() {
+  saveCurrent();
+  const dataURL = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  const ts = new Date().toISOString().slice(0,16).replace('T','-').replace(':','');
+  a.download = `TripLite-涂鸦-${ts}.png`;
+  a.href = dataURL;
+  a.click();
+  showToast('✅ 图片已保存\n长按相册图片可分享', '#059669');
+}
+
+// ── 分享（Web Share API 或 fallback 下载）──
+async function shareImage() {
+  saveCurrent();
+  const dataURL = canvas.toDataURL('image/png');
+
+  if (navigator.share && navigator.canShare) {
+    try {
+      const blob = await (await fetch(dataURL)).blob();
+      const file = new File([blob], 'TripLite涂鸦.png', { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'TripLite涂鸦记录' });
+        return;
+      }
+    } catch(e) {}
+  }
+  // Fallback：弹出图片让用户长按保存
+  const win = window.open();
+  if (win) {
+    win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${dataURL}" style="max-width:100%;max-height:100vh;" /><p style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:white;font-size:14px;background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:20px;">长按图片 → 保存到相册</p></body></html>`);
+    win.document.close();
+  } else {
+    saveImage();
+  }
+}
+
+// ── Toast 提示 ──
+function showToast(msg, color = '#059669') {
+  const t = document.getElementById('save-toast');
+  t.innerHTML = msg.replace('\n','<br>');
+  t.style.background = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── 多页面板 ──
+function togglePagesPanel() {
+  const panel = document.getElementById('pages-panel');
+  const ov = document.getElementById('overlay');
+  if (panel.style.display === 'block') {
+    closeAllPanels();
+  } else {
+    closeAllPanels(false);
+    buildPageThumbs();
+    panel.style.display = 'block';
+    ov.style.display = 'block';
+  }
+}
+
+function buildPageThumbs() {
+  saveCurrent();
+  const grid = document.getElementById('pageThumbGrid');
+  grid.innerHTML = '';
+
+  pages.forEach((snap, idx) => {
+    const d = document.createElement('div');
+    d.className = 'page-thumb' + (idx === currentPage ? ' active' : '');
+
+    if (snap) {
+      const img = document.createElement('img');
+      img.src = snap;
+      d.appendChild(img);
+    } else {
+      d.style.background = '#f1f5f9';
+    }
+
+    const label = document.createElement('div');
+    label.className = 'page-thumb-label';
+    label.textContent = `第${idx+1}页`;
+    d.appendChild(label);
+
+    if (pages.length > 1) {
+      const del = document.createElement('div');
+      del.className = 'page-thumb-del';
+      del.innerHTML = '✕';
+      del.onclick = (e) => { e.stopPropagation(); deletePage(idx); };
+      d.appendChild(del);
+    }
+
+    d.onclick = () => { loadPage(idx); closeAllPanels(); };
+    grid.appendChild(d);
+  });
+
+  // 新增按钮
+  if (pages.length < MAX_PAGES) {
+    const add = document.createElement('div');
+    add.className = 'add-page-btn';
+    add.innerHTML = '<i class="fas fa-plus"></i><span>新建</span>';
+    add.onclick = addPage;
+    grid.appendChild(add);
+  }
+}
+
+function addPage() {
+  saveCurrent();
+  pages.push(null);
+  loadPage(pages.length - 1);
+  closeAllPanels();
+  showToast(`📄 已新建第 ${pages.length} 页`, '#3b82f6');
+}
+
+function deletePage(idx) {
+  if (pages.length <= 1) return;
+  if (!confirm(`删除第 ${idx+1} 页？`)) return;
+  pages.splice(idx, 1);
+  const newIdx = Math.min(currentPage, pages.length - 1);
+  loadPage(newIdx);
+  buildPageThumbs();
+}
+
+// ── 背景面板 ──
+function toggleBgPanel() {
+  const panel = document.getElementById('bg-panel');
+  const ov = document.getElementById('overlay');
+  if (panel.style.display === 'block') {
+    closeAllPanels();
+  } else {
+    closeAllPanels(false);
+    panel.style.display = 'block';
+    ov.style.display = 'block';
+  }
+}
+
+function closeAllPanels(hideOv = true) {
+  document.getElementById('bg-panel').style.display = 'none';
+  document.getElementById('pages-panel').style.display = 'none';
+  if (hideOv) document.getElementById('overlay').style.display = 'none';
+}
+
+// ── 自动保存（退出前）──
+window.addEventListener('beforeunload', saveCurrent);
+window.addEventListener('pagehide', saveCurrent);
+
+// ── 启动 ──
+init();
+</script>
+</body>
+</html>
