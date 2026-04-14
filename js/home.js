@@ -54,10 +54,11 @@ function renderHome() {
   try { _pwaInstalled = localStorage.getItem('pwaInstalled') === '1'; } catch(e) {}
   if (!isStandalone && !_pwaInstalled) {
     // 根据平台决定副标题文案
-    var _installSub = '像App一样使用 · 弱网/断网均可打开';
-    if (isIOS)        _installSub = '点击 → Safari 分享菜单 → 添加到主屏幕';
-    else if (isWeChat) _installSub = '点击 → 在浏览器中打开后安装';
-    else if (!isMobile) _installSub = '点击 → 安装为桌面应用，支持离线';
+    var _installSub = '点击查看添加步骤 · 弱网/断网均可打开';
+    if (isIOS)         _installSub = '📍 Safari → 分享 → 添加到主屏幕';
+    else if (isWeChat) _installSub = '📍 右上角··· → 在浏览器中打开';
+    else if (isAndroid)_installSub = '📍 Chrome菜单 ⋮ → 添加到主屏幕';
+    else               _installSub = '📍 点击查看电脑安装步骤';
 
     installHtml = '<div id="home-install-card" class="fade-in" style="background:linear-gradient(135deg,#1a3a5c,#0369a1);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="showInstallGuide()">'
       + '<div style="font-size:26px;flex-shrink:0;">📲</div>'

@@ -89,19 +89,7 @@ function showInstallGuide() {
     return;
   }
 
-  // ④ Android Chrome 且有安装事件 → 直接触发系统安装
-  if (isAndroid && isChrome && deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(result) {
-      if (result.outcome === 'accepted') {
-        _hideInstallCard();
-      }
-      deferredPrompt = null;
-    });
-    return;
-  }
-
-  // ⑤ Android Chrome 但事件未到 → 提示用菜单安装
+  // ④⑤ Android Chrome → 统一引导用菜单"添加到主屏幕"，比deferredPrompt更稳定
   if (isAndroid && isChrome) {
     _showAndroidChromeManual();
     return;
@@ -142,16 +130,18 @@ function _showIOSGuide() {
   );
 }
 
-// Android Chrome 有事件但点了没反应时的手动引导
+// Android Chrome 手动引导（统一入口，最稳定）
 function _showAndroidChromeManual() {
   _showModal(
-    '📲 安装到桌面',
+    '📲 添加到手机桌面',
     '<div style="background:#f1f5f9;border-radius:12px;padding:14px;margin:12px 0;">'
-    + _step(1, '#f59e0b', '点右上角 <b>⋮</b> 菜单', 'Chrome 浏览器右上角三个点')
-    + _step(2, '#f59e0b', '点「<b>添加到主屏幕</b>」', '或「安装应用 / Install app」')
-    + _step(3, '#10b981', '点「<b>安装</b>」确认', '桌面出现 TripLite 图标 ✓')
-    + '</div>',
-    '明白了 ✓',
+    + _step(1, '#0ea5e9', '点 Chrome 右上角 <b>⋮</b>', '浏览器右上角三个点菜单')
+    + _step(2, '#0ea5e9', '选「<b>添加到主屏幕</b>」', '英文版：Add to Home screen')
+    + _step(3, '#10b981', '弹框里点「<b>添加</b>」', '桌面立刻出现 TripLite 图标 ✓')
+    + '</div>'
+    + '<div style="background:#fef3c7;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e;line-height:1.6;">'
+    + '⚠️ 如弹出「安装应用」而非「添加到主屏幕」，建议选<b>取消</b>，改用菜单手动添加，图标更稳定</div>',
+    '好的，我去操作 →',
     null
   );
 }

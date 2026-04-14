@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.14: 重写PWA安装引导-全平台覆盖(Chrome/iOS/桌面/微信)-常驻安装按钮-各平台精准引导"
+git commit -m "v1.15: 修复stay+checklist页面空白-澳门新增6个可选POI-曼谷新增4个可选POI(Let Relax按摩/MBK/Asiatique河畔夜市)"
 echo.
 
 echo [4/4] 推送到 GitHub...

@@ -890,7 +890,7 @@ var MAP_DATA = {
     zoom: 5
   },
   pois: [
-    // ── 澳门 ──
+    // ── 澳门（D1 · 4/26 · 氹仔岛活动范围）──
     {
       id: 'macau-airport',
       city: 'macau',
@@ -901,47 +901,47 @@ var MAP_DATA = {
       lng: 113.5912,
       type: 'transport',
       address: '澳门氹仔北安',
-      tip: '北出口外停车场有免费酒店穿梭巴士，11:00–21:00每15–20分钟一班',
+      tip: '11:45抵达，走"中国居民"通道出示港澳通行证。步行或打的约5–10分钟到艺居酒店',
       nav: 'https://maps.google.com/?q=22.1496,113.5912'
     },
     {
-      id: 'cotai-hotel',
+      id: 'art-residence-hotel',
       city: 'macau',
-      name: '氹仔/路氹住宿区',
-      nameEn: 'Cotai Strip',
+      name: '艺居酒店（已预订·住宿）',
+      nameEn: 'Art Residence Hotel Taipa',
       emoji: '🏨',
-      lat: 22.1497,
-      lng: 113.5665,
+      lat: 22.1530,
+      lng: 113.5780,
       type: 'stay',
-      address: '澳门路氹城',
-      tip: '推荐住宿区，机场10分钟车程，步行5分钟内有美食广场和便利店',
-      nav: 'https://maps.google.com/?q=22.1497,113.5665'
+      address: '澳门氹仔，近澳门国际机场',
+      tip: '本次住宿酒店，距机场约5分钟。入住后放行李，轻装去官也街。明天早上出发飞曼谷也方便',
+      nav: 'https://maps.google.com/?q=22.1530,113.5780'
     },
     {
-      id: 'ruins-st-paul',
+      id: 'rua-do-cunha',
       city: 'macau',
-      name: '大三巴牌坊（半岛老城·备选）',
-      nameEn: "Ruins of St. Paul's",
-      emoji: '🏛️',
-      lat: 22.1974,
-      lng: 113.5393,
-      type: 'attraction',
-      address: '澳门大堂区大三巴街（澳门半岛）',
-      tip: '⚠️ 本次行程D1不去半岛老城，此处仅供参考。位于氹仔对岸的澳门半岛，从路氹城打的约20–30分钟。免费，全天开放。如有余力可在下午额外前往。',
-      nav: 'https://maps.google.com/?q=22.1974,113.5393'
+      name: '官也街（手信一条街）',
+      nameEn: 'Rua do Cunha',
+      emoji: '🛍️',
+      lat: 22.1563,
+      lng: 113.5589,
+      type: 'shopping',
+      address: '澳门氹仔官也街',
+      tip: '必买：杏仁饼、猪扒包、蛋挞、蛋卷。从艺居酒店步行约15分钟或打的约10分钟，可试吃再买',
+      nav: 'https://maps.google.com/?q=22.1563,113.5589'
     },
     {
-      id: 'senado-square',
+      id: 'taipa-village-portuguese',
       city: 'macau',
-      name: '议事亭前地（半岛老城·备选）',
-      nameEn: 'Senado Square',
-      emoji: '🎭',
-      lat: 22.1937,
-      lng: 113.5384,
+      name: '龙环葡韵（葡式建筑群）',
+      nameEn: 'Taipa Houses Museum',
+      emoji: '🏡',
+      lat: 22.1538,
+      lng: 113.5563,
       type: 'attraction',
-      address: '澳门半岛议事亭前地',
-      tip: '⚠️ 本次行程D1不去半岛老城，此处仅供参考。手信/餐厅密集，大三巴步行5分钟。如时间充裕可作为额外探索。',
-      nav: 'https://maps.google.com/?q=22.1937,113.5384'
+      address: '澳门氹仔海边马路',
+      tip: '5栋彩色葡式小楼依湖而建，外部免费参观，博物馆约10澳门元。从官也街步行约10分钟，下午光线好拍照',
+      nav: 'https://maps.google.com/?q=22.1538,113.5563'
     },
     {
       id: 'macau-food-cotai',
@@ -953,8 +953,73 @@ var MAP_DATA = {
       lng: 113.5628,
       type: 'food',
       address: '澳门路氹城Galaxy银河商场内',
-      tip: '酒店步行5分钟内，多国美食，人均40–150澳门元，营业至23:00',
+      tip: '晚餐首选，酒店步行5分钟内。多国美食，人均40–150澳门元，营业至23:00',
       nav: 'https://maps.google.com/?q=22.1473,113.5628'
+    },
+    {
+      id: 'ka-mo-church',
+      city: 'macau',
+      name: '嘉模圣母堂（可选）',
+      nameEn: 'Our Lady of Carmel Church',
+      emoji: '⛪',
+      lat: 22.1545,
+      lng: 113.5575,
+      type: 'attraction',
+      address: '澳门氹仔嘉模广场',
+      tip: '龙环葡韵步行约3分钟，白色小教堂+彩色广场，免费，是氹仔标志性打卡点，拍照5分钟即可',
+      nav: 'https://maps.google.com/?q=22.1545,113.5575'
+    },
+    {
+      id: 'ka-mo-garden',
+      city: 'macau',
+      name: '嘉模市政花园（可选）',
+      nameEn: 'Jardim Municipal de Taipa',
+      emoji: '🌳',
+      lat: 22.1552,
+      lng: 113.5580,
+      type: 'attraction',
+      address: '澳门氹仔嘉模街旁',
+      tip: '嘉模圣母堂旁边的街坊小公园，绿树成荫，本地人遛弯好去处，免费，休息片刻再继续',
+      nav: 'https://maps.google.com/?q=22.1552,113.5580'
+    },
+    {
+      id: 'venetian-macau',
+      city: 'macau',
+      name: '澳门威尼斯人（可选·室内）',
+      nameEn: 'The Venetian Macao',
+      emoji: '🎰',
+      lat: 22.1485,
+      lng: 113.5649,
+      type: 'attraction',
+      address: '澳门路氹城威尼斯人大道',
+      tip: '天气热或下雨时绝佳避暑选择，室内仿威尼斯运河+贡多拉，免费进场，购物/餐饮/表演自费，步行可到',
+      nav: 'https://maps.google.com/?q=22.1485,113.5649'
+    },
+    {
+      id: 'margaret-egg-tart',
+      city: 'macau',
+      name: '玛嘉烈蛋挞（氹仔店）',
+      nameEn: "Margaret's Cafe e Nata",
+      emoji: '🥧',
+      lat: 22.1568,
+      lng: 113.5594,
+      type: 'food',
+      address: '澳门氹仔告利雅施利华街',
+      tip: '澳门最著名的葡式蛋挞，现烤出炉约12澳门元/个，官也街步行约3分钟，排队买两个即走',
+      nav: 'https://maps.google.com/?q=22.1568,113.5594'
+    },
+    {
+      id: 'antonio-restaurant',
+      city: 'macau',
+      name: 'António 葡餐厅（可选·正餐）',
+      nameEn: 'Restaurante António',
+      emoji: '🍷',
+      lat: 22.1558,
+      lng: 113.5598,
+      type: 'food',
+      address: '澳门氹仔告利雅施利华街',
+      tip: '氹仔最有名的正宗葡式餐厅，必点烤乳猪和炖牛尾，人均200–350澳门元，建议提前订位',
+      nav: 'https://maps.google.com/?q=22.1558,113.5598'
     },
 
     // ── 芭提雅 ──
@@ -1179,8 +1244,47 @@ var MAP_DATA = {
       lng: 100.5697,
       type: 'massage',
       address: '96/1 Sukhumvit 21 (Asoke), Bangkok',
-      tip: '老牌连锁按摩，BTS Asok步行约10分钟，泰式350฿/小时，建议提前电话预约',
+      tip: '老牌连锁按摩，BTS Asok步行约10分钟，泰式按摩350฿/小时，精油按摩580฿起，建议提前电话预约',
       nav: 'https://maps.google.com/?q=13.7278,100.5697'
+    },
+    {
+      id: 'let-relax-spa',
+      city: 'bangkok',
+      name: 'Let\'s Relax Spa（Terminal 21店·可选）',
+      nameEn: "Let's Relax Spa Asok",
+      emoji: '🛁',
+      lat: 13.7376,
+      lng: 100.5608,
+      type: 'massage',
+      address: 'Terminal 21 Asok 4F, Sukhumvit Soi 19, Bangkok',
+      tip: '位于Terminal 21商场4楼，购物后直接上楼按摩，泰式按摩500฿/小时，精油按摩700฿起，无需走远，性价比高',
+      nav: 'https://maps.google.com/?q=13.7376,100.5608'
+    },
+    {
+      id: 'mbk-center',
+      city: 'bangkok',
+      name: 'MBK Center（平价购物·可选）',
+      nameEn: 'MBK Center',
+      emoji: '🏪',
+      lat: 13.7449,
+      lng: 100.5298,
+      type: 'shopping',
+      address: '444 Phaya Thai Rd, Wang Mai, Pathum Wan, Bangkok',
+      tip: '曼谷最大平价商场，BTS National Stadium站步行即达，从Asok约20分钟。电子数码/泰国本土品牌/手机配件价格可议，买伴手礼/零食首选',
+      nav: 'https://maps.google.com/?q=13.7449,100.5298'
+    },
+    {
+      id: 'asiatique',
+      city: 'bangkok',
+      name: 'Asiatique 河畔夜市（可选）',
+      nameEn: 'Asiatique The Riverfront',
+      emoji: '🎡',
+      lat: 13.7198,
+      lng: 100.5132,
+      type: 'nightlife',
+      address: '2194 Charoen Krung Rd, Bang Kho Laem, Bangkok',
+      tip: '湄南河畔大型露天夜市，摩天轮+文创小店+餐厅，从Grab约30分钟或BTS Saphan Taksin换免费渡船，17:00开放，适合D6傍晚',
+      nav: 'https://maps.google.com/?q=13.7198,100.5132'
     },
     {
       id: 'suvarnabhumi',

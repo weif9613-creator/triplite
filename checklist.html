@@ -260,148 +260,79 @@
         if (openGroups[g_init.id] === undefined) openGroups[g_init.id] = true;
       }
       
-      main.innerHTML = `
-        <div class="page-header">
-          <div class="page-header-title">✅ 行前清单</div>
-          <div class="page-header-sub">第一次出国完整准备 · 照着勾即可</div>
-        </div>
-
-        <!-- 倒计时横幅 -->
-        <div id="countdown-banner" style="border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:700;"></div>
-        
-        <!-- 进度总览 -->
-        <div class="card" style="margin-bottom:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <div>
-              <div data-pct style="font-size:24px;font-weight:800;"></div>
-              <div style="font-size:12px;color:var(--text-secondary);">准备完成度</div>
-            </div>
-            <div style="text-align:right;">
-              <div data-must-progress style="font-size:15px;font-weight:700;color:var(--danger);"></div>
-              <div data-all-progress style="font-size:12px;color:var(--text-secondary);"></div>
-            </div>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:0%;"></div>
-          </div>
-          
-          <!-- 快速操作 -->
-          <div style="display:flex;gap:8px;margin-top:12px;">
-            <button onclick="toggleShowUnchecked()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;">
-              <i class="fas fa-filter"></i> <span id="unchecked-btn-text">只看未完成</span>
-            </button>
-            <button onclick="resetAll()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;">
-              <i class="fas fa-redo"></i> 重置全部
-            </button>
-          </div>
-        </div>
-
-        <!-- 阶段快速筛选 -->
-        <div class="city-tabs" style="margin-bottom:12px;" id="phase-tabs">
-          <button class="city-chip" onclick="setPhase('all',this)">📋 全部</button>
-          <button class="city-chip" onclick="setPhase('before',this)">📅 出发前</button>
-          <button class="city-chip" onclick="setPhase('day0',this)">🔥 出发当天</button>
-          <button class="city-chip" onclick="setPhase('during',this)">✈️ 途中</button>
-        </div>
-
-        <!-- 阶段说明 -->
-        <div id="phase-hint"></div>
-        
-        <!-- 必做项提醒 -->
-        <div id="must-do-alert"></div>
-        
-        <!-- 分组清单 -->
-        <div id="checklistGroups"></div>
-
-        <!-- 底部重要提示 -->
-        <div class="card" style="margin-top:8px;border-left:4px solid var(--danger);">
-          <div class="card-title" style="margin-bottom:10px;"><span class="icon">⚡</span>出发前最重要的7件事</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span>
-              <span><strong>🔴 港澳通行证（回乡证）</strong> – 进澳门必须用，不是身份证！没有的立刻去派出所办急件（3个工作日）</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span>
-              <span><strong>🔴 TDAC电子入境卡</strong> – 4/27抵达泰国前72小时内填（推荐4/25–26在澳门填），官网 <a href="https://tdac.immigration.go.th" target="_blank" rel="noopener" style="color:#b45309;font-weight:700;">tdac.immigration.go.th ↗</a>，全英文填写，截图QR码</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span>
-              <span><strong>护照有效期</strong> – 必须在2026年11月3日之后（还剩6个月+），不够立刻换新！</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</span>
-              <span><strong>Grab安装并绑卡</strong> – 整趟旅行的打车核心，提前注册+绑定信用卡，到了没网注册不了</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</span>
-              <span><strong>银行卡开通境外消费</strong> – 手机银行App里操作，否则境外刷卡会被风控拒绝</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">6</span>
-              <span><strong>出境网络方案</strong> – eSIM/国际漫游/泰国落地买SIM，三选一，提前确认，否则落地没网Grab都用不了</span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;">
-              <span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">7</span>
-              <span><strong>4/30大皇宫着装</strong> – 提前从行李箱找出长裤/过膝裙，单独放好备用。现场借衣要排30–60分钟！</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ☀️ 天气相关注意事项专项提示 -->
-        <div class="card" style="margin-top:10px;border-left:4px solid #f97316;">
-          <div class="card-title" style="margin-bottom:10px;"><span class="icon">☀️</span>天气相关 · 出发前必备物品核查</div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">4月底–5月初 东南亚热季末期，高温+强紫外线+可能阵雨，以下物品必须带齐</div>
-          
-          <!-- 防晒必备 -->
-          <div style="background:#fff7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-            <div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:6px;">🧴 防晒（最重要 · 全程每天都用）</div>
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;'><span style='color:#f97316;font-size:10px;margin-top:4px;'>●</span>防晒霜 SPF50+ PA++++ · 至少200ml，最好带两支（随身+备用）</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;'><span style='color:#f97316;font-size:10px;margin-top:4px;'>●</span>防晒补涂喷雾 · 运动防水型，出汗下水后方便补涂</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;'><span style='color:#f97316;font-size:10px;margin-top:4px;'>●</span>宽沿遮阳帽 · 帽檐≥7cm，遮脸颊+颈部+耳朵</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;'><span style='color:#f97316;font-size:10px;margin-top:4px;'>●</span>UV400墨镜 · 强热带阳光，不戴会损伤眼睛</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;'><span style='color:#f97316;font-size:10px;margin-top:4px;'>●</span>防晒衣/长袖衫 · UPF40+，格兰岛出海必备</div>
-            </div>
-          </div>
-
-          <!-- 防暑备水 -->
-          <div style="background:#eff6ff;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-            <div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">💧 防暑补水（高温环境必备）</div>
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;'><span style='color:#3b82f6;font-size:10px;margin-top:4px;'>●</span>保温水壶/杯 500ml+ · 随时补水，不等口渴就喝</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;'><span style='color:#3b82f6;font-size:10px;margin-top:4px;'>●</span>藿香正气水/胶囊 · 轻度中暑+肠胃不适万能药</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;'><span style='color:#3b82f6;font-size:10px;margin-top:4px;'>●</span>十滴水小瓶 · 随身急救，中暑时用</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;'><span style='color:#3b82f6;font-size:10px;margin-top:4px;'>●</span>口服补液盐 · 大量出汗后补充电解质</div>
-            </div>
-          </div>
-
-          <!-- 防雨 -->
-          <div style="background:#f0fdf4;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-            <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:6px;">🌧️ 防雨（午后可能阵雨）</div>
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#14532d;'><span style='color:#22c55e;font-size:10px;margin-top:4px;'>●</span>折叠晴雨伞 · 轻量款，当地7-Eleven也有售约80–120฿</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#14532d;'><span style='color:#22c55e;font-size:10px;margin-top:4px;'>●</span>防水手机袋/小包 · 护照+手机防雨</div>
-            </div>
-          </div>
-
-          <!-- 蚊虫 -->
-          <div style="background:#fdf4ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
-            <div style="font-size:12px;font-weight:700;color:#7e22ce;margin-bottom:6px;">🦟 驱蚊（热带登革热风险）</div>
-            <div style="display:flex;flex-direction:column;gap:5px;">
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#581c87;'><span style='color:#a855f7;font-size:10px;margin-top:4px;'>●</span>驱蚊液 DEET 30%+ · 黄昏后必用，防登革热</div>
-              <div style='display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#581c87;'><span style='color:#a855f7;font-size:10px;margin-top:4px;'>●</span>蚊虫叮咬止痒膏 · 清凉油或芦荟胶</div>
-            </div>
-          </div>
-
-          <div style="display:flex;align-items:center;gap:8px;background:#fef3c7;border-radius:8px;padding:8px 10px;">
-            <span style="font-size:16px;">💡</span>
-            <span style="font-size:12px;color:#92400e;">查看<a href="weather.html" style="color:#b45309;font-weight:700;">天气页面</a>获取逐日天气详情和防暑防晒完整指南 →</span>
-          </div>
-        </div>
-        
-        <div class="safe-bottom"></div>
-      `;
+      main.innerHTML =
+        '<div class="page-header">'
+        + '<div class="page-header-title">\u2705 行前清单</div>'
+        + '<div class="page-header-sub">第一次出国完整准备 · 照着勾即可</div>'
+        + '</div>'
+        + '<div id="countdown-banner" style="border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:700;"></div>'
+        + '<div class="card" style="margin-bottom:12px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+        + '<div><div data-pct style="font-size:24px;font-weight:800;"></div><div style="font-size:12px;color:var(--text-secondary);">准备完成度</div></div>'
+        + '<div style="text-align:right;"><div data-must-progress style="font-size:15px;font-weight:700;color:var(--danger);"></div><div data-all-progress style="font-size:12px;color:var(--text-secondary);"></div></div>'
+        + '</div>'
+        + '<div class="progress-bar"><div class="progress-fill" style="width:0%;"></div></div>'
+        + '<div style="display:flex;gap:8px;margin-top:12px;">'
+        + '<button onclick="toggleShowUnchecked()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;"><i class="fas fa-filter"></i> <span id="unchecked-btn-text">只看未完成</span></button>'
+        + '<button onclick="resetAll()" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px;"><i class="fas fa-redo"></i> 重置全部</button>'
+        + '</div></div>'
+        + '<div class="city-tabs" style="margin-bottom:12px;" id="phase-tabs">'
+        + '<button class="city-chip" onclick="setPhase(\'all\',this)">\uD83D\uDCCB 全部</button>'
+        + '<button class="city-chip" onclick="setPhase(\'before\',this)">\uD83D\uDCC5 出发前</button>'
+        + '<button class="city-chip" onclick="setPhase(\'day0\',this)">\uD83D\uDD25 出发当天</button>'
+        + '<button class="city-chip" onclick="setPhase(\'during\',this)">\u2708\uFE0F 途中</button>'
+        + '</div>'
+        + '<div id="phase-hint"></div>'
+        + '<div id="must-do-alert"></div>'
+        + '<div id="checklistGroups"></div>'
+        + '<div class="card" style="margin-top:8px;border-left:4px solid var(--danger);">'
+        + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\u26A1</span>出发前最重要的7件事</div>'
+        + '<div style="display:flex;flex-direction:column;gap:8px;">'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span><span><strong>\uD83D\uDD34 港澳通行证（回乡证）</strong> – 进澳门必须用，不是身份证！没有的立刻去派出所办急件（3个工作日）</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span><span><strong>\uD83D\uDD34 TDAC电子入境卡</strong> – 4/27抵达泰国前72小时内填（推荐4/25–26在澳门填），官网 <a href="https://tdac.immigration.go.th" target="_blank" rel="noopener" style="color:#b45309;font-weight:700;">tdac.immigration.go.th \u2197</a>，全英文填写，截图QR码</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span><span><strong>护照有效期</strong> – 必须在2026年11月3日之后（还剩6个月+），不够立刻换新！</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">4</span><span><strong>Grab安装并绑卡</strong> – 整趟旅行的打车核心，提前注册+绑定信用卡，到了没网注册不了</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">5</span><span><strong>银行卡开通境外消费</strong> – 手机银行App里操作，否则境外刷卡会被风控拒绝</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">6</span><span><strong>出境网络方案</strong> – eSIM/国际漫游/泰国落地买SIM，三选一，提前确认，否则落地没网Grab都用不了</span></div>'
+        + '<div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">7</span><span><strong>4/30大皇宫着装</strong> – 提前从行李箱找出长裤/过膝裙，单独放好备用。现场借衣要排30–60分钟！</span></div>'
+        + '</div></div>'
+        + '<div class="card" style="margin-top:10px;border-left:4px solid #f97316;">'
+        + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\u2600\uFE0F</span>天气相关 · 出发前必备物品核查</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">4月底–5月初 东南亚热季末期，高温+强紫外线+可能阵雨，以下物品必须带齐</div>'
+        + '<div style="background:#fff7ed;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+        + '<div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:6px;">\uD83E\uDDF4 防晒（最重要 · 全程每天都用）</div>'
+        + '<div style="display:flex;flex-direction:column;gap:5px;">'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>防晒霜 SPF50+ PA++++ · 至少200ml，最好带两支（随身+备用）</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>防晒补涂喷雾 · 运动防水型，出汗下水后方便补涂</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>宽沿遮阳帽 · 帽檐≥7cm，遮脸颊+颈部+耳朵</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>UV400墨镜 · 强热带阳光，不戴会损伤眼睛</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#7c2d12;"><span style="color:#f97316;font-size:10px;margin-top:4px;">●</span>防晒衣/长袖衫 · UPF40+，格兰岛出海必备</div>'
+        + '</div></div>'
+        + '<div style="background:#eff6ff;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+        + '<div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">\uD83D\uDCA7 防暑补水（高温环境必备）</div>'
+        + '<div style="display:flex;flex-direction:column;gap:5px;">'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;"><span style="color:#3b82f6;font-size:10px;margin-top:4px;">●</span>保温水壶/杯 500ml+ · 随时补水，不等口渴就喝</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;"><span style="color:#3b82f6;font-size:10px;margin-top:4px;">●</span>藿香正气水/胶囊 · 轻度中暑+肠胃不适万能药</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;"><span style="color:#3b82f6;font-size:10px;margin-top:4px;">●</span>十滴水小瓶 · 随身急救，中暑时用</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#1e3a8a;"><span style="color:#3b82f6;font-size:10px;margin-top:4px;">●</span>口服补液盐 · 大量出汗后补充电解质</div>'
+        + '</div></div>'
+        + '<div style="background:#f0fdf4;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+        + '<div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:6px;">\uD83C\uDF27\uFE0F 防雨（午后可能阵雨）</div>'
+        + '<div style="display:flex;flex-direction:column;gap:5px;">'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#14532d;"><span style="color:#22c55e;font-size:10px;margin-top:4px;">●</span>折叠晴雨伞 · 轻量款，当地7-Eleven也有售约80–120฿</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#14532d;"><span style="color:#22c55e;font-size:10px;margin-top:4px;">●</span>防水手机袋/小包 · 护照+手机防雨</div>'
+        + '</div></div>'
+        + '<div style="background:#fdf4ff;border-radius:10px;padding:10px 12px;margin-bottom:10px;">'
+        + '<div style="font-size:12px;font-weight:700;color:#7e22ce;margin-bottom:6px;">\uD83E\uDD9F 驱蚊（热带登革热风险）</div>'
+        + '<div style="display:flex;flex-direction:column;gap:5px;">'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#581c87;"><span style="color:#a855f7;font-size:10px;margin-top:4px;">●</span>驱蚊液 DEET 30%+ · 黄昏后必用，防登革热</div>'
+        + '<div style="display:flex;gap:6px;align-items:flex-start;font-size:12px;color:#581c87;"><span style="color:#a855f7;font-size:10px;margin-top:4px;">●</span>蚊虫叮咬止痒膏 · 清凉油或芦荟胶</div>'
+        + '</div></div>'
+        + '<div style="display:flex;align-items:center;gap:8px;background:#fef3c7;border-radius:8px;padding:8px 10px;">'
+        + '<span style="font-size:16px;">\uD83D\uDCA1</span>'
+        + '<span style="font-size:12px;color:#92400e;">查看<a href="weather.html" style="color:#b45309;font-weight:700;">天气页面</a>获取逐日天气详情和防暑防晒完整指南 →</span>'
+        + '</div></div>'
+        + '<div class="safe-bottom"></div>';
       
       renderGroups();
 
