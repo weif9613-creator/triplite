@@ -135,8 +135,8 @@
           + '<div style="font-size:12px;color:#666;margin-bottom:6px;">' + poi_m.address + '</div>'
           + '<div style="font-size:12px;color:#1e40af;background:#dbeafe;padding:4px 8px;border-radius:6px;">' + poi_m.tip + '</div>'
           + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">'
-          + '<a href="https://uri.amap.com/marker?position=' + poi_m.lng + ',' + poi_m.lat + '&name=' + encodeURIComponent(poi_m.name) + '&coordinate=gaode&callnative=1" target="_blank" style="background:#00b7ff;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">📍 高德导航</a>
-          + '<a href="https://maps.google.com/?q=' + poi_m.lat + ',' + poi_m.lng + '" target="_blank" style="background:#4285f4;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">🗺️ 谷歌地图</a>'
+          + '<a href="https://uri.amap.com/marker?position=' + poi_m.lng + ',' + poi_m.lat + '&name=' + encodeURIComponent(poi_m.name) + '&coordinate=gaode&callnative=1" target="_blank" style="background:#00b7ff;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">\uD83D\uDCCD \u9AD8\u5FB7\u5BFC\u822A</a>'
+          + '<a href="https://maps.google.com/?q=' + poi_m.lat + ',' + poi_m.lng + '" target="_blank" style="background:#4285f4;color:white;text-align:center;padding:7px 4px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">\uD83D\uDDFA\uFE0F \u8C37\u6B4C\u5730\u56FE</a>'
           + '</div></div>';
         marker_m = L.marker([poi_m.lat, poi_m.lng], { icon: icon_m })
           .addTo(leafletMap)

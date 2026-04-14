@@ -33,11 +33,11 @@
   <main class="app-main" id="appMain"></main>
 
   <nav class="bottom-nav">
-    <a href="index.html"    class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
-    <a href="trip.html"     class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
-    <a href="map.html"      class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
+    <a href="index.html"     class="nav-item"><i class="fas fa-home"></i><span>首页</span></a>
+    <a href="trip.html"      class="nav-item"><i class="fas fa-route"></i><span>行程</span></a>
+    <a href="map.html"       class="nav-item"><i class="fas fa-map-marker-alt"></i><span>地图</span></a>
     <a href="checklist.html" class="nav-item"><i class="fas fa-check-square"></i><span>清单</span></a>
-    <a href="weather.html"  class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
+    <a href="weather.html"   class="nav-item"><i class="fas fa-cloud-sun"></i><span>天气</span></a>
     <a href="emergency.html" class="nav-item active"><i class="fas fa-shield-alt"></i><span>应急</span></a>
   </nav>
 
@@ -47,10 +47,52 @@
     function renderEmergencyPage() {
       var main = document.getElementById('appMain');
       if (!main) return;
-      
-      main.innerHTML = '<div class="page-header"><div class="page-header-title">\ud83d\udee1\ufe0f \u5e94\u6025\u5e2e\u52a9</div><div class="page-header-sub">\u51fa\u95ee\u9898\u65f6\u8be5\u770b\u54ea \u00b7 \u7d27\u6025\u8054\u7cfb \u00b7 \u5b9e\u7528\u5efa\u8bae</div></div>'\n        + '<div class="card" style="margin-bottom:14px;border:2px solid #fecaca;"><div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">\ud83c\udd98</span>\u7d27\u6025\u7535\u8bdd\uff08\u7acb\u5373\u53ef\u62e8\uff09</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><a href="tel:+6622457010" class="emergency-phone" style="justify-content:center;"><span>\ud83c\udde8\ud83c\uddf3</span> \u4e2d\u56fd\u4f7f\u9986\u9886\u4fdd</a><a href="tel:1155" class="emergency-phone" style="justify-content:center;"><span>\ud83d\udc6e</span> \u65c5\u6e38\u8b66\u5bdf 1155</a><a href="tel:1669" class="emergency-phone" style="justify-content:center;"><span>\ud83d\ude91</span> \u6025\u6551 1669</a><a href="tel:191" class="emergency-phone" style="justify-content:center;"><span>\ud83d\ude94</span> \u8b66\u5bdf 191</a></div><div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">\u70b9\u51fb\u53ef\u76f4\u63a5\u62e8\u6253 \u00b7 \u4ec5\u5728\u6cf0\u56fd\u6709\u6548</div></div>'\n        + '<div id="emergency-sections"></div>'\n        + '<div class="card" style="margin-top:8px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udccb</span>\u51fa\u53d1\u524d\u5fc5\u987b\u5907\u4efd\u5230\u624b\u673a\u7684\u4fe1\u606f</div><div style="display:flex;flex-direction:column;gap:6px;">'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u62a4\u7167\u9996\u9875\u7167\u7247</div><div style="font-size:11px;color:var(--text-muted);">\u624b\u673a\u76f8\u518c\u4e2d\u5355\u72ec\u4fdd\u5b58</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u673a\u7968\u786e\u8ba4\u53f7+\u56de\u7a0b\u673a\u7968</div><div style="font-size:11px;color:var(--text-muted);">\u622a\u56fe\u4fdd\u5b58\u5e76\u53d1\u5230\u81ea\u5df1\u90ae\u7b71</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; TDAC\u786e\u8ba4\u4e8c\u7ef4\u7801</div><div style="font-size:11px;color:var(--text-muted);">\u622a\u56fe\u4fdd\u5b58\uff0c\u5165\u5883\u65f6\u51fa\u793a</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u66fc\u8c37\u9152\u5e97\u82f1\u6587\u5730\u5740</div><div style="font-size:11px;color:var(--text-muted);">\u590d\u5236\u5230\u624b\u673a\u5907\u5fd8\u5f55</div></div>'\n        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);"><div style="font-size:13px;font-weight:600;color:var(--text-primary);">&#10003; \u4e2d\u56fd\u9a7b\u6cf0\u5927\u4f7f\u9986\u9886\u4fdd\u70ed\u7ebf</div><div style="font-size:11px;color:var(--text-muted);">+66-2-245-7010\uff0824h\uff09</div></div>'\n        + '</div></div>'\n        + '<div class="card" style="margin-top:12px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udde3\ufe0f</span>\u5e94\u6025\u6cf0\u8bed\u77ed\u53e5</div><div id="thai-phrases-inline" style="display:flex;flex-direction:column;gap:6px;"></div></div>'\n        + '<div class="card" style="margin-top:12px;"><div class="card-title" style="margin-bottom:12px;"><span class="icon">\ud83d\udeab</span>\u66fc\u8c37\u5e38\u89c1\u9677\u9631</div><div style="display:flex;flex-direction:column;gap:8px;">'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u5927\u7687\u5bab\u201c\u4eca\u5929\u5173\u95ed\u201d\u9a97\u5c40</div><div class="step-desc">\u5927\u7687\u5bab\u95e8\u53e3\u4f1a\u6709\u4eba\u8bf4\u201c\u4eca\u5929\u5173\u95ed\uff0c\u6211\u5e26\u4f60\u53bb\u5176\u4ed6\u5730\u65b9\u201d\u3002\u4e0d\u8981\u4fe1\uff01\u76f4\u63a5\u8fdb\u6b63\u95e8\u3002\u5f00\u653e\u65f6\u95f4\u5b98\u65b9\u4e3a8:30\u201315:30\u552e\u7968\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u561a\u561a\u8f66\u6f2b\u5929\u8981\u4ef7</div><div class="step-desc">\u561a\u561a\u8f66\u8def\u7ebf\u56fa\u5b9a\u4f46\u5bb9\u6613\u7ed5\u8def\u3002\u77ed\u9014\u51fa\u884c\u4f18\u5148\u7528Grab\uff0c\u4ef7\u683c\u900f\u660e\u6709\u4fdd\u969c\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u73e0\u5b9d\u5e97\u9a97\u5c40</div><div class="step-desc">\u51fa\u79df\u8f66/\u8def\u4eba\u63a8\u8350\u201c\u4eca\u5929\u6253\u6298\u73e0\u5b9d\u5e97\u201d\u4e00\u5f8b\u4e0d\u8981\u53bb\u3002\u662f\u9a97\u5c40\u3002</div></div></div>'\n        + '<div class="step-item warning"><div class="step-content"><div class="step-title">\u26a0\ufe0f \u975e\u5b98\u65b9\u79df\u6469\u6258</div><div class="step-desc">\u8a71\u63d0\u96c5\u8857\u8fb9\u975e\u5b98\u65b9\u6469\u6258\u9a7e\u7167\u95ee\u9898\u3002\u51fa\u884c\u4f18\u5148Grab\u6216\u53cc\u6761\u8f66\u3002</div></div></div>'\n        + '</div></div>'\n        + '<div class="safe-bottom"></div>';
+      var h = '';
+      h += '<div class="page-header">';
+      h += '<div class="page-header-title">&#x1F6E1;&#xFE0F; &#x5E94;&#x6025;&#x5E2E;&#x52A9;</div>';
+      h += '<div class="page-header-sub">&#x51FA;&#x95EE;&#x9898;&#x65F6;&#x8BE5;&#x770B;&#x54EA; &middot; &#x7D27;&#x6025;&#x8054;&#x7CFB; &middot; &#x5B9E;&#x7528;&#x5EFA;&#x8BAE;</div>';
+      h += '</div>';
+
+      h += '<div class="card" style="margin-bottom:14px;border:2px solid #fecaca;">';
+      h += '<div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">&#x1F198;</span>&#x7D27;&#x6025;&#x7535;&#x8BDD;&#xFF08;&#x7ACB;&#x5373;&#x53EF;&#x62E8;&#xFF09;</div>';
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+      h += '<a href="tel:+6622457010" class="emergency-phone" style="justify-content:center;"><span>&#x1F1E8;&#x1F1F3;</span> &#x4E2D;&#x56FD;&#x4F7F;&#x9986;&#x9886;&#x4FDD;</a>';
+      h += '<a href="tel:1155" class="emergency-phone" style="justify-content:center;"><span>&#x1F46E;</span> &#x65C5;&#x6E38;&#x8B66;&#x5BDF; 1155</a>';
+      h += '<a href="tel:1669" class="emergency-phone" style="justify-content:center;"><span>&#x1F691;</span> &#x6025;&#x6551; 1669</a>';
+      h += '<a href="tel:191" class="emergency-phone" style="justify-content:center;"><span>&#x1F694;</span> &#x8B66;&#x5BDF; 191</a>';
+      h += '</div>';
+      h += '<div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">&#x70B9;&#x51FB;&#x53EF;&#x76F4;&#x63A5;&#x62E8;&#x6253; &middot; &#x4EC5;&#x5728;&#x6CF0;&#x56FD;&#x6709;&#x6548;</div>';
+      h += '</div>';
+
+      h += '<div id="emergency-sections"></div>';
+
+      h += '<div class="card" style="margin-top:8px;">';
+      h += '<div class="card-title" style="margin-bottom:12px;"><span class="icon">&#x1F4CB;</span>&#x51FA;&#x53D1;&#x524D;&#x5FC5;&#x987B;&#x5907;&#x4EFD;&#x5230;&#x624B;&#x673A;&#x7684;&#x4FE1;&#x606F;</div>';
+      h += '<div style="display:flex;flex-direction:column;gap:6px;">';
+      var backupItems = [
+        ['&#10003; &#x62A4;&#x7167;&#x9996;&#x9875;&#x7167;&#x7247;', '&#x62A4;&#x7167;&#x53F7;&#x3001;&#x6709;&#x6548;&#x671F;&#x3001;&#x7B7E;&#x8BC1;&#x9875;'],
+        ['&#10003; &#x673A;&#x7968;&#x8BA2;&#x5355;&#x622A;&#x56FE;', '&#x822A;&#x73ED;&#x53F7;&#x3001;&#x65F6;&#x95F4;&#x3001;&#x5EA7;&#x4F4D;&#x53F7;'],
+        ['&#10003; &#x9152;&#x5E97;&#x786E;&#x8BA4;&#x51FD;',         '&#x5730;&#x5740;&#x3001;&#x5165;&#x4F4F;&#x65E5;&#x671F;'],
+        ['&#10003; &#x65C5;&#x884C;&#x4FDD;&#x9669;&#x5355;',         '&#x7406;&#x8D54;&#x7535;&#x8BDD;&#x3001;&#x4FDD;&#x5355;&#x53F7;'],
+        ['&#10003; &#x5BB6;&#x4EBA;&#x8054;&#x7CFB;&#x65B9;&#x5F0F;', '&#x7D27;&#x6025;&#x8054;&#x7CFB;&#x4EBA;&#x7535;&#x8BDD;']
+      ];
+      for (var bi = 0; bi < backupItems.length; bi++) {
+        h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">';
+        h += '<div style="font-size:13px;font-weight:600;color:var(--text-primary);">' + backupItems[bi][0] + '</div>';
+        h += '<div style="font-size:11px;color:var(--text-muted);">' + backupItems[bi][1] + '</div>';
+        h += '</div>';
+      }
+      h += '</div></div>';
+
+      h += '<div class="card" style="margin-top:8px;">';
+      h += '<div class="card-title" style="margin-bottom:12px;"><span class="icon">&#x1F1F9;&#x1F1ED;</span>&#x6CF0;&#x8BED;&#x5E94;&#x6025;&#x77ED;&#x53E5;</div>';
+      h += '<div id="thai-phrases-inline" style="display:flex;flex-direction:column;gap:6px;"></div>';
+      h += '</div>';
+
+      h += '<div class="safe-bottom"></div>';
+      main.innerHTML = h;
     }
-    
+
     function renderEmergencyItem(item) {
       return '<div class="emergency-item">'
         + '<div class="emergency-icon">' + item.icon + '</div>'
@@ -73,11 +115,10 @@
         }
       } catch(e) {}
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
       renderEmergencyPage();
 
-      // 按分类填充
       var sectionsEl = document.getElementById('emergency-sections');
       if (sectionsEl && typeof EMERGENCY_DATA !== 'undefined') {
         var sectHtml = '';
@@ -92,7 +133,6 @@
         sectionsEl.innerHTML = sectHtml;
       }
 
-      // 泰语短句
       var thaiPhrases = [
         { th: 'ช่วยด้วย（Chuay duay）', cn: '救命/帮帮我' },
         { th: 'ไปโรงพยาบาล（Pai rong phayaban）', cn: '去医院' },
@@ -109,7 +149,8 @@
         for (var pi = 0; pi < thaiPhrases.length; pi++) {
           var ph = thaiPhrases[pi];
           pHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);">'
-            + '<div><div style="font-size:13px;font-weight:600;color:var(--primary-light);">' + ph.th + '</div><div style="font-size:12px;color:var(--text-secondary);">' + ph.cn + '</div></div>'
+            + '<div><div style="font-size:13px;font-weight:600;color:var(--primary-light);">' + ph.th + '</div>'
+            + '<div style="font-size:12px;color:var(--text-secondary);">' + ph.cn + '</div></div>'
             + '<button onclick="copyToClipboard(this.dataset.text)" data-text="' + ph.th.replace(/"/g, '&quot;') + '" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-muted);cursor:pointer;">复制</button>'
             + '</div>';
         }

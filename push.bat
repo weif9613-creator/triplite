@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v2.1: 修复涂鸦页文字放置不显示(JS换行语法错误)-修复getMergedDataURL读取×字符-修复togglePagesPanel等ES6语法"
+git commit -m "v1.11: 修复地图/应急/天气页打不开-消除JS字符串换行语法错误和非法Unicode转义"
 echo.
 
 echo [4/4] 推送到 GitHub...
