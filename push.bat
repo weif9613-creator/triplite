@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.11: 修复地图/应急/天气页打不开-消除JS字符串换行语法错误和非法Unicode转义"
+git commit -m "v1.13: 修复地图/应急/天气页JS语法错误-修复涂鸦文字放置-修复PWA icon-512空文件-规范manifest"
 echo.
 
 echo [4/4] 推送到 GitHub...
