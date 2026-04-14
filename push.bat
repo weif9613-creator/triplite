@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.13: 修复地图/应急/天气页JS语法错误-修复涂鸦文字放置-修复PWA icon-512空文件-规范manifest"
+git commit -m "v1.14: 重写PWA安装引导-全平台覆盖(Chrome/iOS/桌面/微信)-常驻安装按钮-各平台精准引导"
 echo.
 
 echo [4/4] 推送到 GitHub...

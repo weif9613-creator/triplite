@@ -1,7 +1,7 @@
 // ============================================
-// TripLite · app.js
+// TripLite · app.js  v1.14
 // 全局逻辑：导航高亮 · SW注册 · PWA安装引导
-// 兼容：iOS Safari / Android Chrome / 旧版浏览器
+// 平台覆盖：Android Chrome / iOS Safari / 桌面 / 非标浏览器
 // ============================================
 
 // ── 导航高亮 ──
@@ -13,14 +13,11 @@ function setActiveNav() {
     item.classList.remove('active');
     var href = item.getAttribute('href') || '';
     if (!href) continue;
-    // 路径归一化：去掉 .html 后缀做对比
     var hrefBase = href.replace(/\.html$/, '').replace(/^\.\//, '');
     var pathBase = path.replace(/\.html$/, '').replace(/\/$/, '') || '/index';
-    // 首页特殊处理
     var isHome = hrefBase === 'index' || hrefBase === '/' || hrefBase === '';
     var pathIsHome = path === '/' || path.indexOf('/index.html') !== -1 || path.indexOf('/index') !== -1 || path === '';
     if (isHome && pathIsHome) { item.classList.add('active'); continue; }
-    // 其他页面：路径末尾匹配
     if (!isHome && pathBase.indexOf('/' + hrefBase) !== -1) {
       item.classList.add('active');
     }
@@ -36,202 +33,285 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ── 设备/环境检测 ──
+// ── 环境检测 ──
 var UA = navigator.userAgent;
 var isIOS        = /iPad|iPhone|iPod/.test(UA) && !window.MSStream;
 var isAndroid    = /Android/.test(UA);
 var isMobile     = isIOS || isAndroid;
+var isChrome     = /Chrome/.test(UA) && !/Edg|OPR|QQ|UCBrowser|MiuiBrowser/.test(UA);
+var isWeChat     = /MicroMessenger/.test(UA);  // 微信内
+var isMiniProgram = (typeof wx !== 'undefined') || isWeChat; // 微信小程序预留
 var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
                    || window.navigator.standalone === true;
 
-// Android Chrome: 捕获 beforeinstallprompt
+// ── 捕获 Chrome 安装事件 ──
 var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
+  // 事件到了就更新首页安装按钮状态
+  _updateInstallCardState();
 });
 
-// ── 主入口：页面加载后决定是否显示引导 ──
+// 安装成功后隐藏按钮
+window.addEventListener('appinstalled', function() {
+  deferredPrompt = null;
+  _hideInstallCard();
+});
+
+// ── 初始化 ──
 document.addEventListener('DOMContentLoaded', function() {
   setActiveNav();
-
-  // 已安装/已关闭过 → 不弹
-  if (isStandalone) return;
-  if (sessionStorage.getItem('pwaGuideShown')) return; // 同一次会话只弹一次
-
-  // 延迟2秒再弹，让用户先看到内容
-  setTimeout(function() {
-    if (isIOS) {
-      showIOSGuide();
-    } else if (isAndroid) {
-      // 等待 beforeinstallprompt 事件（最多3秒）
-      if (deferredPrompt) {
-        showAndroidBanner();
-      } else {
-        setTimeout(function() {
-          if (deferredPrompt) showAndroidBanner();
-          else showAndroidManualGuide(); // 部分安卓浏览器无事件，走手动引导
-        }, 3000);
-      }
-    }
-    // 桌面不弹，Chrome会自动在地址栏显示安装按钮
-  }, 2000);
 });
 
-// ════════════════════════════════════════════
-// iOS Safari 引导弹窗
-// ════════════════════════════════════════════
-function showIOSGuide() {
-  if (document.getElementById('pwa-overlay')) return;
-  sessionStorage.setItem('pwaGuideShown', '1');
+// ══════════════════════════════════════════════
+// 对外接口：首页安装卡片调用
+// ══════════════════════════════════════════════
 
-  var overlay = document.createElement('div');
-  overlay.id = 'pwa-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:9000;display:flex;align-items:flex-end;animation:fadeIn 0.25s ease;';
+// 点击"安装/添加到桌面"按钮时调用
+function showInstallGuide() {
 
-  overlay.innerHTML =
-    '<div style="width:100%;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(28px + env(safe-area-inset-bottom,0px));animation:slideUp 0.3s ease;">'
-    + '<div style="width:40px;height:4px;background:#d1d5db;border-radius:2px;margin:0 auto 18px;"></div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'
-    + '<span style="font-size:28px;">✈️</span>'
-    + '<div><div style="font-size:17px;font-weight:800;color:#1e293b;">添加到主屏幕</div>'
-    + '<div style="font-size:12px;color:#64748b;">像App一样使用 · 断网也能打开</div></div></div>'
-    + '<div style="background:#f1f5f9;border-radius:12px;padding:14px 16px;margin:14px 0;">'
-    + '<div style="font-size:12px;color:#475569;font-weight:600;margin-bottom:10px;">📋 按以下步骤操作（Safari浏览器）</div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#0ea5e9;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">点击底部 <span style="background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:6px;font-size:13px;">分享</span> 按钮</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">Safari 底部中间 <strong>方块+向上箭头</strong> ↑</div></div></div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#0ea5e9;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">向下滑动菜单</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">找到 <strong>「添加到主屏幕」</strong></div></div></div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#10b981;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">点 <span style="color:#10b981;">「添加」</span> 确认</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">桌面出现 TripLite 图标，完成！</div></div></div></div>'
-    + '<div style="font-size:11px;color:#94a3b8;text-align:center;margin-bottom:14px;">⚡ 首次安装后离线也能使用全部功能</div>'
-    + '<div style="display:flex;gap:10px;">'
-    + '<button onclick="closePwaOverlay()" style="flex:1;padding:13px;background:#f1f5f9;border:none;border-radius:12px;font-size:14px;color:#64748b;font-weight:600;cursor:pointer;">稍后再说</button>'
-    + '<button onclick="closePwaOverlay(true)" style="flex:2;padding:13px;background:#0ea5e9;border:none;border-radius:12px;font-size:14px;color:white;font-weight:800;cursor:pointer;">我知道了，去操作 →</button>'
-    + '</div></div>';
+  // ① 已安装（standalone模式）
+  if (isStandalone) {
+    _showToast('✅ 已安装到桌面！');
+    return;
+  }
 
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closePwaOverlay();
-  });
+  // ② 微信内 → 引导用浏览器打开
+  if (isWeChat) {
+    _showWechatGuide();
+    return;
+  }
 
-  document.body.appendChild(overlay);
-  injectPwaStyles();
+  // ③ iOS Safari → 分享菜单引导
+  if (isIOS) {
+    _showIOSGuide();
+    return;
+  }
+
+  // ④ Android Chrome 且有安装事件 → 直接触发系统安装
+  if (isAndroid && isChrome && deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(result) {
+      if (result.outcome === 'accepted') {
+        _hideInstallCard();
+      }
+      deferredPrompt = null;
+    });
+    return;
+  }
+
+  // ⑤ Android Chrome 但事件未到 → 提示用菜单安装
+  if (isAndroid && isChrome) {
+    _showAndroidChromeManual();
+    return;
+  }
+
+  // ⑥ Android 非Chrome浏览器 → 建议用Chrome打开
+  if (isAndroid) {
+    _showAndroidOtherGuide();
+    return;
+  }
+
+  // ⑦ 桌面电脑 Chrome → 地址栏安装提示
+  if (!isMobile && isChrome) {
+    _showDesktopChromeGuide();
+    return;
+  }
+
+  // ⑧ 桌面其他浏览器（Safari Mac / Firefox / Edge等）
+  _showDesktopOtherGuide();
 }
 
-// ════════════════════════════════════════════
-// Android Chrome 一键安装横幅
-// ════════════════════════════════════════════
-function showAndroidBanner() {
-  if (document.getElementById('pwa-overlay')) return;
-  sessionStorage.setItem('pwaGuideShown', '1');
+// ══════════════════════════════════════════════
+// 各平台弹窗实现
+// ══════════════════════════════════════════════
 
-  var banner = document.createElement('div');
-  banner.id = 'pwa-overlay';
-  banner.style.cssText = 'position:fixed;bottom:calc(68px + env(safe-area-inset-bottom));left:12px;right:12px;background:linear-gradient(135deg,#1a3a5c,#0ea5e9);color:white;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,0.3);animation:slideUp 0.35s ease;';
+// iOS Safari 引导
+function _showIOSGuide() {
+  _showModal(
+    '📱 添加到 iPhone 主屏幕',
+    '<div style="background:#f1f5f9;border-radius:12px;padding:14px;margin:12px 0;">'
+    + _step(1, '#0ea5e9', '点击底部 <b>分享</b> 按钮', '底部中间「方块+箭头↑」图标')
+    + _step(2, '#0ea5e9', '向下滑动，找到<b>「添加到主屏幕」</b>', '英文版：Add to Home Screen')
+    + _step(3, '#10b981', '点右上角 <b>「添加」</b>', '桌面出现 TripLite 图标 ✓')
+    + '</div>'
+    + '<div style="font-size:12px;color:#64748b;text-align:center;">⚠️ 必须在 Safari 浏览器中操作</div>',
+    '我知道了，去操作 →',
+    null
+  );
+}
 
-  banner.innerHTML =
-    '<div style="font-size:28px;flex-shrink:0;">✈️</div>'
-    + '<div style="flex:1;min-width:0;">'
-    + '<div style="font-size:14px;font-weight:800;margin-bottom:2px;">安装 TripLite 到桌面</div>'
-    + '<div style="font-size:11px;opacity:0.85;">离线可用 · 一键查行程天气</div></div>'
-    + '<button id="pwa-install-btn" style="background:white;color:#0369a1;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">立即安装</button>'
-    + '<button onclick="closePwaOverlay()" style="background:rgba(255,255,255,0.2);color:white;border:none;width:30px;height:30px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">×</button>';
+// Android Chrome 有事件但点了没反应时的手动引导
+function _showAndroidChromeManual() {
+  _showModal(
+    '📲 安装到桌面',
+    '<div style="background:#f1f5f9;border-radius:12px;padding:14px;margin:12px 0;">'
+    + _step(1, '#f59e0b', '点右上角 <b>⋮</b> 菜单', 'Chrome 浏览器右上角三个点')
+    + _step(2, '#f59e0b', '点「<b>添加到主屏幕</b>」', '或「安装应用 / Install app」')
+    + _step(3, '#10b981', '点「<b>安装</b>」确认', '桌面出现 TripLite 图标 ✓')
+    + '</div>',
+    '明白了 ✓',
+    null
+  );
+}
 
-  document.body.appendChild(banner);
-  injectPwaStyles();
+// Android 非Chrome浏览器
+function _showAndroidOtherGuide() {
+  _showModal(
+    '🌐 建议用 Chrome 打开',
+    '<div style="text-align:center;padding:8px 0 16px;">'
+    + '<div style="font-size:40px;margin-bottom:8px;">🟡</div>'
+    + '<div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:6px;">当前浏览器不支持安装</div>'
+    + '<div style="font-size:13px;color:#64748b;line-height:1.6;">请用 <b>Google Chrome</b> 打开<br>'
+    + '<span style="color:#0ea5e9;font-weight:700;">triplite.cn</span><br>即可一键安装到桌面</div>'
+    + '</div>'
+    + '<div style="background:#f1f5f9;border-radius:10px;padding:10px 14px;font-size:12px;color:#475569;">'
+    + '💡 也可在当前浏览器菜单中找「添加到主屏幕」手动添加</div>',
+    '知道了',
+    null
+  );
+}
 
-  var installBtn = document.getElementById('pwa-install-btn');
-  if (installBtn) {
-    installBtn.addEventListener('click', function() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function() {
-        closePwaOverlay(true);
-        deferredPrompt = null;
-      });
+// 微信内引导
+function _showWechatGuide() {
+  _showModal(
+    '📲 请在浏览器中打开',
+    '<div style="text-align:center;padding:8px 0 16px;">'
+    + '<div style="font-size:40px;margin-bottom:8px;">🔗</div>'
+    + '<div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:6px;">微信内无法安装到桌面</div>'
+    + '<div style="font-size:13px;color:#64748b;line-height:1.8;">'
+    + '点右上角 <b>···</b> → <b>在浏览器打开</b><br>'
+    + '然后在浏览器中添加到桌面</div>'
+    + '</div>',
+    '知道了',
+    null
+  );
+}
+
+// 桌面 Chrome 引导
+function _showDesktopChromeGuide() {
+  // 如果有deferredPrompt直接触发
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function() {
+      deferredPrompt = null;
+    });
+    return;
+  }
+  _showModal(
+    '💻 安装到电脑',
+    '<div style="background:#f1f5f9;border-radius:12px;padding:14px;margin:12px 0;">'
+    + _step(1, '#0ea5e9', '点地址栏右侧 <b>⊕</b> 安装图标', '或点右上角 ⋮ → 安装网页应用')
+    + _step(2, '#10b981', '点「<b>安装</b>」确认', '桌面/开始菜单出现 TripLite ✓')
+    + '</div>'
+    + '<div style="font-size:12px;color:#64748b;text-align:center;">安装后像本地App一样使用，支持离线</div>',
+    '知道了',
+    null
+  );
+}
+
+// 桌面其他浏览器
+function _showDesktopOtherGuide() {
+  _showModal(
+    '💻 添加到桌面',
+    '<div style="text-align:center;padding:8px 0 12px;">'
+    + '<div style="font-size:13px;color:#64748b;line-height:1.8;">'
+    + '推荐用 <b>Chrome 浏览器</b> 访问<br>'
+    + '<span style="color:#0ea5e9;font-weight:700;">triplite.cn</span><br>'
+    + '可一键安装为桌面应用</div>'
+    + '</div>'
+    + '<div style="background:#f1f5f9;border-radius:10px;padding:10px 14px;font-size:12px;color:#475569;line-height:1.6;">'
+    + '📌 Safari Mac：分享菜单 → 添加到程序坞<br>'
+    + '📌 Edge：⋯ 菜单 → 应用 → 安装此站点为应用</div>',
+    '知道了',
+    null
+  );
+}
+
+// ── 辅助：步骤条目 ──
+function _step(num, color, title, sub) {
+  return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">'
+    + '<div style="width:24px;height:24px;border-radius:50%;background:' + color + ';color:white;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + num + '</div>'
+    + '<div><div style="font-size:14px;font-weight:600;color:#1e293b;">' + title + '</div>'
+    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + sub + '</div></div></div>';
+}
+
+// ── 通用弹窗 ──
+function _showModal(title, body, btnText, btnAction) {
+  _closeModal();
+  _injectStyles();
+
+  var mask = document.createElement('div');
+  mask.id = 'pwa-modal-mask';
+  mask.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:flex-end;animation:tlFadeIn 0.2s ease;';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'width:100%;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));animation:tlSlideUp 0.28s ease;max-height:85vh;overflow-y:auto;';
+
+  box.innerHTML =
+    '<div style="width:36px;height:4px;background:#d1d5db;border-radius:2px;margin:0 auto 16px;"></div>'
+    + '<div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:4px;">' + title + '</div>'
+    + body
+    + '<button id="pwa-modal-btn" style="width:100%;padding:14px;background:#1a3a5c;border:none;border-radius:12px;font-size:15px;color:white;font-weight:800;cursor:pointer;margin-top:12px;">' + btnText + '</button>';
+
+  mask.appendChild(box);
+  document.body.appendChild(mask);
+
+  mask.addEventListener('click', function(e) {
+    if (e.target === mask) _closeModal();
+  });
+
+  var btn = document.getElementById('pwa-modal-btn');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      _closeModal();
+      if (typeof btnAction === 'function') btnAction();
     });
   }
 }
 
-// ════════════════════════════════════════════
-// 安卓其他浏览器手动引导
-// ════════════════════════════════════════════
-function showAndroidManualGuide() {
-  if (document.getElementById('pwa-overlay')) return;
-  sessionStorage.setItem('pwaGuideShown', '1');
-
-  var overlay = document.createElement('div');
-  overlay.id = 'pwa-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:9000;display:flex;align-items:flex-end;animation:fadeIn 0.25s ease;';
-
-  overlay.innerHTML =
-    '<div style="width:100%;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(28px + env(safe-area-inset-bottom,0px));animation:slideUp 0.3s ease;">'
-    + '<div style="width:40px;height:4px;background:#d1d5db;border-radius:2px;margin:0 auto 18px;"></div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
-    + '<span style="font-size:28px;">✈️</span>'
-    + '<div><div style="font-size:17px;font-weight:800;color:#1e293b;">添加到主屏幕</div>'
-    + '<div style="font-size:12px;color:#64748b;">安卓手机 · Chrome浏览器</div></div></div>'
-    + '<div style="background:#f1f5f9;border-radius:12px;padding:14px 16px;margin-bottom:14px;">'
-    + '<div style="font-size:12px;color:#475569;font-weight:600;margin-bottom:10px;">📋 操作步骤</div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#f59e0b;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">点右上角 <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:6px;">⋮</span> 菜单</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">浏览器右上角三个点</div></div></div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e2e8f0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#f59e0b;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">找到「添加到主屏幕」</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">或「安装应用」/ Add to Home screen</div></div></div>'
-    + '<div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;">'
-    + '<div style="width:26px;height:26px;border-radius:50%;background:#10b981;color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>'
-    + '<div><div style="font-size:14px;font-weight:700;color:#1e293b;">点「<span style="color:#10b981;">添加</span>」确认</div>'
-    + '<div style="font-size:12px;color:#64748b;margin-top:2px;">桌面出现图标，完成！</div></div></div></div>'
-    + '<div style="font-size:11px;color:#94a3b8;text-align:center;margin-bottom:14px;">⚡ 安装后离线可用全部功能</div>'
-    + '<button onclick="closePwaOverlay(true)" style="width:100%;padding:14px;background:#f59e0b;border:none;border-radius:12px;font-size:15px;color:white;font-weight:800;cursor:pointer;">我知道了 ✓</button>'
-    + '</div>';
-
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closePwaOverlay();
-  });
-
-  document.body.appendChild(overlay);
-  injectPwaStyles();
+function _closeModal() {
+  var el = document.getElementById('pwa-modal-mask');
+  if (el) el.remove();
 }
 
-// ── 关闭引导 ──
-function closePwaOverlay(permanent) {
-  var el = document.getElementById('pwa-overlay');
-  if (el) el.remove();
-  if (permanent) {
-    try { localStorage.setItem('pwaInstallDone', '1'); } catch(e) {}
+// ── 更新/隐藏首页安装卡片 ──
+function _updateInstallCardState() {
+  var card = document.getElementById('home-install-card');
+  if (!card) return;
+  var btn = card.querySelector('.install-btn-text');
+  if (btn && deferredPrompt) {
+    btn.textContent = '立即安装';
   }
 }
 
-// ── 注入动画CSS（只注入一次）──
-function injectPwaStyles() {
-  if (document.getElementById('pwa-styles')) return;
+function _hideInstallCard() {
+  var card = document.getElementById('home-install-card');
+  if (card) {
+    card.style.display = 'none';
+    try { localStorage.setItem('pwaInstalled', '1'); } catch(e) {}
+  }
+}
+
+// ── Toast 提示 ──
+function _showToast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:white;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;animation:tlFadeIn 0.2s ease;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2500);
+}
+
+// ── 注入动画CSS ──
+function _injectStyles() {
+  if (document.getElementById('tl-pwa-styles')) return;
   var s = document.createElement('style');
-  s.id = 'pwa-styles';
-  s.textContent = '@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}';
+  s.id = 'tl-pwa-styles';
+  s.textContent = '@keyframes tlSlideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}'
+    + '@keyframes tlFadeIn{from{opacity:0}to{opacity:1}}';
   document.head.appendChild(s);
 }
 
-// ── 手动触发安装引导 ──
-function showInstallGuide() {
-  if (isStandalone) {
-    alert('✅ 已安装！在桌面找到 TripLite 图标即可使用。');
-    return;
-  }
-  try { sessionStorage.removeItem('pwaGuideShown'); } catch(e) {}
-  if (isIOS) showIOSGuide();
-  else if (deferredPrompt) showAndroidBanner();
-  else showAndroidManualGuide();
-}
-
-// 初始化导航高亮（DOMContentLoaded 中已调用，此处做双重保障）
+// ── 导航高亮双重保障 ──
 document.addEventListener('DOMContentLoaded', setActiveNav);

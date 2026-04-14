@@ -48,10 +48,25 @@ function renderHome() {
     warningsHtml = '<div class="card fade-in"><div class="card-header"><div class="card-title"><span class="icon">⚠️</span>今日提醒</div></div>' + wItems + '</div>';
   }
 
-  // 安装引导
+  // 安装卡片：已安装则隐藏，否则常驻显示
   var installHtml = '';
-  if (!isStandalone) {
-    installHtml = '<div id="home-install-card" class="fade-in" style="background:linear-gradient(135deg,#1a3a5c,#0369a1);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="showInstallGuide()"><div style="font-size:26px;flex-shrink:0;">📲</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;color:white;margin-bottom:2px;">添加到手机桌面</div><div style="font-size:11px;color:rgba(255,255,255,0.75);">像App一样使用 · 弱网/断网均可打开</div></div><div style="background:white;color:#0369a1;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0;">安装 →</div></div>';
+  var _pwaInstalled = false;
+  try { _pwaInstalled = localStorage.getItem('pwaInstalled') === '1'; } catch(e) {}
+  if (!isStandalone && !_pwaInstalled) {
+    // 根据平台决定副标题文案
+    var _installSub = '像App一样使用 · 弱网/断网均可打开';
+    if (isIOS)        _installSub = '点击 → Safari 分享菜单 → 添加到主屏幕';
+    else if (isWeChat) _installSub = '点击 → 在浏览器中打开后安装';
+    else if (!isMobile) _installSub = '点击 → 安装为桌面应用，支持离线';
+
+    installHtml = '<div id="home-install-card" class="fade-in" style="background:linear-gradient(135deg,#1a3a5c,#0369a1);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="showInstallGuide()">'
+      + '<div style="font-size:26px;flex-shrink:0;">📲</div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:14px;font-weight:800;color:white;margin-bottom:2px;">添加到桌面</div>'
+      + '<div style="font-size:11px;color:rgba(255,255,255,0.8);line-height:1.4;">' + _installSub + '</div>'
+      + '</div>'
+      + '<div class="install-btn-text" style="background:white;color:#0369a1;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0;white-space:nowrap;">安装 →</div>'
+      + '</div>';
   }
 
   // 时间轴
