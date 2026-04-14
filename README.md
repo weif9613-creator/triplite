@@ -5,6 +5,90 @@
 
 ---
 
+## ⚠️ 新接手开发必读：已踩过的坑（续写 v2.0 前请先看这里）
+
+> 以下是多次调试积累的关键经验，新会话/新开发者拿到代码后**必须先读这部分**，否则会重复踩坑浪费大量时间。
+
+### 坑1：Genspark 预览 iframe 会注入透明覆盖层 🔴 最重要
+
+**现象**：在 Genspark 平台预览页面时，click / mousedown 事件完全无响应，但代码逻辑本身没有问题。  
+**原因**：Genspark 平台会向页面注入一个透明的覆盖节点（`#text` 尺寸约 916×306px），拦截所有鼠标点击事件。  
+**现有解决方案**（note.html）：
+- 工具按钮改用原生 `<input type="radio"> + <label>`，利用原生表单元素穿透覆盖层
+- 画布绘图事件改用 `#hitlayer`（一个 `position:absolute` 的 div，`z-index:5`）接管，而不是直接监听 `<canvas>`
+- 颜色选择同样用 `<input type="radio"> + <label>` 实现
+
+**续写 v2.0 时**：如果新增任何需要点击的交互组件，在 Genspark 预览里不响应，优先怀疑是被覆盖层拦截，而不是代码写错了。
+
+---
+
+### 坑2：`<script>` 块内注释里不能写 `</script>` 🔴 极难发现
+
+**现象**：页面加载后所有按钮、事件绑定全部失效，Console 报 `Invalid or unexpected token`，但行号指向的不是问题所在行。  
+**原因**：HTML 解析器规则——`<script>` 标签内**任何位置**（包括 `//` 注释、`/* */` 注释、字符串）出现 `</script`，都会被视为脚本结束，后续所有代码静默截断。  
+**代码编辑器不会报错，ESLint 也不会报错，只有运行时才能发现。**
+
+```javascript
+// ❌ 错误写法（会截断脚本！）
+// 防止</script>截断
+
+// ✅ 正确写法
+// 防止 script标签截断
+
+// ❌ 字符串里也不行
+var h = '<\/script>';   // 这个 \/ 写法在某些情况下仍有风险
+
+// ✅ 字符串里要生成此内容，用数组拼接
+var h = ['</', 'script>'].join('');
+```
+
+**push 前检查方法**：用 Playwright 或浏览器 Console 逐页确认 `Page Errors = 0`。
+
+---
+
+### 坑3：Service Worker 缓存导致改了代码看不到效果 🟡
+
+**现象**：明明改了代码、push 了，手机/浏览器上刷新还是旧版本。  
+**原因**：SW 缓存了旧文件。  
+**解决方法**：
+- 每次改完代码，把 `sw.js` 里的 `CACHE_NAME` 版本号 +1（如 `triplite-v33` → `triplite-v34`）
+- 强制刷新：Chrome DevTools → Network → 勾选 `Disable cache` → 刷新；或右键刷新按钮 → "清空缓存并硬性重新加载"
+- 手机上：长按刷新 → 清除缓存重载；或直接卸载 PWA 重装
+
+---
+
+### 坑4：`#cwrap` 的 `bottom: calc(...)` 在首次渲染时 `offsetHeight` 可能为 0 🟡
+
+**现象**：note.html 画布高度异常（只有 150px 高），或 hitlayer 尺寸远超画布导致坐标偏移。  
+**原因**：`fitCanvas()` 在 `DOMContentLoaded` 时调用，此时 CSS `bottom: calc(70px + env(safe-area-inset-bottom))` 的布局可能尚未计算完成，`_wrap.offsetHeight` 返回 0。  
+**现有解决方案**：当 `offsetHeight < 10` 时，用 `window.innerHeight - 56 - 70` 兜底估算；同时在 `fitCanvas()` 里明确设置 `_hit.style.width/height` 为 px 值。
+
+---
+
+### 坑5：iOS Safari 的特殊行为 🟡
+
+| 行为 | 说明 |
+|------|------|
+| 300ms 点击延迟 | CSS 已全局设置 `touch-action: manipulation` 消除 |
+| 刘海屏遮挡 | 工具栏/底部栏已用 `env(safe-area-inset-top/bottom)` 适配 |
+| `touchstart` 必须 `passive:false` 才能 `preventDefault` | note.html hitlayer 已正确设置 |
+| PWA 安装需要通过 Safari 分享菜单 | app.js 已有 `_showIOSGuide()` 弹窗引导 |
+| `navigator.share` 分享文件需要 `navigator.canShare({files})` 先判断 | note.html doShare() 已处理 |
+
+---
+
+### 坑6：ES5 兼容性（兼容 Android 4.4+ / iOS 9+）🟢
+
+项目全部代码已降级为 ES5，续写时注意：
+- ❌ 不用 `const` / `let` → 用 `var`
+- ❌ 不用箭头函数 `=>` → 用 `function`
+- ❌ 不用模板字面量 `` `${...}` `` → 用字符串拼接 `'...' + x + '...'`
+- ❌ 不用 `async/await` → 用 `Promise.then` 链
+- ❌ 不用对象展开 `{...obj}` → 用 `Object.assign()`
+- ❌ 不用可选链 `obj?.prop` → 用 `obj && obj.prop`
+
+---
+
 ## 项目概述
 
 - **目标**：第一次出境自由行的全程导航助手，覆盖行程、地图、清单、天气、住宿、应急
