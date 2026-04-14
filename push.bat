@@ -18,7 +18,7 @@ git add .
 echo.
 
 echo [3/4] 提交更改...
-git commit -m "v1.15: 修复stay+checklist页面空白-澳门新增6个可选POI-曼谷新增4个可选POI(Let Relax按摩/MBK/Asiatique河畔夜市)"
+git commit -m "v1.19: 全面细节完善-泰国入境/SIM卡/Grab/芭提雅/曼谷大皇宫/机场流程/医院/应急信息深度更新"
 echo.
 
 echo [4/4] 推送到 GitHub...

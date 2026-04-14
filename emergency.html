@@ -54,14 +54,18 @@
       h += '</div>';
 
       h += '<div class="card" style="margin-bottom:14px;border:2px solid #fecaca;">';
-      h += '<div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">&#x1F198;</span>&#x7D27;&#x6025;&#x7535;&#x8BDD;&#xFF08;&#x7ACB;&#x5373;&#x53EF;&#x62E8;&#xFF09;</div>';
+      h += '<div class="card-title" style="margin-bottom:12px;color:var(--danger);"><span class="icon">&#x1F198;</span>&#x7D27;&#x6025;&#x7535;&#x8BDD;&#xFF08;&#x70B9;&#x51FB;&#x76F4;&#x63A5;&#x62E8;&#x6253;&#xFF09;</div>';
       h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
-      h += '<a href="tel:+6622457010" class="emergency-phone" style="justify-content:center;"><span>&#x1F1E8;&#x1F1F3;</span> &#x4E2D;&#x56FD;&#x4F7F;&#x9986;&#x9886;&#x4FDD;</a>';
+      h += '<a href="tel:+6622457010" class="emergency-phone" style="justify-content:center;"><span>&#x1F1E8;&#x1F1F3;</span> &#x4E2D;&#x56FD;&#x4F7F;&#x9986;&#xFF0824h&#xFF09;</a>';
       h += '<a href="tel:1155" class="emergency-phone" style="justify-content:center;"><span>&#x1F46E;</span> &#x65C5;&#x6E38;&#x8B66;&#x5BDF; 1155</a>';
-      h += '<a href="tel:1669" class="emergency-phone" style="justify-content:center;"><span>&#x1F691;</span> &#x6025;&#x6551; 1669</a>';
-      h += '<a href="tel:191" class="emergency-phone" style="justify-content:center;"><span>&#x1F694;</span> &#x8B66;&#x5BDF; 191</a>';
+      h += '<a href="tel:1669" class="emergency-phone" style="justify-content:center;"><span>&#x1F691;</span> &#x6025;&#x6551;&#x8F66; 1669</a>';
+      h += '<a href="tel:191" class="emergency-phone" style="justify-content:center;"><span>&#x1F694;</span> &#x8B66;&#x5BDF;&#x62A5;&#x8B66; 191</a>';
       h += '</div>';
-      h += '<div style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center;">&#x70B9;&#x51FB;&#x53EF;&#x76F4;&#x63A5;&#x62E8;&#x6253; &middot; &#x4EC5;&#x5728;&#x6CF0;&#x56FD;&#x6709;&#x6548;</div>';
+      h += '<div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+      h += '<a href="tel:+66382599999" class="emergency-phone" style="justify-content:center;background:var(--success-bg,#dcfce7);border:1px solid #86efac;"><span>&#x1F3E5;</span> &#x82AD;&#x63D0;&#x96C5;&#x533B;&#x9662;</a>';
+      h += '<a href="tel:+6620668888" class="emergency-phone" style="justify-content:center;background:var(--success-bg,#dcfce7);border:1px solid #86efac;"><span>&#x1F3E5;</span> &#x66FC;&#x8C37;&#x5EB7;&#x6C11;&#x533B;&#x9662;</a>';
+      h += '</div>';
+      h += '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center;">&#x70B9;&#x51FB;&#x53EF;&#x76F4;&#x63A5;&#x62E8;&#x6253; &middot; &#x4EC5;&#x5728;&#x6CF0;&#x56FD;&#x6709;&#x6548; &middot; &#x533B;&#x9662;&#x6709;&#x4E2D;&#x6587;&#x670D;&#x52A1;</div>';
       h += '</div>';
 
       h += '<div id="emergency-sections"></div>';
@@ -140,8 +144,14 @@
         { th: 'หนังสือเดินทางหาย（Nangsu doenthang haai）', cn: '护照丢了' },
         { th: 'ฉันไม่สบาย（Chan mai sabai）', cn: '我不舒服/生病了' },
         { th: 'เท่าไหร่（Thao rai）', cn: '多少钱' },
-        { th: 'ไม่เอา（Mai ao）', cn: '不要了' },
-        { th: 'ขอบคุณ（Khob khun）', cn: '谢谢' }
+        { th: 'ไม่เอา（Mai ao）', cn: '不要了/不需要' },
+        { th: 'ขอบคุณ（Khob khun）', cn: '谢谢' },
+        { th: 'ขอโทษ（Kho thot）', cn: '对不起/打扰了' },
+        { th: 'ไม่เผ็ด（Mai phet）', cn: '不辣（点餐必备）' },
+        { th: 'เรียกแท็กซี่（Riak taeksi）', cn: '叫出租车' },
+        { th: 'โรงแรมอยู่ที่ไหน（Rongraem yu thi nai）', cn: '酒店在哪里' },
+        { th: 'หยุด（Yut）', cn: '停（告诉司机停车）' },
+        { th: 'ห้องน้ำอยู่ที่ไหน（Hong nam yu thi nai）', cn: '厕所在哪里' }
       ];
       var phrasesEl = document.getElementById('thai-phrases-inline');
       if (phrasesEl) {

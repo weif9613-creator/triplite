@@ -2,1348 +2,865 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1a3a5c">
-  <!-- iOS PWA 全屏支持 -->
+  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TripLite">
-  <meta name="format-detection" content="telephone=no,email=no,address=no">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>涂鸦记录 · TripLite</title>
-  <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"></noscript>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <!-- Android PWA -->
+  <link rel="manifest" href="manifest.json">
+  <title>旅行笔记 · TripLite</title>
   <style>
-    :root {
-      --primary: #1a3a5c;
-      --primary-light: #3b82f6;
-      --bg-page: #f0f4f8;
-      --bg-card: #ffffff;
-      --text-primary: #1e293b;
-      --text-secondary: #64748b;
-      --border: #e2e8f0;
-      --radius: 14px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    html, body {
-      height: 100%;
-      overflow: hidden; /* 防止页面滚动干扰画布 */
-      background: #1a3a5c;
-      font-family: 'Inter', -apple-system, sans-serif;
-      touch-action: none; /* 全局禁用浏览器默认触摸行为 */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      width:100%;height:100%;overflow:hidden;
+      background:#1a3a5c;
+      font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;
+      /* 禁止长按选中、禁止双击缩放 */
+      -webkit-user-select:none;user-select:none;
+      -webkit-touch-callout:none;
+      touch-action:manipulation;
     }
 
     /* ── 顶部工具栏 ── */
-    #toolbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(26,58,92,0.97);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      padding: 10px 12px;
-      padding-top: calc(10px + env(safe-area-inset-top, 0px));
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+    #toolbar{
+      position:fixed;top:0;left:0;right:0;
+      height:56px;
+      /* iOS刘海屏：加顶部安全区 */
+      padding-top:env(safe-area-inset-top,0px);
+      height:calc(56px + env(safe-area-inset-top,0px));
+      background:#1a3a5c;z-index:99999;
+      display:flex;align-items:center;gap:6px;
+      padding-left:max(10px,env(safe-area-inset-left,10px));
+      padding-right:max(10px,env(safe-area-inset-right,10px));
+      overflow-x:auto;overflow-y:hidden;
     }
-    #toolbar::-webkit-scrollbar { display: none; }
+    #toolbar::-webkit-scrollbar{display:none}
 
-    .tb-section {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
+    /* radio 工具按钮 */
+    .tr-radio{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+    .tr-btn{
+      min-width:40px;height:40px;padding:0 8px;
+      border-radius:10px;border:2px solid transparent;
+      background:rgba(255,255,255,0.15);color:#fff;font-size:16px;
+      display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;flex-shrink:0;
+      -webkit-tap-highlight-color:transparent;
+      transition:background .15s;white-space:nowrap;
     }
-    .tb-divider {
-      width: 1px;
-      height: 28px;
-      background: rgba(255,255,255,0.2);
-      flex-shrink: 0;
-    }
-    .tb-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 2px solid transparent;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .tb-btn:active { transform: scale(0.88); }
-    .tb-btn.active {
-      background: rgba(59,130,246,0.8);
-      border-color: #3b82f6;
-    }
-    .tb-btn.danger:active { background: rgba(239,68,68,0.8); }
+    .tr-radio:checked + .tr-btn{background:#3b82f6;border-color:#93c5fd}
+    .tr-btn:active{opacity:.7}
 
-    /* 颜色点 */
-    .color-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2.5px solid transparent;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: transform 0.15s, border-color 0.15s;
+    /* 普通按钮 */
+    .tb{
+      min-width:40px;height:40px;
+      border-radius:10px;border:none;
+      background:rgba(255,255,255,0.15);color:#fff;font-size:16px;
+      display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;flex-shrink:0;outline:none;
+      -webkit-tap-highlight-color:transparent;
     }
-    .color-dot.active {
-      border-color: white;
-      transform: scale(1.15);
-    }
-    .color-dot:active { transform: scale(0.9); }
+    .tb:active{opacity:.6}
 
-    /* 笔刷大小滑块 */
-    #sizeSlider {
-      width: 70px;
-      height: 4px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: rgba(255,255,255,0.3);
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
-      flex-shrink: 0;
+    /* 颜色 radio */
+    .cd-r{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+    .cd-l{
+      width:26px;height:26px;border-radius:50%;
+      border:2.5px solid transparent;cursor:pointer;flex-shrink:0;display:block;
+      -webkit-tap-highlight-color:transparent;
     }
-    #sizeSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: white;
-      cursor: pointer;
-    }
+    .cd-r:checked + .cd-l{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.5)}
 
-    /* ── 画布区域 ── */
-    #canvas-wrap {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      overflow: hidden;
-      background: #fff;
-      touch-action: none;
+    /* 滑块 */
+    #szSlider{
+      width:70px;min-width:50px;height:4px;
+      -webkit-appearance:none;appearance:none;
+      background:rgba(255,255,255,0.3);border-radius:2px;
+      outline:none;cursor:pointer;flex-shrink:0;
     }
+    #szSlider::-webkit-slider-thumb{
+      -webkit-appearance:none;width:20px;height:20px;
+      border-radius:50%;background:#fff;cursor:pointer;
+    }
+    #szPrev{width:10px;height:10px;border-radius:50%;background:#fff;flex-shrink:0;pointer-events:none}
+    .sep{width:1px;min-width:1px;height:24px;background:rgba(255,255,255,.2);flex-shrink:0}
+    #szLbl{font-size:10px;color:rgba(255,255,255,.65);flex-shrink:0;white-space:nowrap}
 
-    #drawCanvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: crosshair;
-      touch-action: none;
+    /* ── 画布容器 ── */
+    #cwrap{
+      position:fixed;
+      top:calc(56px + env(safe-area-inset-top,0px));
+      left:0;right:0;
+      bottom:calc(70px + env(safe-area-inset-bottom,0px));
+      overflow:hidden;background:#fff;z-index:1;
+    }
+    #cv{display:block;position:absolute;top:0;left:0}
+
+    /* 文字节点层 */
+    #tl{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3}
+    .nd{
+      position:absolute;cursor:move;pointer-events:all;
+      padding:2px 4px;border:1.5px dashed transparent;
+      border-radius:4px;line-height:1.4;
+      white-space:pre-wrap;word-break:break-all;max-width:85vw;
+    }
+    .nd.on{border-color:#3b82f6;background:rgba(59,130,246,.07)}
+    .ndx{
+      position:absolute;top:-11px;right:-11px;
+      width:22px;height:22px;border-radius:50%;
+      background:#ef4444;color:#fff;font-size:13px;
+      line-height:22px;text-align:center;cursor:pointer;
+      display:none;z-index:10;
+    }
+    .nd.on .ndx{display:block}
+
+    /* 事件捕获层：在 tl 之上，接收绘图事件 */
+    /* 用 top/left/right/bottom 而非 width/height，确保不超出 #cwrap */
+    #hitlayer{
+      position:absolute;top:0;left:0;right:0;bottom:0;
+      z-index:5;background:transparent;
+      cursor:crosshair;
+      -webkit-user-select:none;user-select:none;
+      touch-action:none;
     }
 
-    /* 文字输入模式时显示的蒙层提示 */
-    #text-hint {
-      position: fixed;
-      bottom: calc(80px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      pointer-events: none;
-      display: none;
-      z-index: 200;
-      white-space: nowrap;
+    /* ── 文字输入框 ── */
+    #txbox{
+      position:fixed;z-index:99998;
+      background:#fff;border:2px solid #3b82f6;
+      border-radius:14px;padding:10px 12px;
+      min-width:180px;max-width:calc(100vw - 32px);
+      box-shadow:0 6px 24px rgba(0,0,0,.28);display:none;
     }
+    #txin{
+      width:100%;border:none;outline:none;
+      font-size:16px;color:#1e293b;background:transparent;
+      resize:none;min-height:36px;max-height:120px;overflow-y:auto;
+      /* 移动端允许选中和输入 */
+      user-select:text;-webkit-user-select:text;
+    }
+    .fsrow{display:flex;gap:5px;margin-bottom:8px}
+    .fsc{
+      flex:1;text-align:center;padding:5px 2px;
+      border-radius:8px;border:1.5px solid #e2e8f0;
+      font-weight:700;cursor:pointer;background:#f8fafc;
+      color:#475569;font-size:12px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .fsc.on{border-color:#3b82f6;background:#eff6ff;color:#2563eb}
+    .txact{display:flex;gap:8px;margin-top:8px}
+    .txact button{
+      flex:1;padding:8px;border-radius:10px;border:none;
+      font-size:13px;font-weight:700;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .txok{background:#3b82f6;color:#fff}
+    .txno{background:#f1f5f9;color:#64748b}
 
-    /* ── 可拖动文字层 ── */
-    #text-layer {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none; /* 默认不拦截画布事件 */
-      z-index: 10;
+    /* ── 底部栏 ── */
+    #bbar{
+      position:fixed;bottom:0;left:0;right:0;
+      height:calc(70px + env(safe-area-inset-bottom,0px));
+      padding-bottom:env(safe-area-inset-bottom,0px);
+      padding-left:max(10px,env(safe-area-inset-left,10px));
+      padding-right:max(10px,env(safe-area-inset-right,10px));
+      background:#1a3a5c;z-index:99999;
+      display:flex;align-items:center;gap:8px;
     }
-    /* 文字节点 */
-    .text-node {
-      position: absolute;
-      cursor: move;
-      user-select: none;
-      -webkit-user-select: none;
-      pointer-events: all;
-      padding: 4px 6px;
-      border-radius: 4px;
-      border: 1.5px dashed transparent;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-width: 80vw;
-      touch-action: none;
+    .bb{
+      flex:1;height:50px;border:none;border-radius:12px;
+      font-size:12px;font-weight:700;cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+      color:#fff;text-decoration:none;outline:none;
+      -webkit-tap-highlight-color:transparent;transition:opacity .12s;
     }
-    .text-node.selected {
-      border-color: #3b82f6;
-      background: rgba(59,130,246,0.07);
-    }
-    /* 文字节点删除按钮 */
-    .text-node-del {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #ef4444;
-      color: white;
-      font-size: 13px;
-      line-height: 20px;
-      text-align: center;
-      cursor: pointer;
-      display: none;
-      z-index: 20;
-      font-style: normal;
-    }
-    .text-node.selected .text-node-del { display: block; }
+    .bb:active{opacity:.6}
+    .ico{font-size:17px;line-height:1}
+    .bg{background:rgba(255,255,255,.15)}
+    .ba{background:#d97706}
+    .bn{background:#059669}
+    .bl{background:#2563eb}
 
-    /* ── 浮动文字输入框 ── */
-    #textInputBox {
-      position: fixed;
-      z-index: 300;
-      background: white;
-      border: 2px solid var(--primary-light);
-      border-radius: 12px;
-      padding: 8px 10px;
-      min-width: 140px;
-      max-width: calc(100vw - 40px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-      display: none;
+    /* ── 面板/遮罩 ── */
+    .pnl{
+      position:fixed;
+      bottom:calc(78px + env(safe-area-inset-bottom,0px));
+      left:50%;transform:translateX(-50%);
+      background:#fff;border-radius:18px;padding:14px;
+      width:calc(100vw - 24px);max-width:420px;
+      max-height:55vh;overflow-y:auto;
+      box-shadow:0 6px 28px rgba(0,0,0,.28);z-index:50000;display:none;
     }
-    #textInput {
-      width: 100%;
-      border: none;
-      outline: none;
-      font-size: 16px; /* 防止iOS自动缩放 */
-      font-family: 'Inter', sans-serif;
-      color: #1e293b;
-      background: transparent;
-      resize: none;
-      min-height: 32px;
-      max-height: 120px;
-      overflow-y: auto;
+    .pnl h4{font-size:13px;font-weight:800;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .pgg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .pgt{aspect-ratio:.7;min-height:80px;border-radius:10px;border:2px solid #e2e8f0;overflow:hidden;cursor:pointer;position:relative;background:#f8fafc}
+    .pgt.on{border-color:#3b82f6}.pgt img{width:100%;height:100%;object-fit:cover}
+    .pgl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;text-align:center;font-size:10px;padding:3px}
+    .pgd{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(220,38,38,.88);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+    .pga{aspect-ratio:.7;min-height:80px;border-radius:10px;border:2px dashed #cbd5e1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#f8fafc;color:#94a3b8;gap:4px;font-size:11px}
+    #ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:49000;background:rgba(0,0,0,.35);display:none}
+    #pgind{
+      position:fixed;top:calc(62px + env(safe-area-inset-top,0px));right:10px;
+      background:rgba(26,58,92,.9);color:#fff;border-radius:20px;
+      padding:3px 10px;font-size:11px;font-weight:700;
+      pointer-events:none;z-index:200;
     }
-    .text-input-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-      align-items: center;
+    #txhint{
+      position:fixed;
+      bottom:calc(82px + env(safe-area-inset-bottom,0px));
+      left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.75);color:#fff;
+      padding:8px 18px;border-radius:22px;
+      font-size:13px;font-weight:600;
+      pointer-events:none;display:none;z-index:200;white-space:nowrap;
     }
-    .text-input-actions button {
-      flex: 1;
-      padding: 6px;
-      border-radius: 8px;
-      border: none;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    #toast{
+      position:fixed;top:50%;left:50%;
+      transform:translate(-50%,-50%) scale(.85);
+      background:#059669;color:#fff;
+      padding:14px 24px;border-radius:18px;
+      font-size:14px;font-weight:800;
+      z-index:999999;text-align:center;
+      opacity:0;pointer-events:none;transition:all .22s;
     }
-    .ti-confirm { background: #3b82f6; color: white; }
-    .ti-cancel  { background: #f1f5f9; color: #64748b; }
-    .text-size-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-    }
-    .ts-chip {
-      flex: 1;
-      text-align: center;
-      padding: 4px;
-      border-radius: 6px;
-      border: 1.5px solid #e2e8f0;
-      font-weight: 700;
-      cursor: pointer;
-      background: #f8fafc;
-      color: #475569;
-    }
-    .ts-chip.active { border-color: #3b82f6; background: #eff6ff; color: #2563eb; }
+    #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
-    /* ── 底部工具栏 ── */
-    #bottom-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(26,58,92,0.97);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      padding: 10px 16px;
-      padding-bottom: calc(10px + var(--safe-bottom));
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .bb-btn {
-      flex: 1;
-      padding: 10px 6px;
-      border: none;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: transform 0.15s;
-      color: white;
-    }
-    .bb-btn:active { transform: scale(0.92); }
-    .bb-btn i { font-size: 18px; }
-    .bb-btn.blue   { background: #2563eb; }
-    .bb-btn.green  { background: #059669; }
-    .bb-btn.amber  { background: #d97706; }
-    .bb-btn.gray   { background: rgba(255,255,255,0.15); }
-    .bb-btn.red    { background: #dc2626; }
-
-    /* ── 画布切换页码 ── */
-    #page-indicator {
-      position: fixed;
-      top: calc(64px + env(safe-area-inset-top, 0px));
-      right: 12px;
-      z-index: 99;
-      background: rgba(26,58,92,0.85);
-      color: white;
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 700;
-      pointer-events: none;
-    }
-
-    /* ── 保存提示 ── */
-    #save-toast {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      background: rgba(5,150,105,0.95);
-      color: white;
-      padding: 16px 28px;
-      border-radius: 18px;
-      font-size: 15px;
-      font-weight: 800;
-      z-index: 500;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.2s;
-    }
-    #save-toast.show {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    /* ── 背景选择面板 ── */
-    #bg-panel {
-      position: fixed;
-      bottom: calc(70px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 200;
-      background: white;
-      border-radius: 16px;
-      padding: 12px 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-      display: none;
-      width: calc(100vw - 32px);
-      max-width: 380px;
-    }
-    #bg-panel h4 {
-      font-size: 13px;
-      font-weight: 800;
-      color: #1e293b;
-      margin-bottom: 10px;
-    }
-    .bg-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .bg-item {
-      aspect-ratio: 1;
-      /* aspect-ratio fallback for older browsers */
-      min-height: 60px;
-      border-radius: 10px;
-      border: 2.5px solid transparent;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 700;
-      color: #475569;
-      overflow: hidden;
-    }
-    .bg-item.active { border-color: #3b82f6; }
-    .bg-item:active { opacity: 0.7; }
-
-    /* ── 多页管理面板 ── */
-    #pages-panel {
-      position: fixed;
-      bottom: calc(70px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 200;
-      background: white;
-      border-radius: 16px;
-      padding: 12px 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-      display: none;
-      width: calc(100vw - 32px);
-      max-width: 380px;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-    #pages-panel h4 {
-      font-size: 13px;
-      font-weight: 800;
-      color: #1e293b;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .page-thumb-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .page-thumb {
-      aspect-ratio: 0.7;
-      /* aspect-ratio fallback */
-      min-height: 80px;
-      border-radius: 8px;
-      border: 2px solid #e2e8f0;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      background: #f8fafc;
-    }
-    .page-thumb.active { border-color: #3b82f6; }
-    .page-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .page-thumb-label {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.5);
-      color: white;
-      text-align: center;
-      font-size: 10px;
-      padding: 3px;
-    }
-    .page-thumb-del {
-      position: absolute;
-      top: 3px; right: 3px;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: rgba(220,38,38,0.85);
-      color: white;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .add-page-btn {
-      aspect-ratio: 0.7;
-      min-height: 80px;
-      border-radius: 8px;
-      border: 2px dashed #cbd5e1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      background: #f8fafc;
-      color: #94a3b8;
-      gap: 4px;
-      font-size: 11px;
-    }
-    .add-page-btn i { font-size: 20px; }
-
-    /* ── 蒙层（关闭面板用）── */
-    #overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 150;
-      background: rgba(0,0,0,0.3);
-      display: none;
-    }
-
-    /* 画布内容区域适配工具栏高度 */
-    #canvas-wrap {
-      top: calc(56px + env(safe-area-inset-top, 0px));
-      bottom: calc(64px + var(--safe-bottom));
+    /* ── 响应式：小屏工具栏字体更小 ── */
+    @media(max-width:380px){
+      .tr-btn{min-width:34px;height:34px;font-size:14px}
+      .cd-l{width:22px;height:22px}
+      #szSlider{width:52px}
     }
   </style>
 </head>
 <body>
 
-<!-- ── 顶部工具栏 ── -->
+<!-- ══ 顶部工具栏 ══ -->
 <div id="toolbar">
-  <!-- 工具选择 -->
-  <div class="tb-section">
-    <div class="tb-btn active" id="btn-pen" onclick="setTool('pen')" title="画笔">
-      <i class="fas fa-pen"></i>
-    </div>
-    <div class="tb-btn" id="btn-marker" onclick="setTool('marker')" title="马克笔">
-      <i class="fas fa-highlighter"></i>
-    </div>
-    <div class="tb-btn" id="btn-eraser" onclick="setTool('eraser')" title="橡皮">
-      <i class="fas fa-eraser"></i>
-    </div>
-    <div class="tb-btn" id="btn-text" onclick="setTool('text')" title="文字">
-      <i class="fas fa-font"></i>
-    </div>
+  <!-- 工具：radio+label，原生表单穿透平台覆盖层 -->
+  <input class="tr-radio" type="radio" name="tool" id="r-pen"    value="pen"    checked>
+  <label class="tr-btn"   for="r-pen"   title="铅笔">✏️</label>
+
+  <input class="tr-radio" type="radio" name="tool" id="r-marker" value="marker">
+  <label class="tr-btn"   for="r-marker" title="马克笔">🖊</label>
+
+  <input class="tr-radio" type="radio" name="tool" id="r-eraser" value="eraser">
+  <label class="tr-btn"   for="r-eraser" title="橡皮">🧹</label>
+
+  <input class="tr-radio" type="radio" name="tool" id="r-text"   value="text">
+  <label class="tr-btn"   for="r-text"   title="文字">T</label>
+
+  <div class="sep"></div>
+
+  <!-- 颜色：radio+label -->
+  <input class="cd-r" type="radio" name="color" id="c0" value="#1e293b" checked><label class="cd-l" for="c0" style="background:#1e293b"></label>
+  <input class="cd-r" type="radio" name="color" id="c1" value="#ef4444"><label class="cd-l" for="c1" style="background:#ef4444"></label>
+  <input class="cd-r" type="radio" name="color" id="c2" value="#f97316"><label class="cd-l" for="c2" style="background:#f97316"></label>
+  <input class="cd-r" type="radio" name="color" id="c3" value="#eab308"><label class="cd-l" for="c3" style="background:#eab308"></label>
+  <input class="cd-r" type="radio" name="color" id="c4" value="#22c55e"><label class="cd-l" for="c4" style="background:#22c55e"></label>
+  <input class="cd-r" type="radio" name="color" id="c5" value="#3b82f6"><label class="cd-l" for="c5" style="background:#3b82f6"></label>
+  <input class="cd-r" type="radio" name="color" id="c6" value="#a855f7"><label class="cd-l" for="c6" style="background:#a855f7"></label>
+  <input class="cd-r" type="radio" name="color" id="c7" value="#ffffff"><label class="cd-l" for="c7" style="background:#fff;border-color:rgba(255,255,255,.45)"></label>
+
+  <div class="sep"></div>
+  <span id="szLbl">粗</span>
+  <input type="range" id="szSlider" min="2" max="30" value="4">
+  <div id="szPrev"></div>
+  <div class="sep"></div>
+  <button class="tb" id="btn-undo"  aria-label="撤销">↩</button>
+  <button class="tb" id="btn-clear" aria-label="清空">🗑</button>
+</div>
+
+<div id="pgind">第 1 / 1 页</div>
+<div id="txhint">✏️ 点击画面任意位置输入文字</div>
+
+<!-- ══ 画布区 ══ -->
+<div id="cwrap">
+  <canvas id="cv"></canvas>
+  <div id="tl"></div>
+  <!-- hitlayer：最顶层，接管所有绘图指针事件 -->
+  <div id="hitlayer" role="img" aria-label="绘图区域"></div>
+</div>
+
+<!-- ══ 文字输入框 ══ -->
+<div id="txbox">
+  <div class="fsrow">
+    <div class="fsc on" data-fs="16">小</div>
+    <div class="fsc"    data-fs="22">中</div>
+    <div class="fsc"    data-fs="30">大</div>
+    <div class="fsc"    data-fs="42">特大</div>
   </div>
-
-  <div class="tb-divider"></div>
-
-  <!-- 颜色 -->
-  <div class="tb-section" id="colorSection">
-    <div class="color-dot active" style="background:#1e293b" data-color="#1e293b" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#ef4444" data-color="#ef4444" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#f97316" data-color="#f97316" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#eab308" data-color="#eab308" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#22c55e" data-color="#22c55e" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#3b82f6" data-color="#3b82f6" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#a855f7" data-color="#a855f7" onclick="setColor(this)"></div>
-    <div class="color-dot" style="background:#ffffff;border:2px solid rgba(255,255,255,0.5);" data-color="#ffffff" onclick="setColor(this)"></div>
-  </div>
-
-  <div class="tb-divider"></div>
-
-  <!-- 笔刷大小 -->
-  <div class="tb-section">
-    <span style="font-size:10px;color:rgba(255,255,255,0.7);">粗细</span>
-    <input type="range" id="sizeSlider" min="2" max="30" value="4" oninput="setBrushSize(this.value)">
-    <div id="sizePreview" style="width:14px;height:14px;border-radius:50%;background:white;flex-shrink:0;transition:all 0.2s;"></div>
-  </div>
-
-  <div class="tb-divider"></div>
-
-  <!-- 撤销/清除 -->
-  <div class="tb-section">
-    <div class="tb-btn" onclick="undo()" title="撤销">
-      <i class="fas fa-undo"></i>
-    </div>
-    <div class="tb-btn danger" onclick="clearCanvas()" title="清空">
-      <i class="fas fa-trash-alt"></i>
-    </div>
+  <textarea id="txin" rows="2" placeholder="输入文字…" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+  <div class="txact">
+    <button class="txok" id="txok" type="button">✅ 放置</button>
+    <button class="txno" id="txno" type="button">取消</button>
   </div>
 </div>
 
-<!-- 页码指示器 -->
-<div id="page-indicator">第 1 / 1 页</div>
-
-<!-- 文字输入模式提示 -->
-<div id="text-hint">✏️ 点击画面任意位置输入文字</div>
-
-<!-- ── 画布 ── -->
-<div id="canvas-wrap">
-  <canvas id="drawCanvas"></canvas>
-  <!-- 可拖动文字层 -->
-  <div id="text-layer"></div>
+<!-- ══ 底部栏 ══ -->
+<div id="bbar">
+  <button class="bb bg" id="btn-pages"><span class="ico">📄</span><span>多页</span></button>
+  <button class="bb ba" id="btn-tpl"  ><span class="ico">✨</span><span>模板</span></button>
+  <button class="bb bn" id="btn-save" ><span class="ico">💾</span><span>保存</span></button>
+  <button class="bb bl" id="btn-share"><span class="ico">📤</span><span>分享</span></button>
+  <a href="index.html" class="bb bg" aria-label="返回首页"><span class="ico">🏠</span><span>首页</span></a>
 </div>
 
-<!-- ── 浮动文字输入框 ── -->
-<div id="textInputBox">
-  <div class="text-size-row">
-    <div class="ts-chip active" data-size="16" onclick="setTextSize(this)">小</div>
-    <div class="ts-chip" data-size="22" onclick="setTextSize(this)">中</div>
-    <div class="ts-chip" data-size="30" onclick="setTextSize(this)">大</div>
-    <div class="ts-chip" data-size="42" onclick="setTextSize(this)">特大</div>
-  </div>
-  <textarea id="textInput" placeholder="输入文字…" rows="2"></textarea>
-  <div class="text-input-actions">
-    <button class="ti-confirm" onclick="confirmText()">✅ 放置</button>
-    <button class="ti-cancel"  onclick="cancelText()">取消</button>
-  </div>
+<!-- ══ 多页面板 ══ -->
+<div class="pnl" id="pgpanel">
+  <h4><span>📄 画布页面</span><span style="font-size:11px;color:#64748b;font-weight:500">点击切换</span></h4>
+  <div class="pgg" id="pgg"></div>
 </div>
-
-<!-- ── 底部工具栏 ── -->
-<div id="bottom-bar">
-  <button class="bb-btn gray" onclick="togglePagesPanel()">
-    <i class="fas fa-layer-group"></i>
-    <span>多页</span>
-  </button>
-  <button class="bb-btn gray" onclick="toggleBgPanel()">
-    <i class="fas fa-image"></i>
-    <span>背景</span>
-  </button>
-  <button class="bb-btn green" onclick="saveImage()">
-    <i class="fas fa-download"></i>
-    <span>保存图片</span>
-  </button>
-  <button class="bb-btn blue" onclick="shareImage()">
-    <i class="fas fa-share-alt"></i>
-    <span>分享</span>
-  </button>
-  <a href="index.html" class="bb-btn gray" style="text-decoration:none;">
-    <i class="fas fa-home"></i>
-    <span>首页</span>
-  </a>
-</div>
-
-<!-- ── 背景选择面板 ── -->
-<div id="bg-panel">
-  <h4>🎨 选择背景</h4>
-  <div class="bg-grid" id="bgGrid">
-    <!-- 由 JS 生成 -->
-  </div>
-</div>
-
-<!-- ── 多页管理面板 ── -->
-<div id="pages-panel">
-  <h4>
-    <span>📄 画布页面</span>
-    <span style="font-size:11px;color:#64748b;font-weight:500;">点击切换·长按删除</span>
-  </h4>
-  <div class="page-thumb-grid" id="pageThumbGrid">
-    <!-- 由 JS 生成 -->
-  </div>
-</div>
-
-<!-- 蒙层 -->
-<div id="overlay" onclick="closeAllPanels()"></div>
-
-<!-- 保存提示 -->
-<div id="save-toast">✅ 图片已保存<br><span style="font-size:12px;font-weight:500;">长按图片可发送到相册</span></div>
+<div id="ov"></div>
+<div id="toast" role="alert" aria-live="polite"></div>
 
 <script>
-// ====================================================
-// TripLite 涂鸦记录模块
-// ====================================================
+/* ══════════════════════════════════════
+   TripLite 旅行笔记 v33
+   修复：
+   1. hitlayer 模式绕过平台覆盖层
+   2. JS字符串内嵌HTML用数组拼接，防止 script标签截断
+   3. iOS/Android 安全区域适配
+   4. 触摸事件缓存 rect，避免每帧 getBoundingClientRect
+   5. 补全 iOS PWA meta 标签
+   6. v33: hitlayer 改用 top/left/right/bottom 替代 width/height
+       fitCanvas 当 offsetHeight=0 时用 innerHeight 估算
+       hitlayer 明确设置 px 尺寸防止膨胀
+══════════════════════════════════════ */
 
-// ── 状态 ──
-var state = {
-  tool: 'pen',        // pen | marker | eraser | text
-  color: '#1e293b',
-  brushSize: 4,
-  textSize: 16,
-  textColor: '#1e293b',
-  isDrawing: false,
-  lastX: 0,
-  lastY: 0,
-  textPos: { x: 0, y: 0 },
-  bgStyle: 'white'    // white | grid | lines | dot | dark | ...
+/* ── 全局状态 ── */
+var S = {
+  bsz:4, fsz:16, bg:'white',
+  draw:false, lx:0, ly:0,
+  txpos:{x:0,y:0}, selnd:null,
+  pages:[null], pg:0, undos:[], MAXU:20, MAXP:10
 };
 
-// ── 多页管理 ──
-var pages = [];       // 每页存储 dataURL
-var currentPage = 0;
-var MAX_PAGES = 10;
+/* ── DOM 引用（DOMContentLoaded 后赋值）── */
+var _wrap, _cv, _ctx, _tl, _hit, _txbox, _txin;
 
-// ── 撤销栈 ──
-var undoStack = [];
-var MAX_UNDO = 20;
+/* ── hitlayer 的缓存 rect（避免每次 touch 都调 getBoundingClientRect）── */
+var _hitRect = null;
+function _cacheRect(){ _hitRect = _hit ? _hit.getBoundingClientRect() : null; }
 
-// ── DOM ──
-var canvas  = document.getElementById('drawCanvas');
-var ctx     = canvas.getContext('2d');
-var wrap    = document.getElementById('canvas-wrap');
-var textBox = document.getElementById('textInputBox');
-var textIn  = document.getElementById('textInput');
-
-// ── 初始化 ──
-function init() {
-  resizeCanvas();
-  initPage();
-  window.addEventListener('resize', debounce(resizeCanvas, 200));
-  window.addEventListener('orientationchange', function() { setTimeout(resizeCanvas, 300); });
-
-  // 绑定画布事件
-  canvas.addEventListener('mousedown',  onStart);
-  canvas.addEventListener('mousemove',  onMove);
-  canvas.addEventListener('mouseup',    onEnd);
-  canvas.addEventListener('mouseleave', onEnd);
-
-  canvas.addEventListener('touchstart',  onStart, { passive: false });
-  canvas.addEventListener('touchmove',   onMove,  { passive: false });
-  canvas.addEventListener('touchend',    onEnd,   { passive: false });
-  canvas.addEventListener('touchcancel', onEnd,   { passive: false });
-
-  // 初始化背景面板
-  buildBgPanel();
-
-  // 更新笔刷预览
-  updateBrushPreview();
+/* ── 从 radio 读取当前工具/颜色 ── */
+function gTool(){
+  var r = document.querySelector('input[name="tool"]:checked');
+  return r ? r.value : 'pen';
+}
+function gColor(){
+  var r = document.querySelector('input[name="color"]:checked');
+  return r ? r.value : '#1e293b';
 }
 
-function debounce(fn, ms) {
-  var t;
-  return function() {
-    var args = arguments;
-    clearTimeout(t);
-    t = setTimeout(function() { fn.apply(null, args); }, ms);
-  };
-}
-
-// ── 画布尺寸适配 ──
-function resizeCanvas() {
-  var w = wrap.clientWidth;
-  var h = wrap.clientHeight;
-  var snap = pages[currentPage] || null;
-  canvas.width  = w * window.devicePixelRatio;
-  canvas.height = h * window.devicePixelRatio;
-  canvas.style.width  = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  drawBackground(state.bgStyle);
-  if (snap) {
-    var rsImg = new Image();
-    rsImg.onload = function() { ctx.drawImage(rsImg, 0, 0, w, h); };
-    rsImg.src = snap;
-  }
-}
-
-// ── 页面初始化 ──
-function initPage() {
-  if (pages.length === 0) {
-    pages.push(null);
-    currentPage = 0;
-  }
-  undoStack = [];
-  drawBackground(state.bgStyle);
-  updatePageIndicator();
-}
-
-function loadPage(idx) {
-  saveCurrent();
-  currentPage = idx;
-  undoStack = [];
-  var snap = pages[idx];
-  var w = wrap.clientWidth;
-  var h = wrap.clientHeight;
-  drawBackground(state.bgStyle);
-  if (textLayer) { textLayer.innerHTML = ''; selectedTextNode = null; }
-  if (snap) {
-    var lpImg = new Image();
-    lpImg.onload = function() { ctx.drawImage(lpImg, 0, 0, w, h); };
-    lpImg.src = snap;
-  }
-  updatePageIndicator();
-}
-
-function saveCurrent() {
-  pages[currentPage] = canvas.toDataURL('image/png');
-}
-
-function updatePageIndicator() {
-  document.getElementById('page-indicator').textContent = '第 ' + (currentPage+1) + ' / ' + pages.length + ' 页';
-}
-
-// ── 背景绘制 ──
-var BG_STYLES = [
-  { id: 'white',   label: '白纸',   draw: function(c2, w, h) { c2.fillStyle='#fff'; c2.fillRect(0,0,w,h); } },
-  { id: 'cream',   label: '米色',   draw: function(c2, w, h) { c2.fillStyle='#fffbeb'; c2.fillRect(0,0,w,h); } },
-  { id: 'dark',    label: '深色',   draw: function(c2, w, h) { c2.fillStyle='#1e293b'; c2.fillRect(0,0,w,h); } },
-  { id: 'blue',    label: '蓝色',   draw: function(c2, w, h) { c2.fillStyle='#eff6ff'; c2.fillRect(0,0,w,h); } },
-  { id: 'grid',    label: '方格纸', draw: function(c2, w, h) {
-    c2.fillStyle='#fff'; c2.fillRect(0,0,w,h);
-    c2.strokeStyle='#dbeafe'; c2.lineWidth=0.8;
-    var g=24,x,y;
-    for(x=0;x<w;x+=g){ c2.beginPath();c2.moveTo(x,0);c2.lineTo(x,h);c2.stroke(); }
-    for(y=0;y<h;y+=g){ c2.beginPath();c2.moveTo(0,y);c2.lineTo(w,y);c2.stroke(); }
+/* ══ 背景定义 ══ */
+var BG = [
+  {id:'white', fn:function(c,w,h){c.fillStyle='#fff';c.fillRect(0,0,w,h);}},
+  {id:'cream', fn:function(c,w,h){c.fillStyle='#fffbeb';c.fillRect(0,0,w,h);}},
+  {id:'dark',  fn:function(c,w,h){c.fillStyle='#1e293b';c.fillRect(0,0,w,h);}},
+  {id:'blue',  fn:function(c,w,h){c.fillStyle='#eff6ff';c.fillRect(0,0,w,h);}},
+  {id:'grid',  fn:function(c,w,h){
+    c.fillStyle='#fff';c.fillRect(0,0,w,h);
+    c.strokeStyle='#dbeafe';c.lineWidth=.8;
+    for(var x=0;x<w;x+=24){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+    for(var y=0;y<h;y+=24){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
   }},
-  { id: 'lines',   label: '横线纸', draw: function(c2, w, h) {
-    c2.fillStyle='#fff'; c2.fillRect(0,0,w,h);
-    c2.strokeStyle='#bfdbfe'; c2.lineWidth=0.8;
-    var g=32,y;
-    for(y=g;y<h;y+=g){ c2.beginPath();c2.moveTo(0,y);c2.lineTo(w,y);c2.stroke(); }
-    c2.strokeStyle='#ef4444'; c2.lineWidth=1;
-    c2.beginPath();c2.moveTo(50,0);c2.lineTo(50,h);c2.stroke();
+  {id:'lines', fn:function(c,w,h){
+    c.fillStyle='#fff';c.fillRect(0,0,w,h);
+    c.strokeStyle='#bfdbfe';c.lineWidth=.8;
+    for(var y=32;y<h;y+=32){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+    c.strokeStyle='#ef4444';c.lineWidth=1;
+    c.beginPath();c.moveTo(50,0);c.lineTo(50,h);c.stroke();
   }},
-  { id: 'dot',     label: '点阵纸', draw: function(c2, w, h) {
-    c2.fillStyle='#fff'; c2.fillRect(0,0,w,h);
-    c2.fillStyle='#93c5fd';
-    var g=20,x,y;
-    for(x=g;x<w;x+=g) for(y=g;y<h;y+=g){ c2.beginPath();c2.arc(x,y,1.2,0,Math.PI*2);c2.fill(); }
+  {id:'dot',   fn:function(c,w,h){
+    c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle='#93c5fd';
+    for(var x=20;x<w;x+=20) for(var y=20;y<h;y+=20){
+      c.beginPath();c.arc(x,y,1.2,0,Math.PI*2);c.fill();
+    }
   }},
-  { id: 'map',     label: '地图格', draw: function(c2, w, h) {
-    c2.fillStyle='#f0fdf4'; c2.fillRect(0,0,w,h);
-    c2.strokeStyle='#86efac'; c2.lineWidth=1;
-    var g=30,x,y;
-    for(x=0;x<w;x+=g){ c2.beginPath();c2.moveTo(x,0);c2.lineTo(x,h);c2.stroke(); }
-    for(y=0;y<h;y+=g){ c2.beginPath();c2.moveTo(0,y);c2.lineTo(w,y);c2.stroke(); }
-    c2.strokeStyle='#16a34a'; c2.lineWidth=1.5;
-    for(x=0;x<w;x+=g*5){ c2.beginPath();c2.moveTo(x,0);c2.lineTo(x,h);c2.stroke(); }
-    for(y=0;y<h;y+=g*5){ c2.beginPath();c2.moveTo(0,y);c2.lineTo(w,y);c2.stroke(); }
+  {id:'map',   fn:function(c,w,h){
+    c.fillStyle='#f0fdf4';c.fillRect(0,0,w,h);c.strokeStyle='#86efac';c.lineWidth=1;
+    for(var x=0;x<w;x+=30){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+    for(var y=0;y<h;y+=30){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
   }}
 ];
-
-function drawBackground(styleId) {
-  var w = wrap.clientWidth;
-  var h = wrap.clientHeight;
-  var bg = BG_STYLES[0];
-  for (var bgi = 0; bgi < BG_STYLES.length; bgi++) { if (BG_STYLES[bgi].id === styleId) { bg = BG_STYLES[bgi]; break; } }
-  ctx.save();
-  ctx.setTransform(1,0,0,1,0,0); // 重置DPR变换
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  ctx.clearRect(0, 0, w, h);
-  bg.draw(ctx, w, h);
-  ctx.restore();
+function getBG(id){for(var i=0;i<BG.length;i++) if(BG[i].id===id) return BG[i]; return BG[0];}
+function drawBG(){
+  var W=parseInt(_cv.style.width)||375, H=parseInt(_cv.style.height)||500;
+  _ctx.globalAlpha=1; _ctx.globalCompositeOperation='source-over';
+  getBG(S.bg).fn(_ctx,W,H);
 }
 
-function buildBgPanel() {
-  var grid = document.getElementById('bgGrid');
-  grid.innerHTML = '';
-  for (var bpi = 0; bpi < BG_STYLES.length; bpi++) {
-    (function(bg) {
-      var d = document.createElement('div');
-      d.className = 'bg-item' + (bg.id === state.bgStyle ? ' active' : '');
-      d.dataset.bg = bg.id;
-      var c = document.createElement('canvas');
-      c.width = 60; c.height = 80;
-      bg.draw(c.getContext('2d'), 60, 80);
-      d.appendChild(c);
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;font-weight:700;padding:2px;background:rgba(255,255,255,0.8);color:#475569;';
-      lbl.textContent = bg.label;
-      d.style.position = 'relative';
-      d.appendChild(lbl);
-      d.onclick = function() { selectBg(bg.id, d); };
-      grid.appendChild(d);
-    })(BG_STYLES[bpi]);
+/* ══ 模板数据 ══ */
+var TPLS = [
+  {id:'todo',   ico:'✅', title:'今日待办', badge:'任务', bc:'#1d4ed8', bb:'#dbeafe'},
+  {id:'expense',ico:'💰', title:'今日花费', badge:'记账', bc:'#d97706', bb:'#fef3c7'},
+  {id:'tmr',    ico:'📅', title:'明天调整', badge:'计划', bc:'#7c3aed', bb:'#ede9fe'},
+  {id:'addr',   ico:'📍', title:'地址速记', badge:'导航', bc:'#059669', bb:'#d1fae5'},
+  {id:'pit',    ico:'🚫', title:'避坑记录', badge:'提醒', bc:'#dc2626', bb:'#fee2e2'}
+];
+function tplLines(id){
+  var d=new Date(), td=(d.getMonth()+1)+'/'+d.getDate();
+  var m = {
+    todo:   ['== 今日待办 '+td+' ==','□ ','□ ','□ ','□ ','----------------','完成：   / 4'],
+    expense:['== 今日花费 '+td+' ==','早餐    _____ THB','午餐    _____ THB','晚餐    _____ THB','交通    _____ THB','门票    _____ THB','其他    _____ THB','----------------','合计    _____ THB'],
+    tmr:    ['== 明天调整备注 ==','出发时间：','第一站：','交通方式：','需要预约：','携带物品：','预计花费：   THB'],
+    addr:   ['== 地址速记 ==','酒店：','今天第1站：','今天第2站：','餐厅：','打车给司机看：','----------------','紧急电话：1155'],
+    pit:    ['== 今日避坑 ==','坑1：','坑2：','坑3：','----------------','下次注意：','推荐：','不推荐：']
+  };
+  return m[id] || [];
+}
+
+/* ══ 画布尺寸 ══ */
+function fitCanvas(){
+  if(!_wrap||!_cv||!_ctx) return;
+
+  /* ── 计算可用尺寸：优先用 _wrap 的实际尺寸 ── */
+  var W = _wrap.offsetWidth;
+  var H = _wrap.offsetHeight;
+
+  /* 若容器尚未布局完成（高度为0），用 innerHeight 减去 toolbar+bbar 估算 */
+  if(W < 10){
+    W = window.innerWidth || 375;
   }
-}
-
-function selectBg(id, el) {
-  state.bgStyle = id;
-  var bgItems = document.querySelectorAll('.bg-item');
-  for (var bi = 0; bi < bgItems.length; bi++) bgItems[bi].classList.remove('active');
-  el.classList.add('active');
-  var snap = canvas.toDataURL();
-  var w = wrap.clientWidth;
-  var h = wrap.clientHeight;
-  drawBackground(id);
-  var sbImg = new Image();
-  sbImg.onload = function() { ctx.drawImage(sbImg, 0, 0, w, h); };
-  sbImg.src = snap;
-  saveCurrent();
-  closeAllPanels();
-}
-
-// ── 工具切换 ──
-function setTool(tool) {
-  state.tool = tool;
-  var tools = ['pen','marker','eraser','text'];
-  for (var ti = 0; ti < tools.length; ti++) {
-    var tbtn = document.getElementById('btn-'+tools[ti]);
-    if (tbtn) tbtn.classList.toggle('active', tools[ti] === tool);
+  if(H < 10){
+    var safeTop = 0, safeBot = 0;
+    try{
+      /* iOS safe-area 估算：通过 CSS env() 获取不到时用默认值 */
+      var st = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0');
+      var sb = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0');
+      safeTop = isNaN(st) ? 0 : st;
+      safeBot = isNaN(sb) ? 0 : sb;
+    }catch(e){}
+    H = (window.innerHeight || 600) - 56 - safeTop - 70 - safeBot;
+    if(H < 100) H = 400;
   }
-  var hint = document.getElementById('text-hint');
-  hint.style.display = tool === 'text' ? 'block' : 'none';
-  canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+
+  var dpr = window.devicePixelRatio || 1;
+  var snap = S.pages[S.pg];
+  _cv.width  = Math.round(W * dpr);
+  _cv.height = Math.round(H * dpr);
+  _cv.style.width  = W + 'px';
+  _cv.style.height = H + 'px';
+  _ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawBG();
+  if(snap){ var img=new Image(); img.onload=function(){_ctx.drawImage(img,0,0,W,H);}; img.src=snap; }
+
+  /* hitlayer 明确设置像素尺寸，避免 position:absolute 在某些浏览器里膨胀 */
+  if(_hit){
+    _hit.style.width  = W + 'px';
+    _hit.style.height = H + 'px';
+  }
+
+  /* resize 后重新缓存 hitlayer rect */
+  setTimeout(_cacheRect, 80);
 }
 
-// ── 颜色 ──
-function setColor(el) {
-  state.color = el.dataset.color;
-  state.textColor = el.dataset.color;
-  var dots = document.querySelectorAll('.color-dot');
-  for (var di = 0; di < dots.length; di++) dots[di].classList.remove('active');
-  el.classList.add('active');
-  if (state.tool === 'eraser') setTool('pen');
-}
-
-// ── 笔刷大小 ──
-function setBrushSize(v) {
-  state.brushSize = parseInt(v);
-  updateBrushPreview();
-}
-function updateBrushPreview() {
-  var p = document.getElementById('sizePreview');
-  var s = Math.max(6, Math.min(state.brushSize * 2, 26));
-  p.style.width = s + 'px';
-  p.style.height = s + 'px';
-}
-
-// ── 坐标提取（兼容鼠标和触摸）──
-function getPos(e) {
-  var rect = canvas.getBoundingClientRect();
-  var x, y;
-  if (e.touches && e.touches.length > 0) {
-    x = e.touches[0].clientX - rect.left;
-    y = e.touches[0].clientY - rect.top;
-  } else if (e.changedTouches && e.changedTouches.length > 0) {
-    x = e.changedTouches[0].clientX - rect.left;
-    y = e.changedTouches[0].clientY - rect.top;
+/* ══ 笔刷 ══ */
+function applyBrush(){
+  var t=gTool(), c=gColor();
+  _ctx.lineCap='round'; _ctx.lineJoin='round';
+  if(t==='eraser'){
+    _ctx.globalCompositeOperation='destination-out';
+    _ctx.globalAlpha=1; _ctx.lineWidth=S.bsz*3;
+    _ctx.strokeStyle='rgba(0,0,0,1)';
+  } else if(t==='marker'){
+    _ctx.globalCompositeOperation='source-over';
+    _ctx.globalAlpha=.38; _ctx.lineWidth=S.bsz*3;
+    _ctx.strokeStyle=c;
   } else {
-    x = e.clientX - rect.left;
-    y = e.clientY - rect.top;
+    _ctx.globalCompositeOperation='source-over';
+    _ctx.globalAlpha=1; _ctx.lineWidth=S.bsz;
+    _ctx.strokeStyle=c;
   }
-  return { x: x, y: y };
+}
+function drawDot(x,y){
+  var t=gTool(), c=gColor();
+  applyBrush();
+  _ctx.beginPath();
+  _ctx.arc(x,y,Math.max(1,_ctx.lineWidth/2),0,Math.PI*2);
+  _ctx.fillStyle = (t==='eraser') ? 'rgba(0,0,0,1)' : c;
+  _ctx.fill();
+}
+function drawSeg(x,y){
+  applyBrush();
+  _ctx.beginPath(); _ctx.moveTo(S.lx,S.ly); _ctx.lineTo(x,y); _ctx.stroke();
+}
+function resetCtx(){ _ctx.globalAlpha=1; _ctx.globalCompositeOperation='source-over'; }
+
+/* ══ hitlayer 坐标（用 offsetX/Y，触摸用缓存rect）══ */
+function hitPosM(e){ return {x:e.offsetX, y:e.offsetY}; }
+function hitPosT(t){
+  var r = _hitRect || _hit.getBoundingClientRect();
+  return {x: t.clientX - r.left, y: t.clientY - r.top};
 }
 
-// ── 绘图事件 ──
-function onStart(e) {
-  e.preventDefault();
-  var pos = getPos(e);
+/* ══ 绘图事件处理 ══ */
+function onDown(x,y){
+  var t = gTool();
+  deselText();
+  if(t==='text'){ S.txpos={x:x,y:y}; openTx(x,y); return; }
+  pushUndo();
+  S.draw=true; S.lx=x; S.ly=y;
+  drawDot(x,y);
+}
+function onMove(x,y){
+  if(!S.draw) return;
+  drawSeg(x,y); S.lx=x; S.ly=y;
+}
+function onUp(){
+  if(!S.draw) return;
+  S.draw=false; resetCtx();
+}
 
-  if (state.tool === 'text') {
-    state.textPos = pos;
-    openTextBox(pos);
+/* ══ 撤销 / 清空 ══ */
+function pushUndo(){ S.undos.push(_cv.toDataURL()); if(S.undos.length>S.MAXU) S.undos.shift(); }
+function doUndo(){
+  if(!S.undos.length){ showToast('已是最初状态','#f59e0b'); return; }
+  var snap=S.undos.pop(), W=parseInt(_cv.style.width)||375, H=parseInt(_cv.style.height)||500;
+  drawBG();
+  var img=new Image(); img.onload=function(){_ctx.drawImage(img,0,0,W,H);}; img.src=snap;
+}
+function doClear(){
+  if(!confirm('确定清空当前画布？')) return;
+  pushUndo(); drawBG(); _tl.innerHTML=''; S.selnd=null;
+}
+
+/* ══ 文字节点 ══ */
+function openTx(x,y){
+  var wRect=_wrap.getBoundingClientRect();
+  var lf=x+wRect.left, tp=y+wRect.top;
+  var vw=window.innerWidth, vh=window.innerHeight;
+  if(lf+200>vw) lf=vw-210; if(lf<8) lf=8;
+  if(tp+180>vh*0.78) tp=Math.max(64,tp-190);
+  _txbox.style.left=lf+'px'; _txbox.style.top=tp+'px'; _txbox.style.display='block';
+  _txin.value='';
+  setTimeout(function(){ _txin.focus(); }, 80);
+}
+function confirmTx(){
+  var txt=_txin.value.trim(); if(!txt){ cancelTx(); return; }
+  var c=gColor();
+  var nd=document.createElement('div'); nd.className='nd';
+  nd.style.left=S.txpos.x+'px'; nd.style.top=S.txpos.y+'px';
+  nd.style.fontSize=S.fsz+'px'; nd.style.color=c; nd.style.fontWeight='bold';
+  var sp=document.createElement('span'); sp.style.whiteSpace='pre-wrap'; sp.textContent=txt; nd.appendChild(sp);
+  var xb=document.createElement('span'); xb.className='ndx'; xb.textContent='×';
+  xb.addEventListener('click',function(e){
+    e.stopPropagation();
+    if(nd.parentNode) nd.parentNode.removeChild(nd);
+    if(S.selnd===nd) S.selnd=null;
+  });
+  nd.appendChild(xb);
+  /* 鼠标拖拽 */
+  nd.addEventListener('mousedown',function(e){
+    e.stopPropagation(); selText(nd);
+    _hit.style.pointerEvents='none'; /* 拖动时让出 hitlayer */
+    var sx=e.clientX, sy=e.clientY, ox=parseInt(nd.style.left)||0, oy=parseInt(nd.style.top)||0;
+    function mv(e2){ nd.style.left=Math.max(0,ox+e2.clientX-sx)+'px'; nd.style.top=Math.max(0,oy+e2.clientY-sy)+'px'; }
+    function up(){ _hit.style.pointerEvents='auto'; document.removeEventListener('mousemove',mv,true); document.removeEventListener('mouseup',up,true); }
+    document.addEventListener('mousemove',mv,true); document.addEventListener('mouseup',up,true);
+  });
+  /* 触摸拖拽 */
+  nd.addEventListener('touchstart',function(e){
+    e.stopPropagation(); selText(nd);
+    _hit.style.pointerEvents='none';
+    var t0=e.touches[0], sx=t0.clientX, sy=t0.clientY, ox=parseInt(nd.style.left)||0, oy=parseInt(nd.style.top)||0;
+    function mv(e2){
+      if(e2.cancelable) e2.preventDefault();
+      var t=e2.touches[0];
+      nd.style.left=Math.max(0,ox+t.clientX-sx)+'px';
+      nd.style.top=Math.max(0,oy+t.clientY-sy)+'px';
+    }
+    function up(){ _hit.style.pointerEvents='auto'; document.removeEventListener('touchmove',mv,true); document.removeEventListener('touchend',up,true); }
+    document.addEventListener('touchmove',mv,{capture:true,passive:false});
+    document.addEventListener('touchend',up,true);
+  },{passive:false});
+  _tl.appendChild(nd); selText(nd); cancelTx();
+}
+function cancelTx(){ _txbox.style.display='none'; _txin.blur(); }
+function selText(nd){ deselText(); S.selnd=nd; nd.classList.add('on'); }
+function deselText(){ if(S.selnd){ S.selnd.classList.remove('on'); S.selnd=null; } }
+
+/* ══ 多页 ══ */
+function saveCur(){ if(_cv) S.pages[S.pg]=_cv.toDataURL('image/png'); }
+function updInd(){ document.getElementById('pgind').textContent='第'+(S.pg+1)+' / '+S.pages.length+'页'; }
+function loadPg(idx){
+  saveCur(); S.pg=idx; S.undos=[];
+  var W=parseInt(_cv.style.width)||375, H=parseInt(_cv.style.height)||500;
+  drawBG(); _tl.innerHTML=''; S.selnd=null;
+  var snap=S.pages[idx];
+  if(snap){ var img=new Image(); img.onload=function(){_ctx.drawImage(img,0,0,W,H);}; img.src=snap; }
+  updInd();
+}
+function addPg(){
+  if(S.pages.length>=S.MAXP){ showToast('最多'+S.MAXP+'页','#f59e0b'); return; }
+  saveCur(); S.pages.push(null); loadPg(S.pages.length-1);
+  closeAll(); showToast('📄 已新建第'+S.pages.length+'页','#3b82f6');
+}
+function delPg(idx){
+  if(S.pages.length<=1) return;
+  if(!confirm('删除第'+(idx+1)+'页？')) return;
+  S.pages.splice(idx,1); loadPg(Math.min(S.pg,S.pages.length-1)); buildPgPanel();
+}
+function doPages(){
+  var p=document.getElementById('pgpanel');
+  if(p.style.display==='block'){ closeAll(); return; }
+  saveCur(); buildPgPanel(); p.style.display='block'; document.getElementById('ov').style.display='block';
+}
+function buildPgPanel(){
+  var g=document.getElementById('pgg'); g.innerHTML='';
+  S.pages.forEach(function(snap,i){
+    var d=document.createElement('div'); d.className='pgt'+(i===S.pg?' on':'');
+    if(snap){ var im=document.createElement('img'); im.src=snap; d.appendChild(im); }
+    var lb=document.createElement('div'); lb.className='pgl'; lb.textContent='第'+(i+1)+'页'; d.appendChild(lb);
+    if(S.pages.length>1){
+      var dl=document.createElement('div'); dl.className='pgd'; dl.textContent='×';
+      dl.addEventListener('click',function(e){ e.stopPropagation(); delPg(i); }); d.appendChild(dl);
+    }
+    d.addEventListener('click',function(){ loadPg(i); closeAll(); });
+    g.appendChild(d);
+  });
+  if(S.pages.length<S.MAXP){
+    var ad=document.createElement('div'); ad.className='pga';
+    /* 注意：不用 innerHTML 写 </div>，避免可能的截断 */
+    var plus=document.createElement('span'); plus.style.fontSize='22px'; plus.textContent='+';
+    var lbl=document.createElement('span'); lbl.textContent='新建';
+    ad.appendChild(plus); ad.appendChild(lbl);
+    ad.addEventListener('click',addPg); g.appendChild(ad);
+  }
+}
+function closeAll(){
+  document.getElementById('pgpanel').style.display='none';
+  document.getElementById('ov').style.display='none';
+  var m=document.getElementById('tplmask'); if(m) document.body.removeChild(m);
+}
+
+/* ══ 模板弹窗 ══ */
+function doTpl(){
+  var existing=document.getElementById('tplmask');
+  if(existing){ document.body.removeChild(existing); return; }
+  var mask=document.createElement('div'); mask.id='tplmask';
+  mask.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99990;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+  mask.addEventListener('click',function(e){ if(e.target===mask) document.body.removeChild(mask); });
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:20px;padding:18px 16px;width:100%;max-width:420px;max-height:82vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.35);box-sizing:border-box;';
+  var hd=document.createElement('div'); hd.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
+  var tt=document.createElement('div'); tt.style.cssText='font-size:16px;font-weight:800;color:#1e293b;'; tt.textContent='✨ 快速模板';
+  var xb=document.createElement('button'); xb.type='button';
+  xb.style.cssText='width:32px;height:32px;border-radius:50%;background:#f1f5f9;border:none;font-size:20px;cursor:pointer;';
+  xb.textContent='×'; xb.addEventListener('click',function(){ document.body.removeChild(mask); });
+  hd.appendChild(tt); hd.appendChild(xb); box.appendChild(hd);
+  var sub=document.createElement('p'); sub.style.cssText='font-size:12px;color:#64748b;margin:0 0 12px;'; sub.textContent='点击模板自动插入到画布'; box.appendChild(sub);
+  var list=document.createElement('div'); list.style.cssText='display:flex;flex-direction:column;gap:10px;';
+  TPLS.forEach(function(tpl){
+    var lines=tplLines(tpl.id);
+    var card=document.createElement('div');
+    card.style.cssText='border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;cursor:pointer;background:#f8fafc;';
+    card.addEventListener('mouseenter',function(){ card.style.background='#eff6ff'; card.style.borderColor='#3b82f6'; });
+    card.addEventListener('mouseleave',function(){ card.style.background='#f8fafc'; card.style.borderColor='#e2e8f0'; });
+    var rh=document.createElement('div'); rh.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px;';
+    var ic=document.createElement('span'); ic.style.fontSize='20px'; ic.textContent=tpl.ico;
+    var nm=document.createElement('span'); nm.style.cssText='font-size:14px;font-weight:800;color:#1e293b;flex:1;'; nm.textContent=tpl.title;
+    var bg=document.createElement('span'); bg.style.cssText='font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;color:'+tpl.bc+';background:'+tpl.bb+';'; bg.textContent=tpl.badge;
+    rh.appendChild(ic); rh.appendChild(nm); rh.appendChild(bg); card.appendChild(rh);
+    var pv=document.createElement('div'); pv.style.cssText='font-size:11px;color:#64748b;line-height:1.8;white-space:pre-wrap;font-family:monospace;background:#f1f5f9;border-radius:6px;padding:5px 8px;';
+    pv.textContent=lines.slice(0,3).join('\n')+'\n…'; card.appendChild(pv);
+    card.addEventListener('click',function(){ document.body.removeChild(mask); insertTpl(tpl); showToast('✅「'+tpl.title+'」已插入','#059669'); });
+    list.appendChild(card);
+  });
+  box.appendChild(list); mask.appendChild(box); document.body.appendChild(mask);
+}
+function insertTpl(tpl){
+  var lines=tplLines(tpl.id); if(!lines.length) return;
+  if(S.bg==='white'){
+    S.bg='lines';
+    var old=_cv.toDataURL();
+    var W=parseInt(_cv.style.width)||375, H=parseInt(_cv.style.height)||500;
+    drawBG();
+    var oi=new Image(); oi.onload=function(){_ctx.drawImage(oi,0,0,W,H);}; oi.src=old;
+  }
+  setTimeout(function(){
+    pushUndo();
+    _ctx.save(); _ctx.globalAlpha=1; _ctx.globalCompositeOperation='source-over'; _ctx.textBaseline='top';
+    lines.forEach(function(line,li){
+      var y=90+li*34;
+      _ctx.font=li===0?'bold 15px sans-serif':'500 13px sans-serif';
+      _ctx.fillStyle=li===0?'#1a3a5c':(line[0]==='-'||line[0]==='=')?'#94a3b8':'#334155';
+      _ctx.fillText(line,20,y);
+    });
+    _ctx.restore(); saveCur();
+  },80);
+}
+
+/* ══ 保存 / 分享 ══ */
+function getMerged(){
+  deselText();
+  var ns=_tl.querySelectorAll('.nd');
+  if(ns.length){
+    _ctx.save();
+    ns.forEach(function(nd){
+      var nx=parseInt(nd.style.left)||0, ny=parseInt(nd.style.top)||0, nf=parseInt(nd.style.fontSize)||16;
+      _ctx.font='bold '+nf+'px sans-serif'; _ctx.fillStyle=nd.style.color||'#1e293b';
+      _ctx.textBaseline='top'; _ctx.globalAlpha=1;
+      var sp=nd.querySelector('span');
+      (sp?sp.textContent:'').split('\n').forEach(function(l,i){_ctx.fillText(l,nx,ny+i*nf*1.4);});
+    });
+    _ctx.restore(); _tl.innerHTML=''; S.selnd=null;
+  }
+  return _cv.toDataURL('image/png');
+}
+function doSave(){
+  saveCur(); var url=getMerged();
+  var a=document.createElement('a');
+  a.download='TripLite-'+new Date().toISOString().slice(0,10)+'.png';
+  a.href=url; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('✅ 已保存图片','#059669');
+}
+function doShare(){
+  saveCur(); var url=getMerged();
+  if(navigator.share && navigator.canShare){
+    fetch(url).then(function(r){return r.blob();}).then(function(b){
+      var f=new File([b],'TripLite笔记.png',{type:'image/png'});
+      if(navigator.canShare({files:[f]})){
+        navigator.share({files:[f],title:'TripLite旅行笔记'}).catch(function(){fallbackShare(url);});
+        return;
+      }
+      fallbackShare(url);
+    }).catch(function(){fallbackShare(url);});
     return;
   }
-
-  // 保存撤销快照
-  pushUndo();
-
-  state.isDrawing = true;
-  state.lastX = pos.x;
-  state.lastY = pos.y;
-
-  ctx.beginPath();
-  ctx.moveTo(pos.x, pos.y);
-
-  if (state.tool === 'eraser') {
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = state.brushSize * 3;
-  } else if (state.tool === 'marker') {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 0.35;
-    ctx.lineWidth = state.brushSize * 3;
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = state.brushSize;
-  }
-
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.strokeStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
-
-  // 点点效果
-  ctx.beginPath();
-  ctx.arc(pos.x, pos.y, (ctx.lineWidth / 2), 0, Math.PI * 2);
-  ctx.fillStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
-  ctx.fill();
+  fallbackShare(url);
+}
+function fallbackShare(url){
+  /* 安全拼接HTML，不内嵌 script结束标签 等危险字符串 */
+  var parts=[
+    '<!DOCTYPE html>','<html>',
+    '<head><meta charset="UTF-8"><title>\u7b14\u8bb0<\/title><\/head>',
+    '<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">',
+    '<img src="'+url+'" style="max-width:100%;max-height:95vh">',
+    '<\/body><\/html>'
+  ];
+  var w=window.open('','_blank');
+  if(w){ w.document.write(parts.join('')); w.document.close(); }
+  else doSave();
 }
 
-function onMove(e) {
-  e.preventDefault();
-  if (!state.isDrawing) return;
-  var pos = getPos(e);
-
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  if (state.tool === 'eraser') {
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = state.brushSize * 3;
-    ctx.strokeStyle = 'rgba(0,0,0,1)';
-  } else if (state.tool === 'marker') {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 0.35;
-    ctx.lineWidth = state.brushSize * 3;
-    ctx.strokeStyle = state.color;
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = state.brushSize;
-    ctx.strokeStyle = state.color;
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(state.lastX, state.lastY);
-  ctx.lineTo(pos.x, pos.y);
-  ctx.stroke();
-
-  state.lastX = pos.x;
-  state.lastY = pos.y;
+/* ══ 工具辅助 ══ */
+function updPrev(){
+  var p=document.getElementById('szPrev'); if(!p) return;
+  var s=Math.max(6,Math.min(S.bsz*2,28));
+  p.style.width=s+'px'; p.style.height=s+'px';
+}
+function setFS(chip,fs){
+  S.fsz=fs;
+  document.querySelectorAll('.fsc').forEach(function(c){c.classList.remove('on');});
+  chip.classList.add('on');
+}
+function showToast(msg,bg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=bg||'#059669';
+  t.classList.add('on'); setTimeout(function(){t.classList.remove('on');},2200);
 }
 
-function onEnd(e) {
-  e.preventDefault();
-  if (!state.isDrawing) return;
-  state.isDrawing = false;
-  ctx.globalAlpha = 1;
-  ctx.globalCompositeOperation = 'source-over';
-}
+/* ══ 页面卸载保存 ══ */
+window.addEventListener('beforeunload',function(){if(saveCur)saveCur();});
+window.addEventListener('pagehide',    function(){if(saveCur)saveCur();});
 
-// ── 文字输入 ──
-var textFontSize = 16;
-var textLayer = document.getElementById('text-layer');
-var selectedTextNode = null;
+/* ══ 主初始化 ══ */
+window.addEventListener('DOMContentLoaded',function(){
+  _wrap  = document.getElementById('cwrap');
+  _cv    = document.getElementById('cv');
+  _ctx   = _cv.getContext('2d');
+  _tl    = document.getElementById('tl');
+  _hit   = document.getElementById('hitlayer');
+  _txbox = document.getElementById('txbox');
+  _txin  = document.getElementById('txin');
 
-function setTextSize(el) {
-  textFontSize = parseInt(el.dataset.size);
-  var chips = document.querySelectorAll('.ts-chip');
-  for (var ci = 0; ci < chips.length; ci++) chips[ci].classList.remove('active');
-  el.classList.add('active');
-  textIn.style.fontSize = textFontSize + 'px';
-}
+  fitCanvas();
+  updInd();
+  updPrev();
 
-function openTextBox(pos) {
-  var vw = window.innerWidth;
-  var vh = window.innerHeight;
-  var left = pos.x;
-  var top  = pos.y;
-  if (left + 200 > vw) left = vw - 200;
-  if (left < 10) left = 10;
-  if (top + 200 > vh * 0.65) top = Math.max(20, pos.y - 230);
-  textBox.style.left = left + 'px';
-  textBox.style.top  = top + 'px';
-  textBox.style.display = 'block';
-  textIn.style.fontSize = textFontSize + 'px';
-  textIn.value = '';
-  // 取消选中已选文字节点
-  deselectTextNode();
-  setTimeout(function() { textIn.focus(); }, 80);
-}
-
-function confirmText() {
-  var text = textIn.value.trim();
-  if (!text) { cancelText(); return; }
-
-  // 在文字层创建可拖动DOM节点
-  var node = document.createElement('div');
-  node.className = 'text-node';
-  node.style.left = state.textPos.x + 'px';
-  node.style.top  = state.textPos.y + 'px';
-  node.style.fontSize  = textFontSize + 'px';
-  node.style.color     = state.textColor;
-  node.style.fontWeight = 'bold';
-
-  // 文字内容放入独立 span，避免 textContent 读到删除按钮
-  var textSpan = document.createElement('span');
-  textSpan.className = 'text-node-content';
-  textSpan.style.whiteSpace = 'pre-wrap';
-  textSpan.textContent = text;
-  node.appendChild(textSpan);
-
-  // 删除按钮
-  var delBtn = document.createElement('i');
-  delBtn.className = 'text-node-del';
-  delBtn.textContent = '\u00d7';
-  delBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    node.parentNode && node.parentNode.removeChild(node);
-    selectedTextNode = null;
+  /* ── hitlayer：鼠标事件 ── */
+  _hit.addEventListener('mousedown',function(e){
+    if(e.button!==0) return;
+    var p=hitPosM(e); onDown(p.x,p.y);
   });
-  node.appendChild(delBtn);
-
-  // 点击选中
-  node.addEventListener('mousedown', function(e) {
-    e.stopPropagation();
-    selectTextNode(node);
-    startDragNode(e, node);
+  _hit.addEventListener('mousemove',function(e){
+    var p=hitPosM(e); onMove(p.x,p.y);
   });
-  node.addEventListener('touchstart', function(e) {
-    e.stopPropagation();
-    selectTextNode(node);
-    startDragNode(e, node);
-  }, { passive: false });
+  _hit.addEventListener('mouseup',   onUp);
+  _hit.addEventListener('mouseleave',onUp);
 
-  textLayer.appendChild(node);
-  selectTextNode(node);
-  cancelText();
-}
+  /* ── hitlayer：触摸事件（iOS/Android）── */
+  _hit.addEventListener('touchstart',function(e){
+    e.preventDefault(); /* 防止滚动、防止300ms延迟 */
+    _cacheRect(); /* 触摸开始时缓存一次 rect */
+    var t=e.touches[0], p=hitPosT(t);
+    onDown(p.x,p.y);
+  },{passive:false});
 
-function cancelText() {
-  textBox.style.display = 'none';
-  textIn.blur();
-}
+  _hit.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    var t=e.touches[0], p=hitPosT(t);
+    onMove(p.x,p.y);
+  },{passive:false});
 
-// ── 文字节点选中/取消 ──
-function selectTextNode(node) {
-  deselectTextNode();
-  selectedTextNode = node;
-  node.classList.add('selected');
-}
+  _hit.addEventListener('touchend',function(e){
+    e.preventDefault(); onUp();
+  },{passive:false});
 
-function deselectTextNode() {
-  if (selectedTextNode) {
-    selectedTextNode.classList.remove('selected');
-    selectedTextNode = null;
-  }
-}
+  _hit.addEventListener('touchcancel',function(){ onUp(); },{passive:true});
 
-// 点击画布空白处取消选中
-canvas.addEventListener('mousedown', function() { deselectTextNode(); });
-canvas.addEventListener('touchstart', function() { deselectTextNode(); }, { passive: true });
+  /* ── 工具切换 → 更新 hitlayer 光标 ── */
+  document.querySelectorAll('input[name="tool"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var cur = r.value==='eraser'?'cell' : r.value==='text'?'text' : 'crosshair';
+      _hit.style.cursor = cur;
+      var hint=document.getElementById('txhint');
+      if(hint) hint.style.display = r.value==='text' ? 'block' : 'none';
+    });
+  });
 
-// ── 文字节点拖动 ──
-function startDragNode(e, node) {
-  var isTouch = e.type === 'touchstart';
-  var startX = isTouch ? e.touches[0].clientX : e.clientX;
-  var startY = isTouch ? e.touches[0].clientY : e.clientY;
-  var origLeft = parseInt(node.style.left) || 0;
-  var origTop  = parseInt(node.style.top)  || 0;
+  /* ── 笔刷大小 ── */
+  document.getElementById('szSlider').addEventListener('input',function(){
+    S.bsz=parseInt(this.value); updPrev();
+  });
 
-  function onDragMove(ev) {
-    ev.preventDefault();
-    var cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-    var cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    var dx = cx - startX;
-    var dy = cy - startY;
-    var wrapRect = wrap.getBoundingClientRect();
-    var newLeft = Math.max(0, Math.min(origLeft + dx, wrapRect.width - 20));
-    var newTop  = Math.max(0, Math.min(origTop  + dy, wrapRect.height - 20));
-    node.style.left = newLeft + 'px';
-    node.style.top  = newTop  + 'px';
-  }
+  /* ── 字号选择 ── */
+  document.querySelectorAll('.fsc').forEach(function(c){
+    c.addEventListener('click',function(){ setFS(c,parseInt(c.dataset.fs)||16); });
+  });
 
-  function onDragEnd() {
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('mouseup',   onDragEnd);
-    document.removeEventListener('touchmove', onDragMove);
-    document.removeEventListener('touchend',  onDragEnd);
-  }
+  /* ── 文字框确认/取消 ── */
+  document.getElementById('txok').addEventListener('click',confirmTx);
+  document.getElementById('txno').addEventListener('click',cancelTx);
 
-  document.addEventListener('mousemove', onDragMove);
-  document.addEventListener('mouseup',   onDragEnd);
-  document.addEventListener('touchmove', onDragMove, { passive: false });
-  document.addEventListener('touchend',  onDragEnd);
-}
+  /* ── 底部栏 ── */
+  document.getElementById('btn-undo') .addEventListener('click',doUndo);
+  document.getElementById('btn-clear').addEventListener('click',doClear);
+  document.getElementById('btn-pages').addEventListener('click',doPages);
+  document.getElementById('btn-tpl')  .addEventListener('click',doTpl);
+  document.getElementById('btn-save') .addEventListener('click',doSave);
+  document.getElementById('btn-share').addEventListener('click',doShare);
+  document.getElementById('ov').addEventListener('click',closeAll);
 
-// ── 撤销 ──
-function pushUndo() {
-  undoStack.push(canvas.toDataURL());
-  if (undoStack.length > MAX_UNDO) undoStack.shift();
-}
+  /* ── 点画布外取消文字节点选中 ── */
+  document.addEventListener('mousedown',function(e){
+    if(!_hit.contains(e.target) && !_tl.contains(e.target)) deselText();
+  });
 
-function undo() {
-  if (undoStack.length === 0) {
-    showToast('已经是最初状态了', '#f59e0b');
-    return;
-  }
-  var snap = undoStack.pop();
-  var w = wrap.clientWidth;
-  var h = wrap.clientHeight;
-  drawBackground(state.bgStyle);
-  var undoImg = new Image();
-  undoImg.onload = function() { ctx.drawImage(undoImg, 0, 0, w, h); };
-  undoImg.src = snap;
-}
-
-// ── 清空 ──
-function clearCanvas() {
-  if (!confirm('确定清空当前画布？')) return;
-  pushUndo();
-  drawBackground(state.bgStyle);
-  // 清空文字层
-  if (textLayer) textLayer.innerHTML = '';
-  selectedTextNode = null;
-}
-
-// ── 把文字层合并绘制到临时canvas ──
-function getMergedDataURL() {
-  // 先把文字节点渲染到画布上
-  deselectTextNode(); // 隐藏选中边框
-  var nodes = textLayer ? textLayer.querySelectorAll('.text-node') : [];
-  if (nodes.length > 0) {
-    ctx.save();
-    for (var ni = 0; ni < nodes.length; ni++) {
-      var nd = nodes[ni];
-      var nx = parseInt(nd.style.left) || 0;
-      var ny = parseInt(nd.style.top)  || 0;
-      var nfs = parseInt(nd.style.fontSize) || 16;
-      ctx.font = 'bold ' + nfs + 'px Inter, -apple-system, sans-serif';
-      ctx.fillStyle = nd.style.color || '#1e293b';
-      ctx.textBaseline = 'top';
-      ctx.globalAlpha = 1;
-      // 读取 span 内容，避免包含删除按钮的文字
-      var contentSpan = nd.querySelector('.text-node-content');
-      var rawText = contentSpan ? contentSpan.textContent : nd.firstChild ? nd.firstChild.textContent : '';
-      var lines = rawText.split('\n');
-      for (var li = 0; li < lines.length; li++) {
-        ctx.fillText(lines[li], nx, ny + li * nfs * 1.4);
-      }
-    }
-    ctx.restore();
-    // 清空文字层（已合并到canvas）
-    textLayer.innerHTML = '';
-    selectedTextNode = null;
-  }
-  return canvas.toDataURL('image/png');
-}
-
-// ── 保存为图片 ──
-function saveImage() {
-  saveCurrent();
-  var dataURL = getMergedDataURL();
-  var a = document.createElement('a');
-  var ts = new Date().toISOString().slice(0,16).replace('T','-').replace(':','');
-  a.download = 'TripLite-涂鸦-' + ts + '.png';
-  a.href = dataURL;
-  a.click();
-  showToast('✅ 图片已保存\n长按相册图片可分享', '#059669');
-}
-
-// ── 分享（Web Share API 或 fallback 下载）──
-function shareImage() {
-  saveCurrent();
-  var dataURL = getMergedDataURL();
-
-  if (navigator.share && navigator.canShare) {
-    try {
-      fetch(dataURL).then(function(r) { return r.blob(); }).then(function(blob) {
-        var file = new File([blob], 'TripLite涂鸦.png', { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: 'TripLite涂鸦记录' })['catch'](function() { doFallbackShare(dataURL); });
-          return;
-        }
-        doFallbackShare(dataURL);
-      })['catch'](function() { doFallbackShare(dataURL); });
-      return;
-    } catch(e) {}
-  }
-  doFallbackShare(dataURL);
-}
-
-function doFallbackShare(dataURL) {
-  // Fallback：弹出图片让用户长按保存（替换document.write，兼容所有浏览器）
-  try {
-    var win = window.open('', '_blank');
-    if (win) {
-      // 用 DOM 操作替代 document.write，避免部分浏览器拦截
-      win.document.title = '涂鸦图片 - 长按保存';
-      var html = win.document.documentElement || win.document.createElement('html');
-      win.document.open();
-      win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;"><img src="' + dataURL + '" style="max-width:100%;max-height:90vh;object-fit:contain;" /><p style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:white;font-size:14px;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;white-space:nowrap;">长按图片 → 保存到相册</p></body></html>');
-      win.document.close();
-    } else {
-      saveImage();
-    }
-  } catch(e) {
-    // window.open 被拦截（如iOS Safari在非用户手势中）
-    saveImage();
-  }
-}
-
-// ── Toast 提示 ──
-function showToast(msg, color) {
-  if (!color) color = '#059669';
-  var t = document.getElementById('save-toast');
-  t.innerHTML = msg.replace('\n','<br>');
-  t.style.background = color;
-  t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2200);
-}
-
-// ── 多页面板 ──
-function togglePagesPanel() {
-  var panel = document.getElementById('pages-panel');
-  var ov = document.getElementById('overlay');
-  if (panel.style.display === 'block') {
-    closeAllPanels();
-  } else {
-    closeAllPanels(false);
-    buildPageThumbs();
-    panel.style.display = 'block';
-    ov.style.display = 'block';
-  }
-}
-
-function buildPageThumbs() {
-  saveCurrent();
-  var grid = document.getElementById('pageThumbGrid');
-  grid.innerHTML = '';
-
-  for (var pti = 0; pti < pages.length; pti++) {
-    (function(snap, idx) {
-      var d = document.createElement('div');
-      d.className = 'page-thumb' + (idx === currentPage ? ' active' : '');
-
-      if (snap) {
-        var img = document.createElement('img');
-        img.src = snap;
-        d.appendChild(img);
-      } else {
-        d.style.background = '#f1f5f9';
-      }
-
-      var label = document.createElement('div');
-      label.className = 'page-thumb-label';
-      label.textContent = '\u7b2c' + (idx+1) + '\u9875';
-      d.appendChild(label);
-
-      if (pages.length > 1) {
-        var del = document.createElement('div');
-        del.className = 'page-thumb-del';
-        del.innerHTML = '\u2715';
-        del.onclick = function(e) { e.stopPropagation(); deletePage(idx); };
-        d.appendChild(del);
-      }
-
-      d.onclick = function() { loadPage(idx); closeAllPanels(); };
-      grid.appendChild(d);
-    })(pages[pti], pti);
-  }
-
-  // 新增按钮
-  if (pages.length < MAX_PAGES) {
-    var add = document.createElement('div');
-    add.className = 'add-page-btn';
-    add.innerHTML = '<i class="fas fa-plus"></i><span>\u65b0\u5efa</span>';
-    add.onclick = addPage;
-    grid.appendChild(add);
-  }
-}
-
-function addPage() {
-  saveCurrent();
-  pages.push(null);
-  loadPage(pages.length - 1);
-  closeAllPanels();
-  showToast('\ud83d\udcc4 \u5df2\u65b0\u5efa\u7b2c ' + pages.length + ' \u9875', '#3b82f6');
-}
-
-function deletePage(idx) {
-  if (pages.length <= 1) return;
-  if (!confirm('\u5220\u9664\u7b2c ' + (idx+1) + ' \u9875\uff1f')) return;
-  pages.splice(idx, 1);
-  var newIdx = Math.min(currentPage, pages.length - 1);
-  loadPage(newIdx);
-  buildPageThumbs();
-}
-
-// ── 背景面板 ──
-function toggleBgPanel() {
-  var panel = document.getElementById('bg-panel');
-  var ov = document.getElementById('overlay');
-  if (panel.style.display === 'block') {
-    closeAllPanels();
-  } else {
-    closeAllPanels(false);
-    panel.style.display = 'block';
-    ov.style.display = 'block';
-  }
-}
-
-function closeAllPanels(hideOv) {
-  if (hideOv === undefined) hideOv = true;
-  document.getElementById('bg-panel').style.display = 'none';
-  document.getElementById('pages-panel').style.display = 'none';
-  if (hideOv) document.getElementById('overlay').style.display = 'none';
-}
-
-// ── 自动保存（退出前）──
-window.addEventListener('beforeunload', saveCurrent);
-window.addEventListener('pagehide', saveCurrent);
-
-// ── 启动 ──
-init();
+  /* ── resize（横竖屏切换）── */
+  var _dbt;
+  window.addEventListener('resize',function(){
+    clearTimeout(_dbt); _dbt=setTimeout(fitCanvas,250);
+  });
+  /* iOS orientationchange */
+  window.addEventListener('orientationchange',function(){
+    setTimeout(fitCanvas,350);
+  });
+});
 </script>
 </body>
 </html>
