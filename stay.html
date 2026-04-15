@@ -76,281 +76,291 @@
   <script>
     var currentStayCity = 'macau';
 
-    // 每家酒店的周边距离数据（补充）
-    var HOTEL_NEARBY = {
-      // ── 澳门 ──
-      '艺居酒店（已选·推荐）': {
-        walk: ['官也街手信街 步行15分钟', '龙环葡韵 步行20分钟', '便利店/餐厅 步行5分钟'],
-        taxi:  ['澳门国际机场 打的约5分钟/约30–40澳门元', '氹仔旧城区 打的约8分钟', '路氹城美食广场 打的约10分钟'],
-        note: '下飞机→酒店最快最近，明天赶飞机也省事，全程氹仔岛活动无需过桥'
-      },
-      '澳门机场美居酒店': {
-        walk: ['澳门国际机场航站楼 步行5分钟（直连）', '便利店 步行5分钟'],
-        taxi:  ['官也街 打的约10分钟', '龙环葡韵 打的约12分钟', '路氹城 打的约15分钟'],
-        note: '走廊直通机场，早班飞机最方便，隔音良好'
-      },
-      '氹仔精品民宿/商务酒店（省钱档）': {
-        walk: ['官也街 步行5–10分钟', '便利店 步行3分钟', '氹仔本地餐厅 步行5分钟'],
-        taxi:  ['澳门机场 打的约10分钟', '龙环葡韵 步行或打的约10分钟'],
-        note: '官也街购物最方便，预算有限的首选，把省下的钱留给泰国'
-      },
-      // ── 芭提雅 ──
-      'Centara Avenue Hotel Pattaya': {
-        walk: ['Beach Road海滩 步行5分钟', '7-Eleven 步行1分钟', '街边泰餐 步行3分钟', 'Central Festival商场 步行8分钟'],
-        taxi:  ['Bali Hai码头 双条车20฿约15分钟', '蒂芙尼秀场 Grab约50฿5分钟', '真理寺 Grab约60฿10分钟'],
-        note: '位置最优：海滩+码头+秀场三者最均衡，首推'
-      },
-      'Amara Bangkok Hotel Pattaya': {
-        walk: ['Beach Road海滩 步行8分钟', '便利店 步行3分钟', 'Big C超市 步行10分钟'],
-        taxi:  ['Bali Hai码头 Grab约70฿10分钟', '蒂芙尼秀场 Grab约60฿8分钟', '真理寺 Grab约40฿6分钟'],
-        note: '泳池是加分项，格兰岛回来直接泡；去码头建议Grab省时间'
-      },
-      'Flipper Lodge Hotel': {
-        walk: ['Beach Road海滩 步行8分钟', '餐厅 步行3分钟', '7-Eleven 步行2分钟'],
-        taxi:  ['Bali Hai码头 双条车20฿约20分钟', '蒂芙尼秀场 Grab约50฿5分钟', 'Central Festival 步行8分钟'],
-        note: '省钱首选，位置与首推相近，省下的钱够多吃两顿海鲜'
-      },
-      // ── 曼谷 ──
-      'Grande Centre Point Terminal 21': {
-        walk: ['Terminal 21商场 步行5分钟（B1美食广场50–100฿）', 'BTS Asok站 步行5分钟', 'MRT Sukhumvit站 步行3分钟', 'Health Land按摩 步行10分钟', '7-Eleven 步行1分钟'],
-        taxi:  ['大皇宫 Grab约80–120฿（40–50分钟）', '唐人街Yaowarat Grab约50–70฿（20分钟）', 'Siam Paragon BTS约15分钟', 'Jodd Fairs夜市 Grab约20分钟', '素万那普机场 Grab约200–300฿（45–60分钟）'],
-        note: '全程最优位置：双地铁交汇，商场/餐厅/按摩步行全解决'
-      },
-      'Mercure Bangkok Sukhumvit 11': {
-        walk: ['BTS Nana站 步行5分钟', 'Soi 11街边餐厅 步行3分钟', '按摩店 步行5分钟', '7-Eleven 步行1分钟'],
-        taxi:  ['Terminal 21 BTS 1站约5分钟', '大皇宫 Grab约80–120฿', '唐人街 Grab约50–70฿', 'Siam Paragon BTS约15分钟', '素万那普机场 Grab约200–300฿'],
-        note: 'Soi 11周末夜间酒吧有噪音，浅睡眠者注意选楼层'
-      },
-      'ibis Bangkok Sukhumvit 4': {
-        walk: ['BTS Nana站 步行3分钟', 'Soi 4/5餐厅 步行3分钟', '7-Eleven 步行1分钟'],
-        taxi:  ['Terminal 21 BTS 1站约5分钟', '大皇宫 Grab约80–120฿', 'Siam Paragon BTS约15分钟', '素万那普机场 Grab约200–300฿'],
-        note: 'Soi 4有酒吧区，位置佳但夜间较热闹，适合价格敏感旅行者'
-      }
-    };
-    
+    // ── 渲染住宿页 ──
     function renderStayPage() {
       var main = document.getElementById('appMain');
       if (!main) return;
-      
-      main.innerHTML =
+
+      // 总览Banner
+      var overviewHtml =
         '<div class="page-header">'
-        + '<div class="page-header-title">\uD83C\uDFE8 住宿建议</div>'
-        + '<div class="page-header-sub">区域分析 · 候选酒店 · 距离说明</div>'
+        + '<div class="page-header-title">🏨 住宿推荐</div>'
+        + '<div class="page-header-sub">精选性价比酒店 · 携程一键预订 · ¥300–500预算</div>'
         + '</div>'
-        + '<div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,#1e3a5f,#1e40af);">'
-        + '<div style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;margin-bottom:8px;">\uD83D\uDCCD 本次行程住宿安排</div>'
-        + '<div style="display:flex;flex-direction:column;gap:6px;">'
-        + '<div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">'
-        + '<span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/26（1晚）</span>'
-        + '<span>\uD83C\uDFB0 澳门 · <strong style="color:#86efac;">\u2705 艺居酒店（已定）</strong></span>'
+        + '<a href="hotel-plan-b.html" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;margin-bottom:12px;background:linear-gradient(135deg,#f0fdf4,#eff6ff);border:1px solid #bfdbfe;border-radius:14px;text-decoration:none;color:#1a3a5c;">'
+        + '<div>'
+        + '<div style="font-size:13px;font-weight:800;">📋 方案B · 独立精选推荐</div>'
+        + '<div style="font-size:12px;color:#4b5563;margin-top:2px;">OZO / NH / Holiday Inn / Furama · 携程直达链接</div>'
         + '</div>'
-        + '<div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">'
-        + '<span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/27–4/28（2晚）</span>'
-        + '<span>\uD83C\uDFD6\uFE0F 芭提雅 · Central Beach Road沿线</span>'
-        + '</div>'
-        + '<div style="display:flex;gap:8px;align-items:center;font-size:13px;color:white;">'
-        + '<span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:20px;font-size:11px;white-space:nowrap;">4/29–5/1（3晚）</span>'
-        + '<span>\uD83C\uDFD9\uFE0F 曼谷 · Asok/Sukhumvit BTS步行圈</span>'
-        + '</div>'
-        + '</div>'
-        + '</div>'
-        + '<div class="city-tabs" id="stay-city-tabs-inner"></div>'
-        + '<div id="stayCityContent"></div>'
-        + '<div class="card" style="margin-top:4px;">'
-        + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">\uD83D\uDCA1</span>住宿选择通用原则</div>'
+        + '<span style="font-size:18px;">→</span>'
+        + '</a>'
+        + '<div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,#1e3a5f,#1e40af);padding:16px;">'
+        + '<div style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:10px;">📍 全程住宿安排</div>'
         + '<div style="display:flex;flex-direction:column;gap:8px;">'
-        + '<div class="step-item am"><div class="step-content">'
-        + '<div class="step-title">位置 > 价格</div>'
-        + '<div class="step-desc">宁可多花50元住在交通方便的地方，省去每天打车折腾时间。尤其是曼谷，必须在BTS/MRT步行圈内。</div>'
-        + '</div></div>'
-        + '<div class="step-item pm"><div class="step-content">'
-        + '<div class="step-title">连续住，不频繁换</div>'
-        + '<div class="step-desc">芭提雅连住2晚，曼谷连住3晚，不要频繁换酒店。每次搬行李都会消耗宝贵的游玩时间。</div>'
-        + '</div></div>'
-        + '<div class="step-item night"><div class="step-content">'
-        + '<div class="step-title">提前预订，灵活取消</div>'
-        + '<div class="step-desc">国内用户推荐用 <strong>Trip.com（携程国际版）</strong>，境外可用 Booking 或 Agoda 比价。均优先选"免费取消"房型，方便调整行程。</div>'
-        + '</div></div>'
-        + '<div class="step-item am"><div class="step-content">'
-        + '<div class="step-title">第一晚酒店要附近有餐厅</div>'
-        + '<div class="step-desc">抵达芭提雅（4/27）和曼谷（4/29）的第一晚，很可能已经很累。确认酒店步行5–10分钟内有餐厅或便利店。</div>'
-        + '</div></div>'
+        + _overviewRow('4/26', '1晚', '🎰', '澳门 · 氹仔艺居酒店', '✅ 已确认', '#86efac')
+        + _overviewRow('4/27–4/28', '2晚', '🏖️', '芭提雅 · Central 2nd Road', '待订', '#fde68a')
+        + _overviewRow('4/29–5/1', '3晚', '🏙️', '曼谷 · Asok/Sukhumvit', '待订', '#fde68a')
+        + '</div>'
+        + '<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.15);font-size:11px;color:rgba(255,255,255,0.65);line-height:1.6;">'
+        + '💡 以下酒店均已人工筛选验证：真实可订、评分8.0+、对应行程地点步行圈内。<strong style="color:rgba(255,255,255,0.9);">携程（ctrip.com）为国内最优先预订渠道</strong>，支持中文客服，付款方便。'
+        + '</div>'
+        + '</div>';
+
+      // 城市 Tabs
+      var tabsHtml = '<div class="city-tabs" id="stay-city-tabs-inner"></div>';
+
+      // 城市内容容器
+      var contentHtml = '<div id="stayCityContent"></div>';
+
+      // 通用原则
+      var tipsHtml =
+        '<div class="card" style="margin-top:4px;">'
+        + '<div class="card-title" style="margin-bottom:10px;"><span class="icon">💡</span>订酒店通用原则</div>'
+        + '<div style="display:flex;flex-direction:column;gap:0;">'
+        + _tipRow('📍', '位置 > 价格', '宁可多花50元住交通方便的地方，省去打车折腾时间。曼谷必须BTS/MRT步行10分钟内。')
+        + _tipRow('📅', '提前订 · 选免费取消', '五一前后（4/26–5/3）是高峰期，越早越便宜。优先选"可免费取消"房型，万一行程变动不损失订金。')
+        + _tipRow('🏨', '连住不换', '芭提雅2晚+曼谷3晚，不要中途换酒店，每次搬行李浪费半天游玩时间。')
+        + _tipRow('📱', '携程 = 国内首选', '携程（ctrip.com）支持支付宝/微信付款，中文客服，退改政策清晰，国内出境游最稳选择。')
         + '</div>'
         + '</div>'
         + '<div class="safe-bottom"></div>';
-      
-      // 动态生成城市tabs
+
+      main.innerHTML = overviewHtml + tabsHtml + contentHtml + tipsHtml;
+
+      // 渲染 Tabs
       var innerTabsEl = document.getElementById('stay-city-tabs-inner');
-      if (innerTabsEl && typeof STAY_DATA !== 'undefined' && STAY_DATA.cities) {
-        var innerChipsHtml = '';
+      if (innerTabsEl && typeof STAY_DATA !== 'undefined') {
+        var chipsHtml = '';
         for (var ic = 0; ic < STAY_DATA.cities.length; ic++) {
-          var icc = STAY_DATA.cities[ic];
-          innerChipsHtml += '<button class="city-chip' + (ic === 0 ? ' active' : '') + '" onclick="switchStayCity(\'' + icc.id + '\', this)">' + icc.emoji + ' ' + icc.name + '</button>';
+          var c = STAY_DATA.cities[ic];
+          chipsHtml += '<button class="city-chip' + (ic === 0 ? ' active' : '') + '" onclick="switchStayCity(\'' + c.id + '\', this)">' + c.emoji + ' ' + c.name + '</button>';
         }
-        innerTabsEl.innerHTML = innerChipsHtml;
+        innerTabsEl.innerHTML = chipsHtml;
       }
       switchStayCity('macau', document.querySelector('.city-chip'));
     }
-    
+
+    function _overviewRow(dates, nights, emoji, name, status, statusColor) {
+      return '<div style="display:flex;align-items:center;gap:8px;">'
+        + '<div style="background:rgba(255,255,255,0.12);padding:3px 8px;border-radius:16px;font-size:10px;color:white;white-space:nowrap;">' + dates + '</div>'
+        + '<div style="background:rgba(255,255,255,0.08);padding:3px 7px;border-radius:16px;font-size:10px;color:rgba(255,255,255,0.7);white-space:nowrap;">' + nights + '</div>'
+        + '<div style="flex:1;font-size:13px;color:white;font-weight:600;">' + emoji + ' ' + name + '</div>'
+        + '<div style="font-size:10px;font-weight:700;color:' + statusColor + ';white-space:nowrap;">' + status + '</div>'
+        + '</div>';
+    }
+
+    function _tipRow(icon, title, desc) {
+      return '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;">'
+        + '<div style="font-size:18px;flex-shrink:0;margin-top:1px;">' + icon + '</div>'
+        + '<div><div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:2px;">' + title + '</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">' + desc + '</div></div>'
+        + '</div>';
+    }
+
+    // ── 切换城市 ──
     function switchStayCity(cityId, btn) {
       currentStayCity = cityId;
-      
-      var allChipsS = document.querySelectorAll('.city-chip');
-      for (var csI = 0; csI < allChipsS.length; csI++) allChipsS[csI].classList.remove('active');
+      var allChips = document.querySelectorAll('.city-chip');
+      for (var i = 0; i < allChips.length; i++) allChips[i].classList.remove('active');
       if (btn) btn.classList.add('active');
-      
+
       var cityData = null;
-      if (typeof STAY_DATA !== 'undefined' && STAY_DATA.cities) {
-        for (var sdI = 0; sdI < STAY_DATA.cities.length; sdI++) {
-          if (STAY_DATA.cities[sdI].id === cityId) { cityData = STAY_DATA.cities[sdI]; break; }
+      if (typeof STAY_DATA !== 'undefined') {
+        for (var j = 0; j < STAY_DATA.cities.length; j++) {
+          if (STAY_DATA.cities[j].id === cityId) { cityData = STAY_DATA.cities[j]; break; }
         }
       }
       var content = document.getElementById('stayCityContent');
       if (!content || !cityData) return;
 
-      // 澳门已定好，单独处理
-      if (cityId === 'macau') {
-        content.innerHTML = '<div class="hero-card" style="margin-bottom:14px;">'
-          + '<div style="font-size:12px;opacity:0.75;margin-bottom:6px;font-weight:600;">4/26（1晚）· 氹仔岛</div>'
-          + '<div style="font-size:20px;font-weight:800;margin-bottom:8px;">🎰 艺居酒店 · 已定好</div>'
-          + '<div style="font-size:13px;opacity:0.85;line-height:1.7;">位于氹仔岛，距澳门国际机场约5分钟，下飞机直接到，明天早上出发也方便。今天只在氹仔活动，不过桥。</div>'
-          + '</div>'
-          + '<div class="alert-card success" style="margin-bottom:10px;">'
-          + '<div class="alert-icon">✅</div>'
-          + '<div class="alert-content">'
-          + '<div class="alert-title">住宿已定，今天这样走</div>'
-          + '<div class="alert-text">① 落地→打的5分钟到艺居酒店放行李<br>② 步行或打的→官也街买手信（步行15分钟）<br>③ 官也街步行10分钟→龙环葡韵拍照<br>④ 打的回路氹城吃晚饭→22:30前回酒店休息</div>'
-          + '</div></div>'
-          + '<div class="alert-card info">'
-          + '<div class="alert-icon">✈️</div>'
-          + '<div class="alert-content">'
-          + '<div class="alert-title">明天出发提醒</div>'
-          + '<div class="alert-text">艺居酒店距机场极近，步行或打的5分钟。出发前把护照、TDAC二维码截图、机票确认邮件放好随身包，提前1.5小时到机场。</div>'
-          + '</div></div>';
-        return;
-      }
-      
-      // 构建内容 HTML
-      var schedHtml2 = '';
-      if (cityData.schedule) {
-        var schedRows2 = '';
-        for (var sci2 = 0; sci2 < cityData.schedule.length; sci2++) {
-          var s2 = cityData.schedule[sci2];
-          var sColor2 = sci2 === 0 ? '#0ea5e9' : '#10b981';
-          var sTColor2 = sci2 === 0 ? '#0369a1' : '#059669';
-          schedRows2 += '<div style="background:var(--bg-card);border-radius:12px;padding:12px 14px;margin-bottom:8px;border-left:4px solid ' + sColor2 + ';">'
-            + '<div style="font-size:12px;font-weight:800;color:' + sTColor2 + ';margin-bottom:6px;">' + s2.time + '</div>'
-            + '<div style="font-size:12px;color:var(--text-primary);line-height:1.9;">' + s2.plan.replace(/→/g, ' <span style="color:#94a3b8;">→</span> ') + '</div>'
+      // ── 城市头部 ──
+      var headerHtml =
+        '<div class="hero-card" style="margin-bottom:14px;">'
+        + '<div style="font-size:11px;opacity:0.7;margin-bottom:4px;font-weight:600;">' + cityData.dates + ' · ' + cityData.stayNights + '晚</div>'
+        + '<div style="font-size:19px;font-weight:800;margin-bottom:6px;">' + cityData.emoji + ' ' + cityData.name + ' · ' + cityData.area + '</div>'
+        + '<div style="font-size:12px;opacity:0.82;line-height:1.7;margin-bottom:10px;">' + cityData.reason + '</div>'
+        + '<div class="hero-tags">'
+        + '<span class="hero-tag">预算 ' + cityData.budgetRange + '</span>'
+        + '<span class="hero-tag">' + cityData.stayNights + '晚</span>'
+        + '</div>'
+        + '</div>';
+
+      // ── 日程参考 ──
+      var schedHtml = '';
+      if (cityData.schedule && cityData.schedule.length) {
+        var rows = '';
+        var schedColors = ['#0ea5e9','#10b981','#a855f7'];
+        var schedTColors = ['#0369a1','#059669','#7c3aed'];
+        for (var s = 0; s < cityData.schedule.length; s++) {
+          rows += '<div style="background:var(--bg-card);border-radius:12px;padding:11px 14px;margin-bottom:8px;border-left:4px solid ' + (schedColors[s] || '#0ea5e9') + ';">'
+            + '<div style="font-size:11px;font-weight:800;color:' + (schedTColors[s] || '#0369a1') + ';margin-bottom:5px;">' + cityData.schedule[s].time + '</div>'
+            + '<div style="font-size:12px;color:var(--text-primary);line-height:1.8;">' + cityData.schedule[s].plan.replace(/→/g,'<span style="color:#94a3b8;margin:0 2px;">→</span>') + '</div>'
             + '</div>';
         }
-        schedHtml2 = '<div class="section-label">📅 住这里·每天怎么走</div><div style="margin-bottom:14px;">' + schedRows2 + '</div>';
+        schedHtml = '<div class="section-label">📅 住这里 · 每天怎么走</div>'
+          + '<div style="margin-bottom:14px;">' + rows + '</div>';
       }
-      var hotelsHtml2 = '';
-      for (var hi2 = 0; hi2 < cityData.hotels.length; hi2++) {
-        hotelsHtml2 += renderHotelCard(cityData.hotels[hi2], hi2, cityData.hotels.length);
+
+      // ── 酒店列表 ──
+      var hotelsHtml =
+        '<div class="section-label">🏨 精选酒店（' + cityData.hotels.length + '家对比 · 均已验证）</div>'
+        + '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;background:var(--bg);padding:8px 10px;border-radius:8px;">'
+        + '📌 价格为五一期间参考均价，以携程实时显示为准。<strong>务必选"免费取消"房型</strong>。'
+        + '</div>';
+
+      for (var hi = 0; hi < cityData.hotels.length; hi++) {
+        hotelsHtml += renderHotelCard(cityData.hotels[hi], hi);
       }
-      content.innerHTML = '<div class="hero-card" style="margin-bottom:14px;">'
-        + '<div style="font-size:12px;opacity:0.75;margin-bottom:6px;font-weight:600;">' + cityData.dates + ' · ' + cityData.stayNights + '晚</div>'
-        + '<div style="font-size:20px;font-weight:800;margin-bottom:6px;">' + cityData.emoji + ' ' + cityData.name + ' · ' + cityData.area + '</div>'
-        + '<div style="font-size:13px;opacity:0.85;line-height:1.7;margin-bottom:12px;">' + cityData.reason + '</div>'
-        + '<div class="hero-tags"><span class="hero-tag">预算 ' + cityData.budgetRange + '</span><span class="hero-tag">' + cityData.stayNights + '晚</span></div>'
-        + '</div>'
-        + schedHtml2
-        + '<div class="section-label">🏨 候选酒店（' + cityData.hotels.length + '家对比）</div>'
-        + '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">价格为参考均价，以预订平台实时为准。<strong>优先选"免费取消"房型。</strong></div>'
-        + hotelsHtml2
-        + getCitySpecialNote(cityId);
+
+      content.innerHTML = headerHtml + schedHtml + hotelsHtml + getCitySpecialNote(cityId);
     }
 
-    function renderHotelCard(hotel, idx, total) {
-      var rankColors = ['#10b981', '#f59e0b', '#94a3b8'];
-      var rankLabels = ['⭐ 首推', '👍 备选', '💰 省钱'];
-      var rankColor = rankColors[idx] || '#94a3b8';
-      var rankLabel = rankLabels[idx] || '';
-      var tagClass = idx === 0 ? 'blue' : idx === 1 ? 'amber' : 'gray';
+    // ── 酒店卡片 ──
+    function renderHotelCard(hotel, idx) {
+      var rankBg   = ['#059669','#d97706','#6b7280'][idx] || '#6b7280';
+      var rankText = ['⭐ 首推','👍 备选','💰 省钱'][idx] || '';
+      var tagBg    = ['#dbeafe','#fef3c7','#f1f5f9'][idx] || '#f1f5f9';
+      var tagColor = ['#1d4ed8','#92400e','#374151'][idx] || '#374151';
+
+      // tags
       var tagsHtml = '';
       for (var ti = 0; ti < hotel.tags.length; ti++) {
-        tagsHtml += '<span class="tag ' + tagClass + '" style="font-size:11px;">' + hotel.tags[ti] + '</span>';
+        tagsHtml += '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:' + tagBg + ';color:' + tagColor + ';font-weight:600;white-space:nowrap;">' + hotel.tags[ti] + '</span>';
       }
+
+      // pros
       var prosHtml = '';
       for (var pi = 0; pi < hotel.pros.length; pi++) {
-        prosHtml += '<div class="hotel-pro">' + hotel.pros[pi] + '</div>';
+        prosHtml += '<div style="font-size:12px;color:var(--text-primary);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5;">' + hotel.pros[pi] + '</div>';
       }
+
+      // why（选择理由）
+      var whyHtml = hotel.why
+        ? '<div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:9px 12px;margin:10px 0;font-size:12px;color:#065f46;line-height:1.6;"><strong>✅ 为什么选它：</strong>' + hotel.why + '</div>'
+        : '';
+
+      // route
       var routeHtml = hotel.route
-        ? '<div style="background:#f0f9ff;border-radius:10px;padding:10px 12px;margin-top:10px;border-left:3px solid #0ea5e9;"><div style="font-size:11px;font-weight:800;color:#0369a1;margin-bottom:6px;">🗺️ 从这里出发怎么走</div><div style="font-size:12px;color:#1e3a5f;line-height:1.9;white-space:pre-line;">' + hotel.route + '</div></div>'
+        ? '<div style="background:#f0f9ff;border-left:3px solid #0ea5e9;border-radius:0 8px 8px 0;padding:9px 12px;margin:10px 0;"><div style="font-size:11px;font-weight:800;color:#0369a1;margin-bottom:5px;">🗺️ 从这里出发怎么走</div><div style="font-size:12px;color:#1e3a5f;line-height:1.8;white-space:pre-line;">' + hotel.route + '</div></div>'
         : '';
-      var warningHtml = hotel.warning
-        ? '<div class="hotel-warning" style="margin-top:8px;"><span>⚠️</span><span>' + hotel.warning + '</span></div>'
+
+      // warning
+      var warnHtml = hotel.warning
+        ? '<div style="background:#fef3c7;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:8px 12px;margin:8px 0;font-size:12px;color:#92400e;line-height:1.5;"><span style="font-weight:700;">⚠️ 注意：</span>' + hotel.warning + '</div>'
         : '';
-      var tripUrl = hotel.trip || 'https://www.trip.com/hotels/';
-      return '<div class="hotel-card" style="margin-bottom:16px;">'
-        + '<span class="hotel-rank-badge" style="background:' + rankColor + ';">' + rankLabel + '</span>'
-        + '<div class="hotel-top"><div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:4px;">'
-        + '<div style="flex:1;"><div class="hotel-name">' + hotel.name + '</div><div class="hotel-area"><i class="fas fa-map-marker-alt" style="color:var(--danger);font-size:11px;"></i> ' + hotel.area + '</div></div>'
-        + '<div style="text-align:right;"><div class="hotel-price-row"><div class="hotel-price">' + hotel.price + '</div><div class="hotel-price-unit">/晚</div></div><div class="hotel-score"><i class="fas fa-star" style="font-size:11px;"></i> ' + hotel.score + '</div></div>'
-        + '</div><div class="hotel-tags">' + tagsHtml + '</div></div>'
-        + '<div class="hotel-body"><div class="hotel-pros">' + prosHtml + '</div>'
-        + routeHtml + warningHtml
-        + '<div style="font-size:11px;color:var(--text-secondary);margin-top:10px;background:var(--bg);padding:7px 10px;border-radius:8px;line-height:1.6;">🔍 以下为<strong>关键词搜索页</strong>，含日期筛选，打开后按名称找到酒店。<strong>国内优先用 Trip.com</strong>，境外用 Booking/Agoda 比价。</div>'
-        + '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">'
-        + '<a href="' + tripUrl + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;background:#006ECC;color:white;font-size:13px;font-weight:700;text-decoration:none;"><i class="fas fa-search" style="font-size:12px;"></i> Trip.com 搜索此酒店（国内可用）</a>'
-        + '<div style="display:flex;gap:8px;">'
-        + '<a href="' + hotel.booking + '" target="_blank" class="hotel-action-btn primary" style="flex:1;text-align:center;"><i class="fas fa-external-link-alt" style="font-size:11px;"></i> Booking</a>'
-        + '<a href="' + hotel.agoda + '" target="_blank" class="hotel-action-btn secondary" style="flex:1;text-align:center;"><i class="fas fa-external-link-alt" style="font-size:11px;"></i> Agoda</a>'
-        + '</div></div></div></div>';
+
+      // 携程直达按钮 + 搜索按钮
+      var ctripDirectBtn = hotel.ctrip
+        ? '<a href="' + hotel.ctrip + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;border-radius:10px;background:#0066b3;color:white;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:0.3px;">'
+          + '<span style="font-size:15px;">🛒</span> 携程直达此酒店</a>'
+        : '';
+      var ctripSearchBtn = hotel.ctripSearch
+        ? '<a href="' + hotel.ctripSearch + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 14px;border-radius:10px;background:#e0f0ff;color:#0066b3;font-size:12px;font-weight:700;text-decoration:none;">'
+          + '<span>🔍</span> 携程搜索同类房源</a>'
+        : '';
+      var bookingBtn = hotel.booking
+        ? '<a href="' + hotel.booking + '" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:9px;border-radius:10px;background:#f1f5f9;color:#1e293b;font-size:12px;font-weight:600;text-decoration:none;"><span>🌐</span>Booking</a>'
+        : '';
+      var agodaBtn = hotel.agoda
+        ? '<a href="' + hotel.agoda + '" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:9px;border-radius:10px;background:#f1f5f9;color:#1e293b;font-size:12px;font-weight:600;text-decoration:none;"><span>🌐</span>Agoda</a>'
+        : '';
+
+      return '<div class="hotel-card" style="margin-bottom:18px;position:relative;">'
+        // 徽章
+        + '<span style="position:absolute;top:-8px;right:12px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;color:white;background:' + rankBg + ';z-index:1;">' + rankText + '</span>'
+        // 顶部：名称+价格
+        + '<div class="hotel-top">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:6px;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div class="hotel-name" style="font-size:15px;padding-right:6px;">' + hotel.name + '</div>'
+        + '<div class="hotel-area" style="margin-top:3px;"><i class="fas fa-map-marker-alt" style="color:#ef4444;font-size:10px;margin-right:3px;"></i>' + hotel.area + '</div>'
+        + '</div>'
+        + '<div style="text-align:right;flex-shrink:0;margin-left:8px;">'
+        + '<div style="font-size:16px;font-weight:800;color:#0f172a;">' + hotel.price + '</div>'
+        + '<div style="font-size:10px;color:var(--text-muted);">/晚</div>'
+        + '<div style="margin-top:3px;display:flex;align-items:center;justify-content:flex-end;gap:3px;">'
+        + '<i class="fas fa-star" style="color:#f59e0b;font-size:10px;"></i>'
+        + '<span style="font-size:12px;font-weight:700;color:#0f172a;">' + hotel.score + '</span>'
+        + '<span style="font-size:10px;color:var(--text-muted);">' + (hotel.scoreLabel || '') + '</span>'
+        + '</div>'
+        + '</div>'
+        + '</div>'
+        // tags
+        + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">' + tagsHtml + '</div>'
+        + '</div>'
+        // 正文
+        + '<div class="hotel-body">'
+        + whyHtml
+        + '<div style="margin-bottom:4px;">' + prosHtml + '</div>'
+        + routeHtml + warnHtml
+        // 预订区
+        + '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">'
+        + '<div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:0.5px;margin-bottom:8px;">📱 预订渠道（国内首选携程）</div>'
+        + '<div style="display:flex;flex-direction:column;gap:7px;">'
+        + ctripDirectBtn
+        + ctripSearchBtn
+        + '<div style="display:flex;gap:7px;">' + bookingBtn + agodaBtn + '</div>'
+        + '</div>'
+        + '<div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.6;background:var(--bg);padding:6px 10px;border-radius:8px;">'
+        + '💡 <strong>携程直达</strong>：含日期已填好，直接看该酒店价格。<strong>携程搜索</strong>：看同区域其他同类房源对比。Booking/Agoda 可比价，境外信用卡付款方便。'
+        + '</div>'
+        + '</div>'
+        + '</div>'
+        + '</div>';
     }
-    
+
+    // ── 城市特别提示 ──
     function getCitySpecialNote(cityId) {
       if (cityId === 'macau') {
-        return '<div class="alert-card info" style="margin-top:4px;">'
-          + '<div class="alert-icon">✈️</div>'
+        return '<div class="alert-card success" style="margin-top:4px;">'
+          + '<div class="alert-icon">✅</div>'
           + '<div class="alert-content">'
-          + '<div class="alert-title">澳门机场接驳 & 明天早班机</div>'
-          + '<div class="alert-text">氹仔/路氹大型酒店均有免费穿梭巴士。<strong>明天要飞曼谷，确认好航班时间，提前至少1.5小时到机场</strong>。机场北出口外停车场找穿梭巴士，11:00–21:00，每15–20分钟一班。出发当天早上先确认班次！</div>'
+          + '<div class="alert-title">澳门已定艺居酒店，今天这样走</div>'
+          + '<div class="alert-text">① 落地→打的5分钟到艺居酒店放行李<br>② 步行15分钟或打的→官也街买手信<br>③ 官也街步行10分钟→龙环葡韵拍照<br>④ 打的回路氹城吃晚饭→22:30前回酒店休息</div>'
           + '</div></div>'
           + '<div class="alert-card warning" style="margin-top:8px;">'
-          + '<div class="alert-icon">💡</div>'
+          + '<div class="alert-icon">⏰</div>'
           + '<div class="alert-content">'
-          + '<div class="alert-title">今晚不要贪玩</div>'
-          + '<div class="alert-text">明天一早飞曼谷落地后直奔芭提雅，路程长。今晚22:30前必须休息，不要熬夜逛威尼斯人。</div>'
+          + '<div class="alert-title">今晚22:30前必须休息</div>'
+          + '<div class="alert-text">明天飞曼谷落地后直奔芭提雅，路途长。今晚不要熬夜逛威尼斯人，提前整理好明天出发材料（护照/TDAC截图/机票）。</div>'
+          + '</div></div>';
+      }
+      if (cityId === 'pattaya') {
+        return '<div class="alert-card info" style="margin-top:4px;">'
+          + '<div class="alert-icon">🎟️</div>'
+          + '<div class="alert-content">'
+          + '<div class="alert-title">蒂芙尼秀 · 提前Klook购票</div>'
+          + '<div class="alert-text">建议出发前在Klook购票，比现场便宜约100–200฿：<br>• Klook搜"Tiffany\'s Show Pattaya"→选4/28日期19:30场<br>• 票价约500–700฿/人（含1杯饮料）<br>• 演出约75分钟，从住宿Grab约50฿约5分钟到秀场</div>'
+          + '</div></div>'
+          + '<div class="alert-card warning" style="margin-top:8px;">'
+          + '<div class="alert-icon">📅</div>'
+          + '<div class="alert-content">'
+          + '<div class="alert-title">4/29退房节奏安排</div>'
+          + '<div class="alert-text">上午可选真理寺（08:00出发，Grab约50฿），12:00前退房，午饭后出发曼谷。<strong>包车约1.5–2小时900–1200฿</strong>，或大巴+BTS约2.5–3小时80–130฿。</div>'
           + '</div></div>';
       }
       if (cityId === 'bangkok') {
         return '<div class="alert-card info" style="margin-top:4px;">'
           + '<div class="alert-icon">🚇</div>'
           + '<div class="alert-content">'
-          + '<div class="alert-title">曼谷Asok区 · 为什么选这里</div>'
-          + '<div class="alert-text">BTS Asok站 + MRT Sukhumvit站双线交汇：<br>• 去大皇宫：BTS转水上巴士约50分钟<br>• 去Siam商圈：BTS约15分钟<br>• 去机场（5/2晚）：Grab直达约45分钟<br>• 步行圈：Terminal 21、按摩店、餐厅、7-Eleven全在5–10分钟内</div>'
+          + '<div class="alert-title">曼谷Asok区 · 为什么是最优选</div>'
+          + '<div class="alert-text">BTS Asok + MRT Sukhumvit双线交汇：<br>• 去大皇宫：BTS转水上巴士约50分钟<br>• 去Siam商圈：BTS约12分钟<br>• 去机场（5/2晚22:00）：Grab约200–300฿约45分钟<br>• 步行圈：Terminal 21、按摩店、餐厅、7-Eleven全在10分钟内</div>'
           + '</div></div>'
           + '<div class="alert-card warning" style="margin-top:8px;">'
           + '<div class="alert-icon">⏰</div>'
           + '<div class="alert-content">'
-          + '<div class="alert-title">5/2（最后一晚）重要提醒</div>'
-          + '<div class="alert-text">5/2中午12:00退房，22:00出发去机场。退房后可以寄存行李在前台，下午轻量购物，17:30前吃完晚饭，取行李，22:00打Grab走人。<strong>不要在这天安排远处活动。</strong></div>'
-          + '</div></div>';
-      }
-      if (cityId === 'pattaya') {
-        return '<div class="alert-card info" style="margin-top:4px;">'
-          + '<div class="alert-icon">💃</div>'
-          + '<div class="alert-content">'
-          + '<div class="alert-title">蒂芙尼秀 · 提前购票攻略</div>'
-          + '<div class="alert-text"><strong>建议在出发前用Klook购票</strong>，比现场便宜约100–200฿：<br>• Klook搜"Tiffany\'s Show Pattaya"，选19:30场<br>• 门票约500–700฿/人（含1杯饮料）<br>• 秀场地址：Pattaya 2nd Road北段，从Central区酒店Grab约50฿5分钟<br>• 演出约75分钟，21:15结束，之后可顺路去Walking Street入口逛逛</div>'
-          + '</div></div>'
-          + '<div class="alert-card warning" style="margin-top:8px;">'
-          + '<div class="alert-icon">📅</div>'
-          + '<div class="alert-content">'
-          + '<div class="alert-title">4/29上午退房节奏</div>'
-          + '<div class="alert-text">上午可选真理寺参观（08:00出发，10:30结束，Grab约50฿），12:00前退房整理行李，午饭后出发曼谷。<strong>包车直达约1.5–2小时900–1200฿</strong>，或北站大巴+BTS约2.5–3小时80–130฿。</div>'
+          + '<div class="alert-title">5/2（最后一晚）关键安排</div>'
+          + '<div class="alert-text">5/2中午12:00退房，行李寄存前台。下午轻装购物，<strong>17:30前吃完晚饭</strong>，取行李，22:00打Grab去机场（出发前2小时）。这天不要安排远处景点。</div>'
           + '</div></div>';
       }
       return '';
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
       renderStayPage();
       var now = new Date();
-      var headerDate = document.getElementById('headerDate');
-      if (headerDate) headerDate.textContent = (now.getMonth()+1) + '月' + now.getDate() + '日';
+      var hd = document.getElementById('headerDate');
+      if (hd) hd.textContent = '住宿推荐 · ' + (now.getMonth()+1) + '月' + now.getDate() + '日';
     });
   </script>
 
